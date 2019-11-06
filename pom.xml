@@ -1,0 +1,252 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.eclipse.emfcloud.modelserver</groupId>
+	<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
+	<name>modelserver-parent</name>
+	<description>parent for all modelserver modules</description>
+	<version>0.7.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<repositories>
+		<repository>
+			<id>sonatype</id>
+			<name>Sonatype</name>
+			<url>https://oss.sonatype.org/content/groups/public</url>
+		</repository>
+	</repositories>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.9</java.version>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+
+	<modules>
+		<module>org.eclipse.emfcloud.modelserver.common</module>
+		<module>org.eclipse.emfcloud.modelserver.emf</module>
+		<module>org.eclipse.emfcloud.modelserver.edit</module>
+		<module>examples/org.eclipse.emfcloud.modelserver.example</module>
+		<module>examples/org.eclipse.emfcloud.modelserver.coffee.model</module>
+		<module>org.eclipse.emfcloud.modelserver.client</module>
+		<module>releng/org.eclipse.emfcloud.modelserver.codecoverage</module>
+	</modules>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+			</testResource>
+		</testResources>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.4</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- to disable use -Dcheckstyle.skip -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<configLocation>releng/org.eclipse.emfcloud.modelserver.codestyle/checkstyle/modelserver-checkstyle.xml</configLocation>
+					<consoleOutput>true</consoleOutput>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>8.23</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>2.27.0</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<!-- Activate using the release property: mvn clean install -Prelease -->
+		<profile>
+			<id>release</id>
+			<activation>
+				<property>
+					<name>release</name>
+				</property>
+			</activation>
+
+			<build>
+				<plugins>
+					<!-- To release to Maven central -->
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.6.8</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoreleaseafterclose>false</autoreleaseafterclose>
+						</configuration>
+					</plugin>
+					<!-- To generate javadoc -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>3.0.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+<!--  Uncomment this for deploying releases -->
+<!-- 					<plugin> -->
+<!-- 						<groupId>org.apache.maven.plugins</groupId> -->
+<!-- 						<artifactId>maven-javadoc-plugin</artifactId> -->
+<!-- 						<version>3.1.0</version> -->
+<!-- 						<executions> -->
+<!-- 							<execution> -->
+<!-- 								<id>attach-javadocs</id> -->
+<!-- 								<goals> -->
+<!-- 									<goal>jar</goal> -->
+<!-- 								</goals> -->
+<!-- 								<configuration> -->
+<!-- 									<tags> -->
+<!-- 										<tag> -->
+<!-- 											<name>generated</name> -->
+<!-- 											<placement>a</placement> -->
+<!-- 											<head></head> -->
+<!-- 										</tag> -->
+<!-- 											<tag> -->
+<!-- 											<name>ordered</name> -->
+<!-- 											<placement>a</placement> -->
+<!-- 											<head></head> -->
+<!-- 										</tag> -->
+<!-- 											<tag> -->
+<!-- 											<name>model</name> -->
+<!-- 											<placement>a</placement> -->
+<!-- 											<head>Model:</head> -->
+<!-- 										</tag> -->
+<!-- 									</tags> -->
+<!-- 								</configuration> -->
+<!-- 							</execution> -->
+<!-- 						</executions> -->
+<!-- 					</plugin> -->
+
+					<!-- To sign the artifacts -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+
+			</build>
+		</profile>
+	</profiles>
+
+	<!-- Additional required metadata for deploying releases to mvn central -->
+
+	<url>https://github.com/eclipse/emfcloud-modelserver</url>
+
+	<licenses>
+		<license>
+			<name>Eclipse Public License - v 2.0</name>
+			<url>http://www.eclipse.org/legal/epl-v20.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Edgar Mueller</name>
+			<email>emueller@eclipsesource.com</email>
+			<organization>EclipseSource</organization>
+			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
+		</developer>
+		<developer>
+			<name>Nina Doschek</name>
+			<email>ndoschek@eclipsesource.com</email>
+			<organization>EclipseSource</organization>
+			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
+		</developer>
+		<developer>
+			<name>Tobias Ortmayr</name>
+			<email>tortmayr@eclipsesource.com</email>
+			<organization>EclipseSource</organization>
+			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<url>https://github.com/eclipse/emfcloud-modelserver</url>
+		<connection>scm:git@github.com:eclipse/emfcloud-modelserver.git</connection>
+		<developerConnection>scm:git@github.com:eclipse/emfcloud-modelserver.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+</project>
