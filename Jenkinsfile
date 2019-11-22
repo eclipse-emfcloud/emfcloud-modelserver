@@ -8,7 +8,7 @@ pipeline {
 
         stage ('Build') {
             steps {
-                sh 'mvn clean verify' 
+                sh 'mvn clean verify --batch-mode package' 
             }
         }
 
@@ -20,7 +20,7 @@ pipeline {
                     sh 'gpg --batch --import "${KEYRING}"'
                     sh 'for fpr in $(gpg --list-keys --with-colons  | awk -F: \'/fpr:/ {print $10}\' | sort -u); do echo -e "5\ny\n" |  gpg --batch --command-fd 0 --expert --edit-key ${fpr} trust; done'
                 }
-                sh 'mvn deploy -Prelease'
+                sh 'mvn deploy -Prelease --batch-mode package'
             }
         }
     }
