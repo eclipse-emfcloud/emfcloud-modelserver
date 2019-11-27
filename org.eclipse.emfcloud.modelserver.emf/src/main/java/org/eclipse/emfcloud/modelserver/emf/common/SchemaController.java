@@ -15,24 +15,22 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
-import org.jetbrains.annotations.NotNull;
-
 import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchema;
+
 import com.google.inject.Inject;
 
 import io.javalin.http.Context;
-import io.javalin.http.Handler;
 
-public class SchemaController implements Handler {
+public class SchemaController {
 
    @Inject
    private ModelRepository modelRepository;
 
-   @Override
-   public void handle(@NotNull final Context ctx) {
-      modelRepository.getModel(ctx.queryParam("modeluri")).ifPresentOrElse(
+   public void getSchema(final Context ctx, final String modeluri) {
+      this.modelRepository.getModel(modeluri).ifPresentOrElse(
          instance -> ctx.json(JsonResponse.success(JsonSchema.from(instance.eClass()))),
          () -> ctx.status(404)
             .json(JsonResponse.error(String.format("Schema for '%s' not found!", ctx.queryParam("modeluri")))));
    }
+
 }
