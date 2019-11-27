@@ -29,10 +29,10 @@ import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
-
 import org.eclipse.emfcloud.modelserver.common.ModelServerPaths;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+
 import com.google.inject.Inject;
 
 import io.javalin.Javalin;
@@ -112,7 +112,15 @@ public class ModelServerRouting extends Routing {
             // GET MODELURIS
             get(ModelServerPaths.MODEL_URIS, getController(ModelController.class).getModelUrisHandler());
 
-            get(ModelServerPaths.SCHEMA, getController(SchemaController.class));
+            // GET JSON SCHEMA
+            get(ModelServerPaths.SCHEMA, ctx -> {
+               getQueryParam(ctx.queryParamMap(), "modeluri")
+                  .map(this::adaptModelUri)
+                  .ifPresentOrElse(
+                     param -> getController(SchemaController.class).getSchema(ctx, param),
+                     () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
+            });
+
             put(ModelServerPaths.SERVER_CONFIGURE, getController(ServerController.class).getConfigureHandler());
             get(ModelServerPaths.SERVER_PING, getController(ServerController.class).getPingHandler());
 
