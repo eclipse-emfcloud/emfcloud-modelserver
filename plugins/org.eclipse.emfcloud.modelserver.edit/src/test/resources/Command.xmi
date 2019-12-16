@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cmd:Command
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:cmd="http://www.eclipsesource.com/schema/2019/modelserver/command"
+    type="set"
+    feature="name">
+  <owner href="Coffee.ecore#//@eClassifiers.0"/>
+  <dataValues>Foo</dataValues>
+</cmd:Command>

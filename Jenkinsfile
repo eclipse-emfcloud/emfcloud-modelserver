@@ -1,26 +1,33 @@
-pipeline { 
-    agent any  
-    tools { 
-        maven 'apache-maven-3.6.2'
+pipeline {
+    agent any
+    tools {
+        maven 'apache-maven-latest'
         jdk 'openjdk-jdk11-latest'
     }
     stages {
-
-        stage ('Build') {
+        stage ('Build: Plain Maven (M2)') {
             steps {
-                sh 'mvn clean verify --batch-mode package' 
+                sh 'mvn clean verify -Pm2 --batch-mode package' 
+            }
+        }
+        
+        stage ('Build: Eclipse-based (P2)') {
+            steps {
+                sh 'mvn clean verify -Pp2 --batch-mode package' 
             }
         }
 
         stage('Deploy') {
             when { branch 'master' }
             steps {
-                sh 'echo Deploy master branch'
-                withCredentials([file(credentialsId: 'secret-subkeys.asc', variable: 'KEYRING')]) {
-                    sh 'gpg --batch --import "${KEYRING}"'
-                    sh 'for fpr in $(gpg --list-keys --with-colons  | awk -F: \'/fpr:/ {print $10}\' | sort -u); do echo -e "5\ny\n" |  gpg --batch --command-fd 0 --expert --edit-key ${fpr} trust; done'
-                }
-                sh 'mvn deploy -Prelease --batch-mode package'
+            	parallel(
+            	    p2: {
+            	        build job: 'deploy-emfcloud-modelserver-p2', wait: false
+            	    },
+            	    m2: {
+            	        build job: 'deploy-emfcloud-modelserver-m2', wait: false
+            	    }
+            	)
             }
         }
     }

@@ -1,9 +1,15 @@
-# Model Server
+# Model Server ![build-status-server](https://img.shields.io/jenkins/build?jobUrl=https://ci.eclipse.org/emfcloud/job/eclipse-emfcloud/job/emfcloud-modelserver/job/master/)
 ## Build
 To build the model server as standalone JAR and execute all component tests execute the following maven goal in the root directory:
 ```bash
 mvn clean install
 ```
+
+### Maven Repositories ![build-status-server](https://img.shields.io/jenkins/build?jobUrl=https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-m2/&label=publish)
+- <i>Snapshots: </i> https://oss.sonatype.org/content/repositories/snapshots/org/eclipse/emfcloud/modelserver/
+
+### P2 Update Sites ![build-status-server](https://img.shields.io/jenkins/build?jobUrl=https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-p2/&label=publish)
+- <i>Snapshots: </i> https://download.eclipse.org/emfcloud/modelserver/p2/nightly/
 
 ### Code Coverage
 

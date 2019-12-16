@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
+        <groupId>org.eclipse.emfcloud.modelserver</groupId>
+        <version>0.7.0-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+    </parent>
+    <artifactId>org.eclipse.emfcloud.modelserver.client</artifactId>
+	<packaging>${package-type}</packaging>
+
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <url>https://jcenter.bintray.com/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emfcloud.modelserver</groupId>
+            <artifactId>org.eclipse.emfcloud.modelserver.common</artifactId>
+            <version>0.7.0-SNAPSHOT</version>
+        </dependency>
+		<dependency>
+			<groupId>org.eclipse.emfcloud.modelserver</groupId>
+			<artifactId>org.eclipse.emfcloud.modelserver.edit</artifactId>
+			<version>0.7.0-SNAPSHOT</version>
+		</dependency>
+        <dependency>
+            <groupId>org.eclipse.emfcloud.modelserver</groupId>
+            <artifactId>org.eclipse.emfcloud.modelserver.coffee.model</artifactId>
+            <version>0.7.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emfcloud.modelserver</groupId>
+            <artifactId>org.eclipse.emfcloud.modelserver.emf</artifactId>
+            <version>0.7.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.gmazzo</groupId>
+            <artifactId>okhttp-mock</artifactId>
+            <version>1.3.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
