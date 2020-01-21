@@ -24,6 +24,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.ecore.EObject;
@@ -57,6 +58,8 @@ import okhttp3.WebSocketListener;
 public class ModelServerClient implements ModelServerClientApi<EObject>, ModelServerPaths {
 
    private static final Set<String> SUPPORTED_FORMATS = ImmutableSet.of("json", "xmi");
+   private static final String PATCH = "PATCH";
+   private static final String POST = "POST";
 
    private static Logger LOG = Logger.getLogger(ModelServerClient.class.getSimpleName());
 
@@ -151,16 +154,52 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
-   public CompletableFuture<Response<String>> update(final String modelUri, final String updatedModel) {
-      final Request request = new Request.Builder()
-         .url(
-            createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter("modeluri", modelUri)
-               .build())
-         .patch(
-            RequestBody.create(
-               Json.object(Json.prop("data", Json.text(updatedModel))).toString(), MediaType.parse("application/json")))
-         .build();
+   public CompletableFuture<Response<String>> create(final String modelUri, final String createdModelAsJsonText) {
+      TextNode dataNode = Json.text(createdModelAsJsonText);
+      final Request request = buildCreateOrUpdateRequest(modelUri, POST, "json", dataNode);
+
+      return makeCall(request)
+              .thenApply(response -> parseField(response, "data"))
+              .thenApply(this::getBodyOrThrow);
+   }
+
+   @Override
+   public CompletableFuture<Response<EObject>> create(final String modelUri, final EObject createdModel,
+                                                      final String format) {
+      return createOrUpdateModel(modelUri, createdModel, format, POST);
+   }
+
+   private CompletableFuture<Response<EObject>> createOrUpdateModel(String modelUri, EObject model, String format, String httpMethod) {
+      String checkedFormat = checkedFormat(format);
+      TextNode dataNode = Json.text(encode(model, checkedFormat));
+      final Request request = buildCreateOrUpdateRequest(modelUri, httpMethod, checkedFormat, dataNode);
+
+      return makeCall(request)
+              .thenApply(response -> parseField(response, "data"))
+              .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
+              .thenApply(this::getBodyOrThrow);
+   }
+
+   @NotNull
+   private Request buildCreateOrUpdateRequest(String modelUri, String httpMethod, String checkedFormat, TextNode dataNode) {
+      return new Request.Builder()
+                .url(
+                        createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
+                                .addQueryParameter("modeluri", modelUri)
+                                .addQueryParameter("format", checkedFormat)
+                                .build())
+                .method(httpMethod,
+                        RequestBody.create(
+                                Json.object(
+                                        Json.prop("data", dataNode)).toString(),
+                                MediaType.parse("application/json")))
+                .build();
+   }
+
+   @Override
+   public CompletableFuture<Response<String>> update(final String modelUri, final String updatedModelAsJsonText) {
+      TextNode dataNode = Json.text(updatedModelAsJsonText);
+      final Request request = buildCreateOrUpdateRequest(modelUri, PATCH, "json", dataNode);
 
       return makeCall(request)
          .thenApply(response -> parseField(response, "data"))
@@ -170,24 +209,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    @Override
    public CompletableFuture<Response<EObject>> update(final String modelUri, final EObject updatedModel,
       final String format) {
-      String checkedFormat = checkedFormat(format);
-      final Request request = new Request.Builder()
-         .url(
-            createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter("modeluri", modelUri)
-               .addQueryParameter("format", checkedFormat)
-               .build())
-         .patch(
-            RequestBody.create(
-               Json.object(
-                  Json.prop("data", Json.text(encode(updatedModel, checkedFormat)))).toString(),
-               MediaType.parse("application/json")))
-         .build();
-
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"))
-         .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
-         .thenApply(this::getBodyOrThrow);
+      return createOrUpdateModel(modelUri, updatedModel, format, PATCH);
    }
 
    private String checkedFormat(final String format) {
