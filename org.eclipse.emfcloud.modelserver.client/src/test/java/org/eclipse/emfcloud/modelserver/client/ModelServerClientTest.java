@@ -34,10 +34,6 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.edit.command.AddCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
-import org.emfjson.jackson.resource.JsonResource;
-import org.junit.Before;
-import org.junit.Test;
-
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.BrewingUnit;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.CoffeeFactory;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.CoffeePackage;
@@ -53,6 +49,10 @@ import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponse;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
+import org.emfjson.jackson.resource.JsonResource;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Charsets;
 
@@ -140,14 +140,14 @@ public class ModelServerClientTest {
    public void create() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(display);
       interceptor.addRule()
-              .url(BASE_URL + ModelServerPaths.MODEL_BASE_PATH + "?modeluri=SuperBrewer3000.json&format=json")
-              .post()
-              .respond(JsonResponse.success(expected).toString());
+         .url(BASE_URL + ModelServerPaths.MODEL_BASE_PATH + "?modeluri=SuperBrewer3000.json&format=json")
+         .post()
+         .respond(JsonResponse.success(expected).toString());
       ModelServerClient client = createClient();
 
       final CompletableFuture<Response<String>> f = client.create(
-              "SuperBrewer3000.json",
-              expected.toString());
+         "SuperBrewer3000.json",
+         expected.toString());
 
       assertThat(f.get().body(), equalTo(expected.toString()));
    }
@@ -157,15 +157,15 @@ public class ModelServerClientTest {
    public void createModel() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(display);
       interceptor.addRule()
-              .url(BASE_URL + ModelServerPaths.MODEL_BASE_PATH + "?modeluri=SuperBrewer3000.json&format=json")
-              .post()
-              .respond(JsonResponse.success(expected).toString());
+         .url(BASE_URL + ModelServerPaths.MODEL_BASE_PATH + "?modeluri=SuperBrewer3000.json&format=json")
+         .post()
+         .respond(JsonResponse.success(expected).toString());
       ModelServerClient client = createClient();
 
       CompletableFuture<Response<EObject>> f = client.create(
-              "SuperBrewer3000.json",
-              display,
-              "json");
+         "SuperBrewer3000.json",
+         display,
+         "json");
 
       assertThat(jsonCodec.encode(f.get().body()), equalTo(expected));
    }

@@ -24,7 +24,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.ecore.EObject;
@@ -42,6 +41,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
@@ -159,41 +159,45 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = buildCreateOrUpdateRequest(modelUri, POST, "json", dataNode);
 
       return makeCall(request)
-              .thenApply(response -> parseField(response, "data"))
-              .thenApply(this::getBodyOrThrow);
+         .thenApply(response -> parseField(response, "data"))
+         .thenApply(this::getBodyOrThrow);
    }
 
    @Override
    public CompletableFuture<Response<EObject>> create(final String modelUri, final EObject createdModel,
-                                                      final String format) {
+      final String format) {
       return createOrUpdateModel(modelUri, createdModel, format, POST);
    }
 
-   private CompletableFuture<Response<EObject>> createOrUpdateModel(String modelUri, EObject model, String format, String httpMethod) {
+   private CompletableFuture<Response<EObject>> createOrUpdateModel(final String modelUri, final EObject model,
+      final String format,
+      final String httpMethod) {
       String checkedFormat = checkedFormat(format);
       TextNode dataNode = Json.text(encode(model, checkedFormat));
       final Request request = buildCreateOrUpdateRequest(modelUri, httpMethod, checkedFormat, dataNode);
 
       return makeCall(request)
-              .thenApply(response -> parseField(response, "data"))
-              .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
-              .thenApply(this::getBodyOrThrow);
+         .thenApply(response -> parseField(response, "data"))
+         .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
+         .thenApply(this::getBodyOrThrow);
    }
 
    @NotNull
-   private Request buildCreateOrUpdateRequest(String modelUri, String httpMethod, String checkedFormat, TextNode dataNode) {
+   private Request buildCreateOrUpdateRequest(final String modelUri, final String httpMethod,
+      final String checkedFormat,
+      final TextNode dataNode) {
       return new Request.Builder()
-                .url(
-                        createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-                                .addQueryParameter("modeluri", modelUri)
-                                .addQueryParameter("format", checkedFormat)
-                                .build())
-                .method(httpMethod,
-                        RequestBody.create(
-                                Json.object(
-                                        Json.prop("data", dataNode)).toString(),
-                                MediaType.parse("application/json")))
-                .build();
+         .url(
+            createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
+               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter("format", checkedFormat)
+               .build())
+         .method(httpMethod,
+            RequestBody.create(
+               Json.object(
+                  Json.prop("data", dataNode)).toString(),
+               MediaType.parse("application/json")))
+         .build();
    }
 
    @Override
