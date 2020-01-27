@@ -22,6 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assume.assumeThat;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 
 import org.eclipse.emf.common.util.URI;
 import org.junit.Test;
@@ -34,6 +35,12 @@ public class ServerConfigurationTest {
    public void normalizeWorkspaceRoot() {
       serverConfiguration.setWorkspaceRoot("foo");
       assertThat(serverConfiguration.getWorkspaceRoot(), endsWith("foo/"));
+   }
+
+   @Test
+   public void normalizeWorkspaceRootEncoded() throws UnsupportedEncodingException {
+      serverConfiguration.setWorkspaceRoot("file:/c%3A/foo%20bar/");
+      assertThat(serverConfiguration.getWorkspaceRoot(), endsWith("c:/foo bar/"));
    }
 
    @Test
