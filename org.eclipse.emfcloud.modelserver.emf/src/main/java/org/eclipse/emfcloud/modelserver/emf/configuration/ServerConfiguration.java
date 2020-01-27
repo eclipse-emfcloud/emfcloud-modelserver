@@ -12,6 +12,8 @@ package org.eclipse.emfcloud.modelserver.emf.configuration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -84,17 +86,19 @@ public class ServerConfiguration {
    }
 
    private static Optional<URI> toFilePath(final String fileUrl) {
+
       try {
-         URI uri = URI.createURI(fileUrl, true);
+         String decodedUrl = URLDecoder.decode(fileUrl, "UTF-8");
+         URI uri = URI.createURI(decodedUrl, true);
          if (uri.scheme() == null) {
-            uri = URI.createFileURI(fileUrl);
+            uri = URI.createFileURI(decodedUrl);
          }
          if (uri.isRelative()) {
             URI cwd = URI.createFileURI(System.getProperty("user.dir"));
             uri = uri.resolve(ensureDirectory(cwd));
          }
          return Optional.ofNullable(uri).filter(URI::isFile);
-      } catch (NullPointerException | IllegalArgumentException e) {
+      } catch (NullPointerException | IllegalArgumentException | UnsupportedEncodingException e) {
          LOG.warn(String.format("Could not convert to filePath! ’%s’ is not a valid URL", fileUrl));
          return Optional.empty();
       }
