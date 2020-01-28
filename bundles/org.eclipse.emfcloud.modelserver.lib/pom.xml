@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.eclipse.emfcloud.modelserver</groupId>
+		<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
+		<version>0.7.0-SNAPSHOT</version>
+		<relativePath>../..</relativePath>
+	</parent>
+	<artifactId>org.eclipse.emfcloud.modelserver.lib</artifactId>
+	<packaging>${package-type}</packaging>
+	
+	<properties>
+		<maven.deploy.skip>false</maven.deploy.skip>
+	</properties>
+
+	<!-- Additional required metadata for deploying releases to mvn central -->
+	<url>https://github.com/eclipse/emfcloud-modelserver</url>
+
+	<licenses>
+		<license>
+			<name>Eclipse Public License - v 2.0</name>
+			<url>http://www.eclipse.org/legal/epl-v20.html</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Edgar Mueller</name>
+			<email>emueller@eclipsesource.com</email>
+			<organization>EclipseSource</organization>
+			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
+		</developer>
+		<developer>
+			<name>Nina Doschek</name>
+			<email>ndoschek@eclipsesource.com</email>
+			<organization>EclipseSource</organization>
+			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
+		</developer>
+		<developer>
+			<name>Tobias Ortmayr</name>
+			<email>tortmayr@eclipsesource.com</email>
+			<organization>EclipseSource</organization>
+			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<url>https://github.com/eclipse/emfcloud-modelserver</url>
+		<connection>scm:git@github.com:eclipse/emfcloud-modelserver.git</connection>
+		<developerConnection>scm:git@github.com:eclipse/emfcloud-modelserver.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+</project>

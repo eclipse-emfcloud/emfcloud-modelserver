@@ -18,7 +18,6 @@
     </module>
     <module name="JavadocMethod">
       <property name="scope" value="package"/>
-      <property name="allowMissingJavadoc" value="true"/>
     </module>
     <module name="SuppressionCommentFilter">
       <property name="offCommentFormat" value="(@generated$)|(// end of custom code$)"/>

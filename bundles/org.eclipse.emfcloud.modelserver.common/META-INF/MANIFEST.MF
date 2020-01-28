@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ModelServer Common
+Bundle-SymbolicName: org.eclipse.emfcloud.modelserver.common
+Bundle-Version: 0.7.0.qualifier
+Automatic-Module-Name: org.eclipse.emfcloud.modelserver.common
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: com.fasterxml.jackson.core.jackson-core;bundle-version="[2.9.0,3.0.0)",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.9.0,3.0.0)",
+ com.google.inject;bundle-version="[3.0.0,4.0.0)",
+ org.apache.log4j;bundle-version="[1.2.15,2.0.0)",
+ org.eclipse.emf.ecore;bundle-version="[2.20.0,3.0.0)",
+ org.eclipse.emf.ecore.xmi;bundle-version="[2.16.0,3.0.0)",
+ org.emfjson.jackson;bundle-version="[1.2.0,2.0.0)"
+Export-Package: org.eclipse.emfcloud.modelserver.common,
+ org.eclipse.emfcloud.modelserver.common.codecs,
+ org.eclipse.emfcloud.modelserver.jsonschema
+Bundle-Vendor: EclipseSource

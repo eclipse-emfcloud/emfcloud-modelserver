@@ -58,10 +58,6 @@ local.properties
 .scala_dependencies
 .worksheet
 
-### Eclipse Patch ###
-# JDT-specific (Eclipse Java Development Tools)
-.classpath
-
 # Annotation Processing
 .apt_generated
 

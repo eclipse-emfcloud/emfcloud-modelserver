@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ModelServer Client
+Bundle-SymbolicName: org.eclipse.emfcloud.modelserver.client
+Bundle-Version: 0.7.0.qualifier
+Automatic-Module-Name: org.eclipse.emfcloud.modelserver.client
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: com.fasterxml.jackson.core.jackson-core;bundle-version="[2.9.0,3.0.0)",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.9.0,3.0.0)",
+ com.google.guava;bundle-version="[27.1.0,28.0.0)",
+ org.apache.log4j;bundle-version="[1.2.15,2.0.0)",
+ org.eclipse.emf.common;bundle-version="[2.17.0,3.0.0)",
+ org.eclipse.emf.ecore;bundle-version="[2.20.0,3.0.0)",
+ org.eclipse.emfcloud.modelserver.common;bundle-version="[0.7.0,1.0.0)",
+ org.eclipse.emfcloud.modelserver.edit;bundle-version="[0.7.0,1.0.0)",
+ org.eclipse.emfcloud.modelserver.lib;bundle-version="[0.7.0,1.0.0)"
+Export-Package: org.eclipse.emfcloud.modelserver.client,
+ org.eclipse.emfcloud.modelserver.internal.client;x-internal:=true
+Bundle-Vendor: EclipseSource

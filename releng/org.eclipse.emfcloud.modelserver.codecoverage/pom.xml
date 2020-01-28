@@ -9,7 +9,6 @@
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>org.eclipse.emfcloud.modelserver.codecoverage</artifactId>
-	<name>modelserver-codecoverage</name>
 	<description>code coverage report aggregation of all testable modules</description>
 
 	<properties>

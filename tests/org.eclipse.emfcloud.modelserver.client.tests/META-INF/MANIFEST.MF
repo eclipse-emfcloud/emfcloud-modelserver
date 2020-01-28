@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ModelServer Client Tests
+Bundle-SymbolicName: org.eclipse.emfcloud.modelserver.client.tests
+Bundle-Version: 0.7.0.qualifier
+Fragment-Host: org.eclipse.emfcloud.modelserver.client;bundle-version="0.7.0.qualifier"
+Automatic-Module-Name: org.eclipse.emfcloud.modelserver.client.tests
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.9.0,3.0.0)",
+ org.eclipse.emf.ecore;bundle-version="[2.20.0,3.0.0)",
+ org.eclipse.emf.edit;bundle-version="[2.16.0,3.0.0)",
+ org.eclipse.emfcloud.modelserver.emf;bundle-version="[0.7.0,1.0.0)",
+ org.eclipse.emfcloud.modelserver.tests;bundle-version="[0.7.0,1.0.0)",
+ org.emfjson.jackson;bundle-version="[1.2.0,2.0.0)",
+ org.junit;bundle-version="[4.12.0,5.0.0)"
+Bundle-ClassPath: .
+Bundle-Vendor: EclipseSource

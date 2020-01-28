@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.eclipse.emfcloud.modelserver.feature_0.7.0.qualifier.jar" id="org.eclipse.emfcloud.modelserver.feature" version="0.7.0.qualifier">
+      <category name="org.eclipse.emfcloud.modelserver"/>
+   </feature>
+   <feature url="features/org.eclipse.emfcloud.modelserver.feature.source_0.7.0.qualifier.jar" id="org.eclipse.emfcloud.modelserver.feature.source" version="0.7.0.qualifier">
+      <category name="org.eclipse.emfcloud.modelserver"/>
+   </feature>
+   <category-def name="org.eclipse.emfcloud.modelserver" label="Model Server"/>
+</site>

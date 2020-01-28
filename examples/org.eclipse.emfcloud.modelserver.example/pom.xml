@@ -9,7 +9,6 @@
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>org.eclipse.emfcloud.modelserver.example</artifactId>
-	<name>modelserver-emf-example</name>
 
 	<properties>
 		<maven.deploy.skip>false</maven.deploy.skip>

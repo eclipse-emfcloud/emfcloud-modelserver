@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Common
+Bundle-SymbolicName: org.eclipse.emfcloud.modelserver.common
+Bundle-Version: 1.0.0.qualifier
+Export-Package: org.eclipse.emfcloud.modelserver.common,
+ org.eclipse.emfcloud.modelserver.common.codecs,
+ org.eclipse.emfcloud.modelserver.jsonschema
