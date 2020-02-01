@@ -12,6 +12,7 @@
 
 	<properties>
 		<maven.deploy.skip>false</maven.deploy.skip>
+		<package-type>jar</package-type>
 	</properties>
 
 	<dependencies>
@@ -29,6 +30,14 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
+	</build>
 	<profiles>
 		<profile>
 			<id>fatjar</id>

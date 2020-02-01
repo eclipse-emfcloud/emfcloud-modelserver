@@ -9,11 +9,21 @@
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>org.eclipse.emfcloud.modelserver.coffee.model</artifactId>
-	
+
 	<properties>
+		<package-type>jar</package-type>
 		<maven.deploy.skip>false</maven.deploy.skip>
 	</properties>
 	
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
+	</build>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.eclipse.emf</groupId>
