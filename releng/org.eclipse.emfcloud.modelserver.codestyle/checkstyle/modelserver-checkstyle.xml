@@ -10,6 +10,10 @@
 -->
 <module name="Checker">
   <property name="severity" value="warning"/>
+  <module name="LineLength">
+    <property name="severity" value="ignore"/>
+    <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
+  </module>
   <module name="TreeWalker">
     <property name="tabWidth" value="4"/>
     <module name="SuppressWarningsHolder"/>
@@ -68,10 +72,6 @@
     <module name="IllegalImport"/>
     <module name="RedundantImport"/>
     <module name="UnusedImports"/>
-    <module name="LineLength">
-      <property name="severity" value="ignore"/>
-      <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
-    </module>
     <module name="MethodLength"/>
     <module name="ParameterNumber"/>
     <module name="EmptyForIteratorPad">
@@ -222,7 +222,7 @@
   </module>
   <module name="Translation"/>
   <module name="RegexpHeader">
-    <property name="header" value="^\/\*{2,80}$\n^ \* Copyright( \(c\))? \d\d\d\d(-\d\d\d\d)? EclipseSource and others\.$\n^ \*$\n^ \* This program and the accompanying materials are made available under the$\n^ \* terms of the Eclipse Public License v\. 2\.0 which is available at$\n^ \* https\:\/\/www\.eclipse\.org\/legal\/epl-2\.0, or the MIT License which is$\n^ \* available at https\:\/\/opensource\.org\/licenses\/MIT\.$\n^ \*$\n^ \* SPDX-License-Identifier\: EPL-2\.0 OR MIT$\n^ \*{1,80}\/$"/>
+    <property name="header" value="^\/\*{2,80}$\n^ \* Copyright( \(c\))? \d\d\d\d(-\d\d\d\d)?.+$\n^ \*$\n^ \* This program and the accompanying materials are made available under the$\n^ \* terms of the Eclipse Public License v\. 2\.0 which is available at$\n^ \* https\:\/\/www\.eclipse\.org\/legal\/epl-2\.0, or the MIT License which is$\n^ \* available at https\:\/\/opensource\.org\/licenses\/MIT\.$\n^ \*$\n^ \* SPDX-License-Identifier\: EPL-2\.0 OR MIT$\n^ \*{1,80}\/$"/>
     <property name="fileExtensions" value="java"/>
   </module>
   <module name="SuppressWarningsFilter"/>
