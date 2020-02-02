@@ -68,6 +68,9 @@ public class ModelRepository {
    }
 
    public void initialize(final String workspaceRoot, final boolean clearResources) {
+      if (workspaceRoot==null || workspaceRoot.isEmpty()) {
+         return;
+      }
       if (clearResources) {
          resourceSet.getResources().forEach(Resource::unload);
          resourceSet.getResources().clear();
