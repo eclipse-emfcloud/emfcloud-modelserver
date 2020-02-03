@@ -15,15 +15,12 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.UnrecognizedOptionException;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.eclipse.emfcloud.modelserver.emf.launch.CLIParser;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerLauncher;
 import org.eclipse.emfcloud.modelserver.example.util.ResourceUtil;
+
 import com.google.common.collect.Lists;
 
 public final class ExampleServerLauncher {
@@ -39,26 +36,8 @@ public final class ExampleServerLauncher {
    private ExampleServerLauncher() {}
 
    public static void main(String[] args) throws ParseException {
-      BasicConfigurator.configure();
-      try {
-         CLIParser.create(args, CLIParser.getDefaultCLIOptions());
-      } catch (UnrecognizedOptionException e) {
-         LOG.error("Unrecognized command line argument(s) used!\n");
-         CLIParser.printHelp(PROCESS_NAME, CLIParser.getDefaultCLIOptions());
-         return;
-      }
-
-      if (CLIParser.getInstance().optionExists("h")) {
-         CLIParser.getInstance().printHelp(PROCESS_NAME);
-         return;
-      }
-
-      Logger root = Logger.getRootLogger();
-      if (CLIParser.getInstance().optionExists("e")) {
-         root.setLevel(Level.ERROR);
-      } else {
-         root.setLevel(Level.INFO);
-      }
+      ModelServerLauncher.configureLogger();
+      CLIParser.create(args, CLIParser.getDefaultCLIOptions());
 
       if (!CLIParser.getInstance().optionExists("r")) {
          // No workspace root was specified, use test workspace

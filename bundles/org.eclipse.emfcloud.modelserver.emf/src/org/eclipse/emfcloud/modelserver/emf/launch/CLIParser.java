@@ -67,7 +67,7 @@ public final class CLIParser {
       return port;
    }
 
-   protected Optional<String> parseWorkspaceRoot() throws ParseException {
+   public Optional<String> parseWorkspaceRoot() throws ParseException {
       String rootArg = cmd.getOptionValue("r");
       if (rootArg != null) {
          if (!ServerConfiguration.isValidWorkspaceRoot(rootArg)) {

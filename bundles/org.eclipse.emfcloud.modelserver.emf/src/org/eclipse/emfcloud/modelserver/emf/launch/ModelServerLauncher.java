@@ -13,26 +13,39 @@ package org.eclipse.emfcloud.modelserver.emf.launch;
 import java.util.Collection;
 
 import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.apache.commons.cli.UnrecognizedOptionException;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.di.ModelServerModule;
+
 import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 
 public class ModelServerLauncher {
-   private static final Logger LOG = LoggerFactory.getLogger(ModelServerLauncher.class.getSimpleName());
+   private static final Logger LOG = Logger.getLogger(ModelServerLauncher.class.getSimpleName());
    public static final int DEFAULT_JAVALIN_PORT = 8081;
 
    private final Collection<Module> modules;
    private Injector injector;
    private String[] args;
    private ServerConfiguration configuration;
+
+   public static void configureLogger() {
+      Logger root = Logger.getRootLogger();
+      if (!root.getAllAppenders().hasMoreElements()) {
+         root.addAppender(new ConsoleAppender(
+            new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN)));
+      }
+      root.setLevel(Level.DEBUG);
+
+   }
 
    public ModelServerLauncher() {
       modules = Sets.newHashSet(ModelServerModule.create());
@@ -64,18 +77,36 @@ public class ModelServerLauncher {
    }
 
    protected boolean parseCLIArguments(final String[] args) {
-      if (CLIParser.initialized()) {
-         CLIParser parser = CLIParser.getInstance();
-         try {
-            configuration.setServerPort(parser.parsePort());
-            parser.parseWorkspaceRoot().ifPresent(configuration::setWorkspaceRoot);
-            return true;
-         } catch (ParseException e) {
-            LOG.error(e.getMessage(), e);
-            parser.printHelp("ModelServerLauncher");
+      try {
+         if (!CLIParser.initialized()) {
+            configureCLIParser();
          }
+         CLIParser parser = CLIParser.getInstance();
+
+         if (parser.optionExists("h")) {
+            CLIParser.getInstance().printHelp("start modelserver");
+            return false;
+
+         }
+
+         if (parser.optionExists("e")) {
+            Logger.getRootLogger().setLevel(Level.ERROR);
+         }
+         configuration.setServerPort(parser.parsePort());
+         parser.parseWorkspaceRoot().ifPresent(configuration::setWorkspaceRoot);
+         return true;
+      } catch (UnrecognizedOptionException e) {
+         LOG.error("Unrecognized command line argument(s) used!\n");
+         CLIParser.printHelp("", CLIParser.getDefaultCLIOptions());
+      } catch (ParseException e) {
+         LOG.error(e.getMessage(), e);
       }
+
       return false;
+   }
+
+   protected void configureCLIParser() throws ParseException {
+      CLIParser.create(args, CLIParser.getDefaultCLIOptions());
    }
 
    public void shutdown() {
