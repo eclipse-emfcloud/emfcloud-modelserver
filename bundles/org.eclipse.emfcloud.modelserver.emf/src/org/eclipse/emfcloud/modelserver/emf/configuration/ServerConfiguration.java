@@ -56,7 +56,7 @@ public class ServerConfiguration {
 
       URI normalized = URIConverter.INSTANCE.normalize(workspaceRootURI);
       if (normalized.isFile()) {
-         try (Stream<Path> paths = Files.walk(Paths.get(normalized.toFileString()))) {
+         try (Stream<Path> paths = Files.walk(Paths.get(normalized.toString()))) {
             paths
                .filter(Files::isRegularFile)
                .forEach(file -> filePaths.add(file.toString()));
