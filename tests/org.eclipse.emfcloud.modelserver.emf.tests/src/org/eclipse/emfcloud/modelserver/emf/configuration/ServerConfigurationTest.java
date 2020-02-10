@@ -29,19 +29,19 @@ public class ServerConfigurationTest {
    @Test
    public void normalizeWorkspaceRoot() {
       serverConfiguration.setWorkspaceRoot("foo");
-      assertThat(serverConfiguration.getWorkspaceRoot(), endsWith("foo/"));
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), endsWith("foo/"));
    }
 
    @Test
    public void normalizeWorkspaceRootEncoded() throws UnsupportedEncodingException {
       serverConfiguration.setWorkspaceRoot("file:/c%3A/foo%20bar/");
-      assertThat(serverConfiguration.getWorkspaceRoot(), endsWith("c:/foo bar/"));
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), endsWith("c:/foo bar/"));
    }
 
    @Test
    public void normalizeWorkspaceRootSlashAlreadyPresent() {
       serverConfiguration.setWorkspaceRoot("foo/");
-      assertThat(serverConfiguration.getWorkspaceRoot(), endsWith("foo/"));
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), endsWith("foo/"));
    }
 
    @Test
@@ -49,7 +49,7 @@ public class ServerConfigurationTest {
       File cwd = getCWD();
 
       serverConfiguration.setWorkspaceRootURI(URI.createFileURI(cwd.getAbsolutePath()));
-      assertThat(serverConfiguration.getWorkspaceRoot(), is(cwd.getAbsolutePath()));
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), is(cwd.getAbsolutePath()));
    }
 
    @Test
@@ -59,7 +59,7 @@ public class ServerConfigurationTest {
       serverConfiguration.setWorkspaceRoot(".");
       URI expected = URI.createFileURI(cwd.getAbsolutePath()).appendSegment(""); // trailing slash
       assertThat(serverConfiguration.getWorkspaceRootURI(), is(expected));
-      assertThat(serverConfiguration.getWorkspaceRoot(), is(cwd.getAbsolutePath() + "/"));
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), is(cwd.getAbsolutePath() + "/"));
    }
 
    @Test

@@ -11,8 +11,9 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import org.apache.log4j.Logger;
-
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+
 import com.google.inject.Inject;
 
 import io.javalin.http.Context;
@@ -31,11 +32,12 @@ public class ServerController {
 
    private final Handler configureHandler = ctx -> {
       ServerConfiguration newConf = ctx.bodyAsClass(ServerConfiguration.class);
-      String workspaceRoot = newConf.getWorkspaceRoot();
-      if (workspaceRoot != null) {
+      URI workspaceRootUri = newConf.getWorkspaceRootURI();
+      if (workspaceRootUri != null) {
+         String workspaceRoot = workspaceRootUri.toString();
          if (ServerConfiguration.isValidWorkspaceRoot(workspaceRoot)) {
             serverConfiguration.setWorkspaceRoot(workspaceRoot);
-            modelRepository.initialize(workspaceRoot, true);
+            modelRepository.initialize(newConf.getWorkspaceRootURI().toFileString(), true);
             ctx.json(JsonResponse.success());
          } else {
             handleError(ctx, 400, "The given workspaceRoot is not a valid path: " + workspaceRoot);
