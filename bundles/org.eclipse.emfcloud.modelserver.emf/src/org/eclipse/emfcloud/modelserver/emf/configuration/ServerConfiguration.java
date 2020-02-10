@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.URIConverter;
-
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerLauncher;
 
 /**
@@ -43,8 +42,6 @@ public class ServerConfiguration {
 
    public void setWorkspaceRootURI(final URI uri) { this.workspaceRootURI = uri; }
 
-   public String getWorkspaceRoot() { return workspaceRootURI.toFileString(); }
-
    public void setWorkspaceRoot(final String workspaceRoot) {
       toFilePath(workspaceRoot)
          .map(ServerConfiguration::ensureDirectory)
@@ -56,7 +53,7 @@ public class ServerConfiguration {
 
       URI normalized = URIConverter.INSTANCE.normalize(workspaceRootURI);
       if (normalized.isFile()) {
-         try (Stream<Path> paths = Files.walk(Paths.get(normalized.toString()))) {
+         try (Stream<Path> paths = Files.walk(Paths.get(normalized.toFileString()))) {
             paths
                .filter(Files::isRegularFile)
                .forEach(file -> filePaths.add(file.toString()));
