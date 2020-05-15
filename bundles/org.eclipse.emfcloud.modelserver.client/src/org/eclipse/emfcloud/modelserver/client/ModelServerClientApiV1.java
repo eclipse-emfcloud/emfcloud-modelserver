@@ -38,6 +38,8 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<String>> getSchema(String modelUri);
 
+   CompletableFuture<Response<String>> getTypeSchema(String modelUri);
+
    CompletableFuture<Response<Boolean>> configure(ServerConfiguration configuration);
 
    CompletableFuture<Response<Boolean>> ping();

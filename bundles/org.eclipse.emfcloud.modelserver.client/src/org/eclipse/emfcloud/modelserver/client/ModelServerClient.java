@@ -264,6 +264,20 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
+   public CompletableFuture<Response<String>> getTypeSchema(final String modelUri) {
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(TYPE_SCHEMA))
+               .addQueryParameter("modeluri", modelUri)
+               .build())
+         .build();
+
+      return makeCall(request)
+         .thenApply(response -> parseField(response, "data"))
+         .thenApply(this::getBodyOrThrow);
+   }
+
+   @Override
    public CompletableFuture<Response<Boolean>> configure(final ServerConfiguration configuration) {
 
       ObjectNode config = Json.object(

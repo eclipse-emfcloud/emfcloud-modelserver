@@ -28,4 +28,11 @@ public class SchemaController {
             .json(JsonResponse.error(String.format("Schema for '%s' not found!", ctx.queryParam("modeluri")))));
    }
 
+   public void getTypeSchema(final Context ctx, final String modeluri) {
+      this.modelRepository.getModel(modeluri).ifPresentOrElse(
+         instance -> ctx.json(JsonResponse.success(JsonSchema.from(instance))),
+         () -> ctx.status(404)
+            .json(JsonResponse.error(String.format("Type schema for '%s' not found!", ctx.queryParam("modeluri")))));
+   }
+
 }
