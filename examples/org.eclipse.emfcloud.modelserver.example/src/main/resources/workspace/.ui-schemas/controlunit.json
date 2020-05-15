@@ -1,0 +1,123 @@
+{
+	"type": "VerticalLayout",
+	"elements": [
+		{
+			"type": "Label",
+			"text": "Control Unit"
+		},
+		{
+			"type": "Group",
+			"label": "Processor",
+			"elements": [
+				{
+					"type": "HorizontalLayout",
+					"elements": [
+						{
+							"type": "VerticalLayout",
+							"elements": [
+								{
+									"type": "Control",
+									"label": "Vendor",
+									"scope": "#/properties/processor/properties/vendor"
+								},
+								{
+									"type": "Control",
+									"label": "Clock Speed",
+									"scope": "#/properties/processor/properties/clockSpeed"
+								},
+								{
+									"type": "Control",
+									"label": "Number Of Cores",
+									"scope": "#/properties/processor/properties/numberOfCores"
+								}
+							]
+						},
+						{
+							"type": "VerticalLayout",
+							"elements": [
+								{
+									"type": "Control",
+									"label": "Socketconnector Type",
+									"scope": "#/properties/processor/properties/socketconnectorType"
+								},
+								{
+									"type": "Control",
+									"label": "Manufacturing Process",
+									"scope": "#/properties/processor/properties/manufactoringProcess"
+								},
+								{
+									"type": "Control",
+									"label": "Thermal Design Power",
+									"scope": "#/properties/processor/properties/thermalDesignPower"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "Group",
+			"label": "Display",
+			"elements": [
+				{
+					"type": "HorizontalLayout",
+					"elements": [
+						{
+							"type": "Control",
+							"label": "Width",
+							"scope": "#/properties/display/properties/width"
+						},
+						{
+							"type": "Control",
+							"label": "Height",
+							"scope": "#/properties/display/properties/height"
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "Group",
+			"label": "Dimension",
+			"elements": [
+				{
+					"type": "HorizontalLayout",
+					"elements": [
+						{
+							"type": "Control",
+							"label": "Width",
+							"scope": "#/properties/dimension/properties/width"
+						},
+						{
+							"type": "Control",
+							"label": "Height",
+							"scope": "#/properties/dimension/properties/height"
+						},
+						{
+							"type": "Control",
+							"label": "Length",
+							"scope": "#/properties/dimension/properties/length"
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "Control",
+			"label": "Ram",
+			"scope": "#/properties/ram"
+		},
+		{
+			"type": "Group",
+			"label": "User Description",
+			"elements": [
+				{
+					"type": "Control",
+					"label": "User Description",
+					"scope": "#/properties/userDescription"
+				}
+			]
+		}
+	]
+}

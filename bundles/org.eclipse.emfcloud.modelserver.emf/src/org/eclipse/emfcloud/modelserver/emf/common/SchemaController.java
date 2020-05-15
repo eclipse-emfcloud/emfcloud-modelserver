@@ -21,11 +21,23 @@ public class SchemaController {
    @Inject
    private ModelRepository modelRepository;
 
+   @Inject
+   private SchemaRepository schemaRepository;
+
    public void getSchema(final Context ctx, final String modeluri) {
       this.modelRepository.getModel(modeluri).ifPresentOrElse(
          instance -> ctx.json(JsonResponse.success(JsonSchema.from(instance.eClass()))),
          () -> ctx.status(404)
             .json(JsonResponse.error(String.format("Schema for '%s' not found!", ctx.queryParam("modeluri")))));
+   }
+
+   public void getJsonFormsUISchema(final Context ctx, final String schemaname) {
+      this.schemaRepository.loadUISchema(schemaname).ifPresentOrElse(
+         jsonNode -> {
+            ctx.json(JsonResponse.success(jsonNode));
+         },
+         () -> ctx.status(404)
+            .json(JsonResponse.error(String.format("UI schema '%s' not found!", ctx.queryParam("schemaname")))));
    }
 
 }

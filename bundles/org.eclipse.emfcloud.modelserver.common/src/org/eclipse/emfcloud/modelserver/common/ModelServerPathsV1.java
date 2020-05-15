@@ -22,6 +22,8 @@ interface ModelServerPathsV1 {
 
    String SCHEMA = "schema"; // accepts query parameter "modeluri"
 
+   String UI_SCHEMA = "uischema";
+
    String SERVER_CONFIGURE = "server/configure";
    String SERVER_PING = "server/ping";
 

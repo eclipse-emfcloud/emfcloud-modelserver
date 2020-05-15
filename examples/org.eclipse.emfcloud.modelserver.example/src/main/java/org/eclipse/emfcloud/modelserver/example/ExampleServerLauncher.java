@@ -29,6 +29,18 @@ public final class ExampleServerLauncher {
    private static String ECORE_TEST_FILE = "Coffee.ecore";
    private static String COFFEE_TEST_FILE = "SuperBrewer3000.coffee";
    private static String JSON_TEST_FILE = "SuperBrewer3000.json";
+   private static String WORKSPACE_UISCHEMA_ROOT = "workspace/.ui-schemas";
+   private static String UISCHEMA_AUTOMATICTASK_FILE = "automatictask.json";
+   private static String UISCHEMA_BREWINGUNIT_FILE = "brewingunit.json";
+   private static String UISCHEMA_CONTROLUNIT_FILE = "controlunit.json";
+   private static String UISCHEMA_DECISION_FILE = "decision.json";
+   private static String UISCHEMA_DIPTRAY_FILE = "diptray.json";
+   private static String UISCHEMA_FLOW_FILE = "flow.json";
+   private static String UISCHEMA_MACHINE_FILE = "machine.json";
+   private static String UISCHEMA_MANUALTASK_FILE = "manualtask.json";
+   private static String UISCHEMA_MERGE_FILE = "merge.json";
+   private static String UISCHEMA_WATERTANK_FILE = "watertank.json";
+   private static String UISCHEMA_WEIGHTEDFLOW_FILE = "weightedflow.json";
    private static String PROCESS_NAME = "java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar";
 
    private static Logger LOG = Logger.getLogger(ExampleServerLauncher.class.getSimpleName());
@@ -66,6 +78,34 @@ public final class ExampleServerLauncher {
          new File(workspaceRoot, COFFEE_TEST_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_ROOT + "/" + JSON_TEST_FILE,
          new File(workspaceRoot, JSON_TEST_FILE));
+      result &= setupTempUISchemaTestWorkspace(new File(workspaceRoot + "/.ui-schemas/"), result);
+      return result;
+   }
+
+   @SuppressWarnings("checkstyle:CyclomaticComplexity")
+   private static boolean setupTempUISchemaTestWorkspace(final File workspaceUISchemaRoot, boolean result) {
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_AUTOMATICTASK_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_AUTOMATICTASK_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_BREWINGUNIT_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_BREWINGUNIT_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_CONTROLUNIT_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_CONTROLUNIT_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_DECISION_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_DECISION_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_DIPTRAY_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_DIPTRAY_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_FLOW_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_FLOW_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_MACHINE_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_MACHINE_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_MANUALTASK_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_MANUALTASK_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_MERGE_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_MERGE_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_WATERTANK_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_WATERTANK_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_WEIGHTEDFLOW_FILE,
+         new File(workspaceUISchemaRoot, UISCHEMA_WEIGHTEDFLOW_FILE));
       return result;
    }
 
