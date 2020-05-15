@@ -60,13 +60,29 @@ public class ModelServerRouting extends Routing {
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
 
-            // GET ONE/GET ALL
+            // GET ONE MODEL/GET ALL MODELS
             get(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
                getQueryParam(ctx.queryParamMap(), "modeluri")
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).getOne(ctx, param),
                      () -> getController(ModelController.class).getAll(ctx));
+            });
+            // GET MODEL ELEMENT
+            get(ModelServerPaths.MODEL_ELEMENT, ctx -> {
+               getQueryParam(ctx.queryParamMap(), "modeluri")
+                  .map(this::adaptModelUri)
+                  .ifPresentOrElse(
+                     modelUriParam -> {
+                        getQueryParam(ctx.queryParamMap(), "elementid").ifPresentOrElse(
+                           elementIdParam -> getController(ModelController.class).getModelElement(ctx, modelUriParam,
+                              elementIdParam),
+                           () -> getQueryParam(ctx.queryParamMap(), "elementname").ifPresentOrElse(
+                              elementnameParam -> getController(ModelController.class).getModelElementByName(ctx,
+                                 modelUriParam, elementnameParam),
+                              () -> handleHttpError(ctx, 400, "Missing parameter 'elementid' or 'elementname'")));
+                     },
+                     () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
             // UPDATE
             patch(ModelServerPaths.MODEL_BASE_PATH, ctx -> {

@@ -24,6 +24,10 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<List<String>>> getAll();
 
+   CompletableFuture<Response<A>> getModelElementById(String modelUri, String elementid, String format);
+
+   CompletableFuture<Response<A>> getModelElementByName(String modelUri, String elementname, String format);
+
    CompletableFuture<Response<Boolean>> delete(String modelUri);
 
    CompletableFuture<Response<String>> create(String modelUri, String createdModelAsJsonText);

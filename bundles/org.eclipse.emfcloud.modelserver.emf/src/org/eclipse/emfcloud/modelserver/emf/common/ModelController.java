@@ -20,7 +20,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
@@ -28,6 +27,7 @@ import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.Codecs;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -117,6 +117,36 @@ public class ModelController {
             }
          },
          () -> handleError(ctx, 404, "Model '" + modeluri + "' not found!"));
+   }
+
+   public void getModelElement(final Context ctx, final String modeluri, final String elementid) {
+      this.modelRepository.getModelElementById(modeluri, elementid).ifPresentOrElse(
+         modelElement -> {
+            try {
+               ctx.json(JsonResponse.success(codecs.encode(ctx, modelElement)));
+            } catch (EncodingException ex) {
+               handleEncodingError(ctx, ex);
+            }
+         },
+         () -> handleError(ctx, 404,
+            "Element by elementid '" + elementid + "' of model '" + modeluri + "' not found!"));
+   }
+
+   public void getModelElementByName(final Context ctx, final String modeluri, final String elementname) {
+      this.modelRepository.getModelElementByName(modeluri, elementname).ifPresentOrElse(
+         modelElement -> {
+            if (modelElement == null) {
+               ctx.json(JsonResponse.error(""));
+            } else {
+               try {
+                  ctx.json(JsonResponse.success(codecs.encode(ctx, modelElement)));
+               } catch (EncodingException ex) {
+                  handleEncodingError(ctx, ex);
+               }
+            }
+         },
+         () -> handleError(ctx, 404,
+            "Element by elementname '" + elementname + "' of model '" + modeluri + "' not found!"));
    }
 
    public void update(final Context ctx, final String modeluri) {

@@ -138,6 +138,44 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
+   public CompletableFuture<Response<EObject>> getModelElementById(final String modelUri, final String elementid,
+      final String format) {
+      String checkedFormat = checkedFormat(format);
+
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
+               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter("elementid", elementid)
+               .addQueryParameter("format", checkedFormat)
+               .build())
+         .build();
+
+      return call(request)
+         .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
+         .thenApply(this::getBodyOrThrow);
+   }
+
+   @Override
+   public CompletableFuture<Response<EObject>> getModelElementByName(final String modelUri, final String elementname,
+      final String format) {
+      String checkedFormat = checkedFormat(format);
+
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
+               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter("elementname", elementname)
+               .addQueryParameter("format", checkedFormat)
+               .build())
+         .build();
+
+      return call(request)
+         .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
+         .thenApply(this::getBodyOrThrow);
+   }
+
+   @Override
    public CompletableFuture<Response<Boolean>> delete(final String modelUri) {
       final Request request = new Request.Builder()
          .url(
