@@ -48,6 +48,8 @@ public class ServerConfiguration {
          .ifPresent(uri -> this.workspaceRootURI = uri);
    }
 
+   public String getWorkspaceUISchemaPath() { return workspaceRootURI.toFileString().concat(".ui-schemas/"); }
+
    public Set<String> getWorkspaceEntries() {
       Set<String> filePaths = new HashSet<>();
 

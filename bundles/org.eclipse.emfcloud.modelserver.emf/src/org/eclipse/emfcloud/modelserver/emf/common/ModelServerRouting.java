@@ -125,6 +125,14 @@ public class ModelServerRouting extends Routing {
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
 
+            // GET JSONFORMS UI SCHEMA
+            get(ModelServerPaths.UI_SCHEMA, ctx -> {
+               getQueryParam(ctx.queryParamMap(), "schemaname")
+                  .ifPresentOrElse(
+                     param -> getController(SchemaController.class).getJsonFormsUISchema(ctx, param),
+                     () -> handleHttpError(ctx, 400, "Missing parameter 'schemaname'!"));
+            });
+
             put(ModelServerPaths.SERVER_CONFIGURE, getController(ServerController.class).getConfigureHandler());
             get(ModelServerPaths.SERVER_PING, getController(ServerController.class).getPingHandler());
 
