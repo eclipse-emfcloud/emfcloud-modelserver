@@ -35,6 +35,7 @@ import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerLauncher;
  */
 public class ServerConfiguration {
    private URI workspaceRootURI = URI.createURI("");
+   private URI uiSchemaFolderURI = URI.createURI("");
    private static Logger LOG = Logger.getLogger(ServerConfiguration.class);
    private int serverPort = ModelServerLauncher.DEFAULT_JAVALIN_PORT;
 
@@ -45,10 +46,18 @@ public class ServerConfiguration {
    public void setWorkspaceRoot(final String workspaceRoot) {
       toFilePath(workspaceRoot)
          .map(ServerConfiguration::ensureDirectory)
-         .ifPresent(uri -> this.workspaceRootURI = uri);
+         .ifPresent(uri -> setWorkspaceRootURI(uri));
    }
 
-   public String getWorkspaceUISchemaPath() { return workspaceRootURI.toFileString().concat(".ui-schemas/"); }
+   public URI getUISchemaFolderURI() { return this.uiSchemaFolderURI; }
+
+   public void setUISchemaFolderURI(final URI uri) { this.uiSchemaFolderURI = uri; }
+
+   public void setUISchemaFolder(final String uiSchemaFolder) {
+      toFilePath(uiSchemaFolder)
+         .map(ServerConfiguration::ensureDirectory)
+         .ifPresent(uri -> setUISchemaFolderURI(uri));
+   }
 
    public Set<String> getWorkspaceEntries() {
       Set<String> filePaths = new HashSet<>();
@@ -76,7 +85,7 @@ public class ServerConfiguration {
 
    public void setServerPort(final int serverPort) { this.serverPort = serverPort; }
 
-   public static boolean isValidWorkspaceRoot(final String fileUrl) {
+   public static boolean isValidFileURI(final String fileUrl) {
       return toFilePath(fileUrl).map(uri -> new File(uri.toFileString()).exists()).orElse(false);
    }
 

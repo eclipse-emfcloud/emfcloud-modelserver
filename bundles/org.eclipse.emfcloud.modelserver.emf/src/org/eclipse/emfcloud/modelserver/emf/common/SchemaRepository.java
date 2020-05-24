@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -23,18 +24,22 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
+/**
+ * Injectable singleton class represents a repository to load UI schemas from the currently set path.
+ *
+ */
 public class SchemaRepository {
    private static Logger LOG = Logger.getLogger(SchemaRepository.class.getSimpleName());
 
-   private final String schemaRepositoryPath;
+   private final URI schemaRepositoryPath;
 
    @Inject
    public SchemaRepository(final ServerConfiguration serverConfiguration) {
-      this.schemaRepositoryPath = serverConfiguration.getWorkspaceUISchemaPath();
+      this.schemaRepositoryPath = serverConfiguration.getUISchemaFolderURI();
    }
 
-   public Optional<JsonNode> loadUISchema(final String viewname) {
-      String schemaFilePath = this.schemaRepositoryPath.concat(viewname + ".json");
+   public Optional<JsonNode> loadUISchema(final String schemaname) {
+      String schemaFilePath = this.schemaRepositoryPath.toFileString().concat(schemaname + ".json");
       ObjectMapper mapper = new ObjectMapper();
       JsonNode jsonNode = null;
       try {

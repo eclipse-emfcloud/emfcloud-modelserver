@@ -29,7 +29,8 @@ public final class ExampleServerLauncher {
    private static String ECORE_TEST_FILE = "Coffee.ecore";
    private static String COFFEE_TEST_FILE = "SuperBrewer3000.coffee";
    private static String JSON_TEST_FILE = "SuperBrewer3000.json";
-   private static String WORKSPACE_UISCHEMA_ROOT = "workspace/.ui-schemas";
+   private static String UISCHEMA_FOLDER = ".ui-schemas";
+   private static String WORKSPACE_UISCHEMA_FOLDER = "workspace" + "/" + UISCHEMA_FOLDER;
    private static String UISCHEMA_AUTOMATICTASK_FILE = "automatictask.json";
    private static String UISCHEMA_BREWINGUNIT_FILE = "brewingunit.json";
    private static String UISCHEMA_CONTROLUNIT_FILE = "controlunit.json";
@@ -49,7 +50,7 @@ public final class ExampleServerLauncher {
 
    public static void main(String[] args) throws ParseException {
       ModelServerLauncher.configureLogger();
-      CLIParser.create(args, CLIParser.getDefaultCLIOptions());
+      CLIParser.create(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME);
 
       if (!CLIParser.getInstance().optionExists("r")) {
          // No workspace root was specified, use test workspace
@@ -61,7 +62,15 @@ public final class ExampleServerLauncher {
          Runtime.getRuntime().addShutdownHook(new Thread(() -> cleanupTempTestWorkspace(workspaceRoot)));
          args = Arrays.copyOf(args, args.length + 1);
          args[args.length - 1] = "--root=" + workspaceRoot.toURI();
-         CLIParser.create(args, CLIParser.getDefaultCLIOptions());
+
+         // No ui schema folder was specified, use folder in just loaded temp test workspace
+         if (!CLIParser.getInstance().optionExists("u")) {
+            final File uiSchemaFolder = new File(TEMP_DIR + "/" + WORKSPACE_UISCHEMA_FOLDER);
+            args = Arrays.copyOf(args, args.length + 1);
+            args[args.length - 1] = "-u=" + uiSchemaFolder.toURI();
+         }
+
+         CLIParser.create(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME);
       }
 
       final ModelServerLauncher launcher = new ModelServerLauncher(args);
@@ -78,33 +87,33 @@ public final class ExampleServerLauncher {
          new File(workspaceRoot, COFFEE_TEST_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_ROOT + "/" + JSON_TEST_FILE,
          new File(workspaceRoot, JSON_TEST_FILE));
-      result &= setupTempUISchemaTestWorkspace(new File(workspaceRoot + "/.ui-schemas/"), result);
+      result &= setupTempUISchemaTestWorkspace(new File(workspaceRoot + "/" + UISCHEMA_FOLDER + "/"), result);
       return result;
    }
 
    @SuppressWarnings("checkstyle:CyclomaticComplexity")
    private static boolean setupTempUISchemaTestWorkspace(final File workspaceUISchemaRoot, boolean result) {
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_AUTOMATICTASK_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_AUTOMATICTASK_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_AUTOMATICTASK_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_BREWINGUNIT_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_BREWINGUNIT_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_BREWINGUNIT_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_CONTROLUNIT_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_CONTROLUNIT_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_CONTROLUNIT_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_DECISION_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_DECISION_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_DECISION_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_DIPTRAY_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_DIPTRAY_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_DIPTRAY_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_FLOW_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_FLOW_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_FLOW_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_MACHINE_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_MACHINE_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_MACHINE_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_MANUALTASK_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_MANUALTASK_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_MANUALTASK_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_MERGE_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_MERGE_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_MERGE_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_WATERTANK_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_WATERTANK_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_WATERTANK_FILE));
-      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_ROOT + "/" + UISCHEMA_WEIGHTEDFLOW_FILE,
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_WEIGHTEDFLOW_FILE,
          new File(workspaceUISchemaRoot, UISCHEMA_WEIGHTEDFLOW_FILE));
       return result;
    }

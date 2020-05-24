@@ -119,7 +119,7 @@ public class ModelController {
          () -> handleError(ctx, 404, "Model '" + modeluri + "' not found!"));
    }
 
-   public void getModelElement(final Context ctx, final String modeluri, final String elementid) {
+   public void getModelElementById(final Context ctx, final String modeluri, final String elementid) {
       this.modelRepository.getModelElementById(modeluri, elementid).ifPresentOrElse(
          modelElement -> {
             try {

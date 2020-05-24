@@ -13,7 +13,7 @@ package org.eclipse.emfcloud.modelserver.common;
 interface ModelServerPathsV1 {
 
    String MODEL_BASE_PATH = "models"; // accepts query parameter "modeluri"
-   String MODEL_ELEMENT = "modelelement"; // accepts query parameters "modeluri" and "elementId"
+   String MODEL_ELEMENT = "modelelement"; // accepts query parameters "modeluri" and either "elementId" or "elementname"
 
    String MODEL_URIS = "modeluris";
 
@@ -21,10 +21,8 @@ interface ModelServerPathsV1 {
    String EDIT = "edit"; // accepts query parameter "modeluri"
    String SAVE = "save"; // accepts query parameter "modeluri"
 
-   String SCHEMA = "schema"; // accepts query parameter "modeluri"
    String TYPE_SCHEMA = "typeschema"; // accepts query parameter "modeluri"
-
-   String UI_SCHEMA = "uischema";
+   String UI_SCHEMA = "uischema"; // accepts query parameter "schemaname"
 
    String SERVER_CONFIGURE = "server/configure";
    String SERVER_PING = "server/ping";

@@ -35,7 +35,7 @@ public class ServerController {
       URI workspaceRootUri = newConf.getWorkspaceRootURI();
       if (workspaceRootUri != null) {
          String workspaceRoot = workspaceRootUri.toString();
-         if (ServerConfiguration.isValidWorkspaceRoot(workspaceRoot)) {
+         if (ServerConfiguration.isValidFileURI(workspaceRoot)) {
             serverConfiguration.setWorkspaceRoot(workspaceRoot);
             modelRepository.initialize(newConf.getWorkspaceRootURI().toFileString(), true);
             ctx.json(JsonResponse.success());

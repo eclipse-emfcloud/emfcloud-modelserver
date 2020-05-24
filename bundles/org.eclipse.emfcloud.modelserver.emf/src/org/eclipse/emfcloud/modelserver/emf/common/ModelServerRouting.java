@@ -75,7 +75,8 @@ public class ModelServerRouting extends Routing {
                   .ifPresentOrElse(
                      modelUriParam -> {
                         getQueryParam(ctx.queryParamMap(), "elementid").ifPresentOrElse(
-                           elementIdParam -> getController(ModelController.class).getModelElement(ctx, modelUriParam,
+                           elementIdParam -> getController(ModelController.class).getModelElementById(ctx,
+                              modelUriParam,
                               elementIdParam),
                            () -> getQueryParam(ctx.queryParamMap(), "elementname").ifPresentOrElse(
                               elementnameParam -> getController(ModelController.class).getModelElementByName(ctx,
@@ -123,15 +124,6 @@ public class ModelServerRouting extends Routing {
             // GET MODELURIS
             get(ModelServerPaths.MODEL_URIS, getController(ModelController.class).getModelUrisHandler());
 
-            // GET JSON SCHEMA
-            get(ModelServerPaths.SCHEMA, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
-                  .map(this::adaptModelUri)
-                  .ifPresentOrElse(
-                     param -> getController(SchemaController.class).getSchema(ctx, param),
-                     () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
-            });
-
             // GET JSON TYPE SCHEMA
             get(ModelServerPaths.TYPE_SCHEMA, ctx -> {
                getQueryParam(ctx.queryParamMap(), "modeluri")
@@ -145,7 +137,7 @@ public class ModelServerRouting extends Routing {
             get(ModelServerPaths.UI_SCHEMA, ctx -> {
                getQueryParam(ctx.queryParamMap(), "schemaname")
                   .ifPresentOrElse(
-                     param -> getController(SchemaController.class).getJsonFormsUISchema(ctx, param),
+                     param -> getController(SchemaController.class).getUISchema(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'schemaname'!"));
             });
 

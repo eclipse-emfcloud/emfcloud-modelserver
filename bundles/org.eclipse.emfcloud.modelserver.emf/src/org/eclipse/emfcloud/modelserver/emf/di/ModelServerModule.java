@@ -16,7 +16,6 @@ import java.util.Collection;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
-
 import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.common.Routing;
@@ -27,6 +26,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRouting;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
+import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
@@ -34,6 +34,8 @@ import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfigurat
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerEntryPoint;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerStartup;
+import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
+
 import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
@@ -86,7 +88,9 @@ public class ModelServerModule extends AbstractModule {
       bind(ModelServerStartup.class).in(Singleton.class);
       bind(ModelController.class).in(Singleton.class);
       bind(ModelRepository.class).in(Singleton.class);
+      bind(JsonSchemaConverter.class).in(Singleton.class);
       bind(SchemaController.class).in(Singleton.class);
+      bind(SchemaRepository.class).in(Singleton.class);
       bind(SessionController.class).in(Singleton.class);
       Multibinder.newSetBinder(binder(), Routing.class).addBinding().to(ModelServerRouting.class).in(Singleton.class);
       MapBinder.newMapBinder(binder(), EntryPointType.class, AppEntryPoint.class).addBinding(EntryPointType.REST)

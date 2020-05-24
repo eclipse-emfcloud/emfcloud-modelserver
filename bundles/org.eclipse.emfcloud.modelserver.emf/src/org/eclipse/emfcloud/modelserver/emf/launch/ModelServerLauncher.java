@@ -31,6 +31,7 @@ import com.google.inject.Module;
 public class ModelServerLauncher {
    private static final Logger LOG = Logger.getLogger(ModelServerLauncher.class.getSimpleName());
    public static final int DEFAULT_JAVALIN_PORT = 8081;
+   private static String PROCESS_NAME = "java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar";
 
    private final Collection<Module> modules;
    private Injector injector;
@@ -84,7 +85,7 @@ public class ModelServerLauncher {
          CLIParser parser = CLIParser.getInstance();
 
          if (parser.optionExists("h")) {
-            CLIParser.getInstance().printHelp("start modelserver");
+            CLIParser.getInstance().printHelp();
             return false;
 
          }
@@ -94,6 +95,7 @@ public class ModelServerLauncher {
          }
          configuration.setServerPort(parser.parsePort());
          parser.parseWorkspaceRoot().ifPresent(configuration::setWorkspaceRoot);
+         parser.parseUISchemaFolder().ifPresent(configuration::setUISchemaFolder);
          return true;
       } catch (UnrecognizedOptionException e) {
          LOG.error("Unrecognized command line argument(s) used!\n");
@@ -106,7 +108,7 @@ public class ModelServerLauncher {
    }
 
    protected void configureCLIParser() throws ParseException {
-      CLIParser.create(args, CLIParser.getDefaultCLIOptions());
+      CLIParser.create(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME);
    }
 
    public void shutdown() {
