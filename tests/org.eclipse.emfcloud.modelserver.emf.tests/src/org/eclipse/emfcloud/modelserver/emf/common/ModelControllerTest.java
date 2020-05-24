@@ -10,6 +10,8 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import static org.eclipse.emfcloud.modelserver.jsonschema.Json.prop;
+import static org.eclipse.emfcloud.modelserver.tests.util.EMFMatchers.eEqualTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,17 +48,22 @@ import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
-import static org.eclipse.emfcloud.modelserver.tests.util.EMFMatchers.*;
 import org.emfjson.jackson.resource.JsonResource;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.javalin.http.Context;
 
+/**
+ * Unit tests for the {@link ModelController} class.
+ */
+@RunWith(MockitoJUnitRunner.class)
 public class ModelControllerTest {
 
    private ModelRepository modelRepository;
@@ -135,7 +142,7 @@ public class ModelControllerTest {
    @Ignore
    @Test
    public void updateXmi() throws EncodingException {
-	      final EClass brewingUnit = EcoreFactory.eINSTANCE.createEClass();
+      final EClass brewingUnit = EcoreFactory.eINSTANCE.createEClass();
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
       queryParams.put("format", Collections.singletonList("xmi"));
       when(context.queryParamMap()).thenReturn(queryParams);
@@ -212,6 +219,78 @@ public class ModelControllerTest {
       res.unload();
       verify(modelRepository).updateModel(eq("SuperBrewer3000.json"), argThat(eEqualTo(addCommand)));
       verify(sessionController).modelChanged(eq("SuperBrewer3000.json"), argThat(eEqualTo(addCommand)));
+   }
+
+   @Test
+   public void getModelelementByIdJsonFormat() throws EncodingException {
+      final EClass simpleWorkflow = EcoreFactory.eINSTANCE.createEClass();
+      simpleWorkflow.setName("SimpleWorkflow");
+      when(modelRepository.getModelElementById("test", "//@workflows.0")).thenReturn(Optional.of(simpleWorkflow));
+
+      modelController.getModelElementById(context, "test", "//@workflows.0");
+
+      JsonNode expectedResponse = Json.object(
+         prop("type", Json.text("success")),
+         prop("data", Json.object(
+            prop("eClass", Json.text("http://www.eclipse.org/emf/2002/Ecore#//EClass")),
+            prop("name", Json.text("SimpleWorkflow")))));
+
+      verify(context).json(expectedResponse);
+   }
+
+   @Test
+   public void getModelelementByIdXmiFormat() throws EncodingException {
+      final EClass simpleWorkflow = EcoreFactory.eINSTANCE.createEClass();
+      simpleWorkflow.setName("SimpleWorkflow");
+      final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
+      queryParams.put("format", Collections.singletonList("xmi"));
+      when(context.queryParamMap()).thenReturn(queryParams);
+      when(modelRepository.getModelElementById("test", "//@workflows.0")).thenReturn(Optional.of(simpleWorkflow));
+
+      modelController.getModelElementById(context, "test", "//@workflows.0");
+
+      String expectedXmiSnippet = "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n<ecore:EClass xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:ecore=\"http://www.eclipse.org/emf/2002/Ecore\" name=\"SimpleWorkflow\"/>\n";
+      JsonNode expectedResponse = Json.object(
+         prop("type", Json.text("success")),
+         prop("data", Json.text(expectedXmiSnippet)));
+
+      verify(context).json(expectedResponse);
+   }
+
+   @Test
+   public void getModelelementByNameJsonFormat() throws EncodingException {
+      final EClass preHeatTask = EcoreFactory.eINSTANCE.createEClass();
+      preHeatTask.setName("PreHeat");
+      when(modelRepository.getModelElementById("test", "PreHeat")).thenReturn(Optional.of(preHeatTask));
+
+      modelController.getModelElementById(context, "test", "PreHeat");
+
+      JsonNode expectedResponse = Json.object(
+         prop("type", Json.text("success")),
+         prop("data", Json.object(
+            prop("eClass", Json.text("http://www.eclipse.org/emf/2002/Ecore#//EClass")),
+            prop("name", Json.text("PreHeat")))));
+
+      verify(context).json(expectedResponse);
+   }
+
+   @Test
+   public void getModelelementByNameXmiFormat() throws EncodingException {
+      final EClass preHeatTask = EcoreFactory.eINSTANCE.createEClass();
+      preHeatTask.setName("PreHeat");
+      final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
+      queryParams.put("format", Collections.singletonList("xmi"));
+      when(context.queryParamMap()).thenReturn(queryParams);
+      when(modelRepository.getModelElementById("test", "PreHeat")).thenReturn(Optional.of(preHeatTask));
+
+      modelController.getModelElementById(context, "test", "PreHeat");
+
+      String expectedXmiSnippet = "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n<ecore:EClass xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:ecore=\"http://www.eclipse.org/emf/2002/Ecore\" name=\"PreHeat\"/>\n";
+      JsonNode expectedResponse = Json.object(
+         prop("type", Json.text("success")),
+         prop("data", Json.text(expectedXmiSnippet)));
+
+      verify(context).json(expectedResponse);
    }
 
 }
