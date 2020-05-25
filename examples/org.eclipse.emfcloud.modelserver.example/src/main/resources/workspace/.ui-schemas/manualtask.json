@@ -1,0 +1,20 @@
+{
+	"type": "VerticalLayout",
+	"elements": [
+		{
+			"type": "Control",
+			"label": "Name",
+			"scope": "#/properties/name"
+		},
+		{
+			"type": "Control",
+			"label": "Actor",
+			"scope": "#/properties/actor"
+		},
+		{
+			"type": "Control",
+			"label": "Duration",
+			"scope": "#/properties/duration"
+		}
+	]
+}

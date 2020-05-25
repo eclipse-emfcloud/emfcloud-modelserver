@@ -63,14 +63,25 @@ public class ServerConfigurationTest {
    }
 
    @Test
-   public void isValidWorkspaceRoot() {
-      assertThat(ServerConfiguration.isValidWorkspaceRoot(getCWD().getAbsolutePath()), is(true));
+   public void getUISchemaFolder() {
+      File cwd = getCWD();
+
+      serverConfiguration.setUISchemaFolder("./ui-schema-folder");
+      URI expected = URI.createFileURI(cwd.getAbsolutePath() + "/ui-schema-folder").appendSegment(""); // trailing slash
+      assertThat(serverConfiguration.getUISchemaFolderURI(), is(expected));
+      assertThat(serverConfiguration.getUISchemaFolderURI().toFileString(),
+         is(cwd.getAbsolutePath() + "/ui-schema-folder/"));
+   }
+
+   @Test
+   public void isValidFileURI() {
+      assertThat(ServerConfiguration.isValidFileURI(getCWD().getAbsolutePath()), is(true));
       assertThat("file URI deemed invalid",
-         ServerConfiguration.isValidWorkspaceRoot(URI.createFileURI(getCWD().getAbsolutePath()).toString()),
+         ServerConfiguration.isValidFileURI(URI.createFileURI(getCWD().getAbsolutePath()).toString()),
          is(true));
-      assertThat("relative path deemed invalid", ServerConfiguration.isValidWorkspaceRoot("."), is(true));
+      assertThat("relative path deemed invalid", ServerConfiguration.isValidFileURI("."), is(true));
       String bogusPath = new File(getCWD(), "$this$/cannot/likely/exist").getAbsolutePath();
-      assertThat("non-existent path deemed valid", ServerConfiguration.isValidWorkspaceRoot(bogusPath), is(false));
+      assertThat("non-existent path deemed valid", ServerConfiguration.isValidFileURI(bogusPath), is(false));
    }
 
    @Test

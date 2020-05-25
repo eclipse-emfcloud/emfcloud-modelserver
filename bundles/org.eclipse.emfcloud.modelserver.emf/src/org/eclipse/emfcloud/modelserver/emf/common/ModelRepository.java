@@ -26,8 +26,10 @@ import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -68,7 +70,7 @@ public class ModelRepository {
    }
 
    public void initialize(final String workspaceRoot, final boolean clearResources) {
-      if (workspaceRoot==null || workspaceRoot.isEmpty()) {
+      if (workspaceRoot == null || workspaceRoot.isEmpty()) {
          return;
       }
       if (clearResources) {
@@ -105,6 +107,37 @@ public class ModelRepository {
                return Optional.empty();
             }
             return Optional.of(contents.get(0));
+         });
+   }
+
+   @SuppressWarnings("checkstyle:IllegalCatch")
+   public Optional<EObject> getModelElementById(final String modeluri, final String elementid) {
+      return loadResource(modeluri)
+         .flatMap(res -> {
+            try {
+               EObject modelElement = res.getEObject(elementid);
+               return Optional.ofNullable(modelElement);
+            } catch (Exception e) {
+               LOG.error("Could not load element with URI fragment: " + elementid);
+               return Optional.empty();
+            }
+         });
+   }
+
+   public Optional<EObject> getModelElementByName(final String modeluri, final String elementname) {
+      return loadResource(modeluri)
+         .flatMap(res -> {
+            TreeIterator<EObject> contentIterator = res.getAllContents();
+            while (contentIterator.hasNext()) {
+               EObject type = contentIterator.next();
+               EStructuralFeature name = type.eClass().getEStructuralFeature("name");
+               if (name != null) {
+                  if (type.eGet(name).equals(elementname)) {
+                     return Optional.of(type);
+                  }
+               }
+            }
+            return Optional.empty();
          });
    }
 

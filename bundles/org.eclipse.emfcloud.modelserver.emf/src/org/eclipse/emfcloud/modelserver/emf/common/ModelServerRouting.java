@@ -60,13 +60,30 @@ public class ModelServerRouting extends Routing {
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
 
-            // GET ONE/GET ALL
+            // GET ONE MODEL/GET ALL MODELS
             get(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
                getQueryParam(ctx.queryParamMap(), "modeluri")
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).getOne(ctx, param),
                      () -> getController(ModelController.class).getAll(ctx));
+            });
+            // GET MODEL ELEMENT
+            get(ModelServerPaths.MODEL_ELEMENT, ctx -> {
+               getQueryParam(ctx.queryParamMap(), "modeluri")
+                  .map(this::adaptModelUri)
+                  .ifPresentOrElse(
+                     modelUriParam -> {
+                        getQueryParam(ctx.queryParamMap(), "elementid").ifPresentOrElse(
+                           elementIdParam -> getController(ModelController.class).getModelElementById(ctx,
+                              modelUriParam,
+                              elementIdParam),
+                           () -> getQueryParam(ctx.queryParamMap(), "elementname").ifPresentOrElse(
+                              elementnameParam -> getController(ModelController.class).getModelElementByName(ctx,
+                                 modelUriParam, elementnameParam),
+                              () -> handleHttpError(ctx, 400, "Missing parameter 'elementid' or 'elementname'")));
+                     },
+                     () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
             // UPDATE
             patch(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
@@ -107,13 +124,21 @@ public class ModelServerRouting extends Routing {
             // GET MODELURIS
             get(ModelServerPaths.MODEL_URIS, getController(ModelController.class).getModelUrisHandler());
 
-            // GET JSON SCHEMA
-            get(ModelServerPaths.SCHEMA, ctx -> {
+            // GET JSON TYPE SCHEMA
+            get(ModelServerPaths.TYPE_SCHEMA, ctx -> {
                getQueryParam(ctx.queryParamMap(), "modeluri")
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
-                     param -> getController(SchemaController.class).getSchema(ctx, param),
+                     param -> getController(SchemaController.class).getTypeSchema(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
+            });
+
+            // GET JSONFORMS UI SCHEMA
+            get(ModelServerPaths.UI_SCHEMA, ctx -> {
+               getQueryParam(ctx.queryParamMap(), "schemaname")
+                  .ifPresentOrElse(
+                     param -> getController(SchemaController.class).getUISchema(ctx, param),
+                     () -> handleHttpError(ctx, 400, "Missing parameter 'schemaname'!"));
             });
 
             put(ModelServerPaths.SERVER_CONFIGURE, getController(ServerController.class).getConfigureHandler());

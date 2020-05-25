@@ -24,6 +24,14 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<List<String>>> getAll();
 
+   CompletableFuture<Response<String>> getModelElementById(String modelUri, String elementid);
+
+   CompletableFuture<Response<A>> getModelElementById(String modelUri, String elementid, String format);
+
+   CompletableFuture<Response<String>> getModelElementByName(String modelUri, String elementname);
+
+   CompletableFuture<Response<A>> getModelElementByName(String modelUri, String elementname, String format);
+
    CompletableFuture<Response<Boolean>> delete(String modelUri);
 
    CompletableFuture<Response<String>> create(String modelUri, String createdModelAsJsonText);
@@ -36,7 +44,9 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<Boolean>> save(String modelUri);
 
-   CompletableFuture<Response<String>> getSchema(String modelUri);
+   CompletableFuture<Response<String>> getTypeSchema(String modelUri);
+
+   CompletableFuture<Response<String>> getUISchema(String schemaname);
 
    CompletableFuture<Response<Boolean>> configure(ServerConfiguration configuration);
 

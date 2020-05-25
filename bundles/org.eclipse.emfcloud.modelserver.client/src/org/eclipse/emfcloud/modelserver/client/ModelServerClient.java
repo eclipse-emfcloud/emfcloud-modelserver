@@ -138,6 +138,74 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
+   public CompletableFuture<Response<String>> getModelElementById(final String modelUri, final String elementid) {
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
+               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter("elementid", elementid)
+               .build())
+         .build();
+
+      return makeCall(request)
+         .thenApply(response -> parseField(response, "data"))
+         .thenApply(this::getBodyOrThrow);
+   }
+
+   @Override
+   public CompletableFuture<Response<EObject>> getModelElementById(final String modelUri, final String elementid,
+      final String format) {
+      String checkedFormat = checkedFormat(format);
+
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
+               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter("elementid", elementid)
+               .addQueryParameter("format", checkedFormat)
+               .build())
+         .build();
+
+      return call(request)
+         .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
+         .thenApply(this::getBodyOrThrow);
+   }
+
+   @Override
+   public CompletableFuture<Response<String>> getModelElementByName(final String modelUri, final String elementname) {
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
+               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter("elementname", elementname)
+               .build())
+         .build();
+
+      return makeCall(request)
+         .thenApply(response -> parseField(response, "data"))
+         .thenApply(this::getBodyOrThrow);
+   }
+
+   @Override
+   public CompletableFuture<Response<EObject>> getModelElementByName(final String modelUri, final String elementname,
+      final String format) {
+      String checkedFormat = checkedFormat(format);
+
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
+               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter("elementname", elementname)
+               .addQueryParameter("format", checkedFormat)
+               .build())
+         .build();
+
+      return call(request)
+         .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
+         .thenApply(this::getBodyOrThrow);
+   }
+
+   @Override
    public CompletableFuture<Response<Boolean>> delete(final String modelUri) {
       final Request request = new Request.Builder()
          .url(
@@ -250,11 +318,25 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
-   public CompletableFuture<Response<String>> getSchema(final String modelUri) {
+   public CompletableFuture<Response<String>> getTypeSchema(final String modelUri) {
       final Request request = new Request.Builder()
          .url(
-            createHttpUrlBuilder(makeUrl(SCHEMA))
+            createHttpUrlBuilder(makeUrl(TYPE_SCHEMA))
                .addQueryParameter("modeluri", modelUri)
+               .build())
+         .build();
+
+      return makeCall(request)
+         .thenApply(response -> parseField(response, "data"))
+         .thenApply(this::getBodyOrThrow);
+   }
+
+   @Override
+   public CompletableFuture<Response<String>> getUISchema(final String schemaname) {
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(UI_SCHEMA))
+               .addQueryParameter("schemaname", schemaname)
                .build())
          .build();
 

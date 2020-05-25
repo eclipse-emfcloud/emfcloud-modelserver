@@ -37,13 +37,14 @@ java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar
 #### Usage
 ```
 usage: java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar
-       [-e] [-h] [-p <arg>] [-r <arg>]
+       [-e] [-h] [-p <arg>] [-r <arg>] [-u <arg>]
 
 options:
- -e,--errorsOnly   Only log errors
- -h,--help         Display usage information about ModelServer
- -p,--port <arg>   Set server port, otherwise default port 8081 is used
- -r,--root <arg>   Set workspace root
+ -e,--errorsOnly          Only log errors
+ -h,--help                Display usage information about ModelServer
+ -p,--port <arg>          Set server port, otherwise default port 8081 is used
+ -r,--root <arg>          Set workspace root
+ -u,--uiSchemaUri <arg>   Set UI schema folder uri
 ```
 
 ## Model Server API
@@ -63,7 +64,10 @@ The following table shows the current HTTP endpoints:
 | |Save|__GET__|`/save`|query parameter: `?modeluri=...`
 | |Execute commands|__PATCH__|`/edit`|query parameter: `?modeluri=...`
 | |Get all available model URIs in the workspace|__GET__|`/modeluris`| -
-|__JSON schema__ |Get JSON schema of a model|__GET__|`/schema`|query parameter: `?modeluri=...`
+| |Get model element by id|__GET__|`/modelelement`|query parameter: `[?modeluri=...&elementid=...[&format=...]]`
+| |Get model element by name <br> (Returns the first element that matches the given `elementname`)|__GET__|`/modelelement`|query parameter: `[?modeluri=...&elementname=...[&format=...]]`
+|__JSON schema__ |Get the type schema of a model as a JSON schema|__GET__|`/typeschema`|query parameter: `?modeluri=...`
+| |Get the UI schema of a certain view element|__GET__|`/uischema`|query parameter: `?schemaname=...`
 |__Server actions__|Ping server|__GET__|`/server/ping`| -
 | |Update server configuration|__PUT__|`/server/configure`|application/json
 
@@ -98,6 +102,14 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<List<String>>> getAll();
 
+   CompletableFuture<Response<String>> getModelElementById(String modelUri, String elementid);
+
+   CompletableFuture<Response<A>> getModelElementById(String modelUri, String elementid, String format);
+
+   CompletableFuture<Response<String>> getModelElementByName(String modelUri, String elementname);
+
+   CompletableFuture<Response<A>> getModelElementByName(String modelUri, String elementname, String format);
+
    CompletableFuture<Response<Boolean>> delete(String modelUri);
 
    CompletableFuture<Response<String>> create(String modelUri, String createdModelAsJsonText);
@@ -110,7 +122,9 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<Boolean>> save(String modelUri);
 
-   CompletableFuture<Response<String>> getSchema(String modelUri);
+   CompletableFuture<Response<String>> getTypeSchema(String modelUri);
+
+   CompletableFuture<Response<String>> getUISchema(String schemaname);
 
    CompletableFuture<Response<Boolean>> configure(ServerConfiguration configuration);
 

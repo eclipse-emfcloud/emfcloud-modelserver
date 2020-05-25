@@ -12,8 +12,8 @@ package org.eclipse.emfcloud.modelserver.emf.launch;
 
 import java.util.Optional;
 
-import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -23,14 +23,17 @@ public final class CLIParser {
    private static CLIParser INSTANCE;
    private final CommandLine cmd;
    private final Options options;
+   private final String processName;
 
-   private CLIParser(final String[] args, final Options options) throws ParseException {
+   private CLIParser(final String[] args, final Options options, final String processName) throws ParseException {
       this.cmd = new DefaultParser().parse(options, args);
       this.options = options;
+      this.processName = processName;
    }
 
-   public static void create(final String[] args, final Options options) throws ParseException {
-      INSTANCE = new CLIParser(args, options);
+   public static void create(final String[] args, final Options options, final String processName)
+      throws ParseException {
+      INSTANCE = new CLIParser(args, options, processName);
    }
 
    public static CLIParser getInstance() { return INSTANCE; }
@@ -70,7 +73,7 @@ public final class CLIParser {
    public Optional<String> parseWorkspaceRoot() throws ParseException {
       String rootArg = cmd.getOptionValue("r");
       if (rootArg != null) {
-         if (!ServerConfiguration.isValidWorkspaceRoot(rootArg)) {
+         if (!ServerConfiguration.isValidFileURI(rootArg)) {
             throw new ParseException(String.format("Could not set workspace! The path '%s' is invalid.", rootArg));
          }
          return Optional.of(rootArg);
@@ -78,13 +81,25 @@ public final class CLIParser {
       return Optional.empty();
    }
 
-   public void printHelp(final String processName) {
-      CLIParser.printHelp(processName, this.options);
+   public Optional<String> parseUISchemaFolder() throws ParseException {
+      String uiSchemaFolderArg = cmd.getOptionValue("u");
+      if (uiSchemaFolderArg != null) {
+         if (!ServerConfiguration.isValidFileURI(uiSchemaFolderArg)) {
+            throw new ParseException(
+               String.format("Could not set UI schema folder! The path '%s' is invalid.", uiSchemaFolderArg));
+         }
+         return Optional.of(uiSchemaFolderArg);
+      }
+      return Optional.empty();
+   }
+
+   public void printHelp() {
+      CLIParser.printHelp(this.processName, this.options);
    }
 
    public static void printHelp(final String processName, final Options options) {
       HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp(85, processName, "\noptions:", options, "", true);
+      formatter.printHelp(90, processName, "\noptions:", options, "", true);
    }
 
    public static Options getDefaultCLIOptions() {
@@ -92,6 +107,7 @@ public final class CLIParser {
       options.addOption("h", "help", false, "Display usage information about ModelServer");
       options.addOption("p", "port", true, "Set server port, otherwise default port 8081 is used");
       options.addOption("r", "root", true, "Set workspace root");
+      options.addOption("u", "uiSchemaUri", true, "Set UI schema folder uri");
       options.addOption("e", "errorsOnly", false, "Only log errors");
       return options;
    }
