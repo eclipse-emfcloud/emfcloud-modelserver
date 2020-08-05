@@ -385,6 +385,18 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
+   public CompletableFuture<Response<String>> validate(final String modelUri) {
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(VALIDATION))
+               .addQueryParameter("modeluri", modelUri)
+               .build())
+         .build();
+
+      return makeCall(request);
+   }
+
+   @Override
    public CompletableFuture<Response<String>> getTypeSchema(final String modelUri) {
       final Request request = new Request.Builder()
          .url(
@@ -714,6 +726,17 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          }
       }
       return false;
+   }
+   
+   @Override
+   public CompletableFuture<Response<String>> getValidationConstraints(final String modelUri) {
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(VALIDATION_CONSTRAINTS))
+               .addQueryParameter("modeluri", modelUri)
+               .build())
+         .build();
+      return makeCall(request);
    }
 
    @Override

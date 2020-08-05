@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
@@ -28,6 +29,9 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.jetbrains.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.jetbrains.annotations.TestOnly;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -42,6 +46,8 @@ public class SessionController extends WsHandler {
    private static Logger LOG = Logger.getLogger(SessionController.class.getSimpleName());
 
    private final Map<String, Set<WsContext>> modelUrisToClients = Maps.newConcurrentMap();
+
+   private final Map<String, BasicDiagnostic> modelUriToLastSendDiagnostic = Maps.newConcurrentMap();
 
    @Inject
    private ModelRepository modelRepository;
@@ -134,6 +140,11 @@ public class SessionController extends WsHandler {
          () -> broadcastError(modeluri, "Could not load changed object"));
    }
 
+   public void modelValidated(final String modeluri, final BasicDiagnostic newResult,
+      final ObjectMapper mapper) {
+      broadcastValidationResult(modeluri, newResult, mapper);
+   }
+
    public void broadcastUndoRedo(final String modeluri, final Map<String, JsonNode> encodings) {
       modelRepository.getModel(modeluri).ifPresentOrElse(
          eObject -> {
@@ -217,6 +228,26 @@ public class SessionController extends WsHandler {
    private void broadcastDirtyState(final String modeluri, final Boolean isDirty) {
       getOpenSessions(modeluri)
          .forEach(session -> session.send(JsonResponse.dirtyState(isDirty)));
+   }
+
+   private void broadcastValidationResult(final String modeluri, final BasicDiagnostic newResult,
+      final ObjectMapper mapper) {
+      if (modelUrisToClients.containsKey(modeluri)) {
+         getOpenSessions(modeluri)
+            .forEach(session -> {
+               if (!modelUriToLastSendDiagnostic.containsKey(modeluri)) {
+                  modelUriToLastSendDiagnostic.put(modeluri, newResult);
+                  session.send(JsonResponse
+                     .validationResult(mapper.valueToTree(mapper.valueToTree(newResult))));
+               } else {
+                  if (!modelUriToLastSendDiagnostic.get(modeluri).getChildren().equals(newResult.getChildren())) {
+                     modelUriToLastSendDiagnostic.replace(modeluri, newResult);
+                     session.send(JsonResponse
+                        .validationResult(mapper.valueToTree(mapper.valueToTree(newResult))));
+                  }
+               }
+            });
+      }
    }
 
    private void broadcastError(final String modeluri, final String errorMessage) {

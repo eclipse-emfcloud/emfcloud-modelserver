@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -36,8 +37,10 @@ import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CommandKind;
@@ -86,8 +89,15 @@ public class ModelControllerTest {
 
    @Before
    public void before() {
+
+      ResourceSet set = new ResourceSetImpl();
+      set.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
+      URI uri = URI.createFileURI("resources/Test1.ecore");
+      Optional<Resource> resource = Optional.of(set.getResource(uri, true));
+
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI("/home/modelserver/workspace/"));
       codecs = new Codecs(Map.of(ModelServerPathParameters.FORMAT_XMI, new XmiCodec()));
+      when(modelRepository.loadResource(getModelUri("Test1.ecore").toString())).thenReturn(resource);
       modelController = new ModelController(modelRepository, sessionController, serverConfiguration, codecs);
    }
 
@@ -306,6 +316,34 @@ public class ModelControllerTest {
          prop(JsonResponseMember.DATA, Json.text(expectedXmiSnippet)));
 
       verify(context).json(expectedResponse);
+   }
+
+   @Test
+   public void validate() throws EncodingException, IOException {
+      modelController.validate(context, getModelUri("Test1.ecore").toString());
+
+      JsonNode expectedResponse = Json.object(
+         prop("type", Json.text("validationResult")),
+         prop("data", Json.parse("null")));
+
+      verify(context).json(expectedResponse);
+   }
+
+   @Test
+   public void getConstraints() throws EncodingException, IOException {
+      modelController.getValidationConstraints(context, getModelUri("Test1.ecore").toString());
+
+      JsonNode expectedResponse = Json.object(
+         prop("type", Json.text("success")),
+         prop("data", Json.parse("null")));
+
+      (context).json(expectedResponse);
+   }
+
+   static File getCWD() { return new File(System.getProperty("user.dir")); }
+
+   private URI getModelUri(final String modelFileName) {
+      return URI.createFileURI(getCWD() + "/resources/" + modelFileName);
    }
 
 }

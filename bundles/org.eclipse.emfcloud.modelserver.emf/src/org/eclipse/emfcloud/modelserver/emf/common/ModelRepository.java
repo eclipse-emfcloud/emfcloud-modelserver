@@ -19,11 +19,13 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -158,6 +160,16 @@ public class ModelRepository {
 
    public boolean redo(final String modeluri) {
       return modelResourceManager.redo(modeluri);
+   }
+
+   public BasicDiagnostic validate(final String modeluri) {
+      if (!getModel(modeluri).isEmpty()) {
+         BasicDiagnostic diagnostics = Diagnostician.INSTANCE.createDefaultDiagnostic(getModel(modeluri).get());
+         Diagnostician.INSTANCE.validate(getModel(modeluri).get(), diagnostics,
+            Diagnostician.INSTANCE.createDefaultContext());
+         return diagnostics;
+      }
+      return null;
    }
 
    public Set<String> getAllModelUris() {

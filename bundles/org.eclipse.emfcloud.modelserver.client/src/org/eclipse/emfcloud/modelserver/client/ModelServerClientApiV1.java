@@ -49,6 +49,10 @@ public interface ModelServerClientApiV1<A> {
    CompletableFuture<Response<Boolean>> save(String modelUri);
 
    CompletableFuture<Response<Boolean>> saveAll();
+   
+   CompletableFuture<Response<String>> validate(String modelUri);
+
+   CompletableFuture<Response<String>> getValidationConstraints(String modelUri);
 
    CompletableFuture<Response<String>> getTypeSchema(String modelUri);
 

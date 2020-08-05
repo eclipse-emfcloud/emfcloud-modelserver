@@ -75,6 +75,8 @@ The following table shows the current HTTP endpoints:
 | |Get the UI schema of a certain view element|__GET__|`/uischema`|query parameter: `?schemaname=...`
 |__Server actions__|Ping server|__GET__|`/server/ping`| -
 | |Update server configuration|__PUT__|`/server/configure`|application/json
+|__Model Validation__|Validate Model|__GET__|`/validation`| query parameter: `?modeluri=...`
+| |Get list of constraints|__GET__|`/validation/constraints`|query parameter: `?modeluri=...`
 
 <br/>
 
@@ -135,8 +137,12 @@ public interface ModelServerClientApiV1<A> {
    CompletableFuture<Response<A>> update(String modelUri, A updatedModel, String format);
 
    CompletableFuture<Response<Boolean>> save(String modelUri);
-
+   
    CompletableFuture<Response<Boolean>> saveAll();
+   
+   CompletableFuture<Response<String>> validate(String modelUri);
+
+   CompletableFuture<Response<String>> getConstraints(String modelUri);
 
    CompletableFuture<Response<String>> getTypeSchema(String modelUri);
 
@@ -155,7 +161,7 @@ public interface ModelServerClientApiV1<A> {
    void subscribe(String modelUri, SubscriptionListener subscriptionListener);
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format);
-
+   
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, long timeout);
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format, long timeout);
