@@ -14,4 +14,5 @@ public interface ServerConfiguration {
 
    String getWorkspaceRoot();
 
+   String getUiSchemaFolder();
 }

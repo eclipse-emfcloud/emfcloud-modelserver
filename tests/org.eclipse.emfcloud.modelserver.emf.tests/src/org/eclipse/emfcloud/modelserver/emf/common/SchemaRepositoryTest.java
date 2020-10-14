@@ -42,7 +42,7 @@ public class SchemaRepositoryTest {
    @Before
    public void before() {
       serverConfiguration = mock(ServerConfiguration.class);
-      when(serverConfiguration.getUISchemaFolderURI())
+      when(serverConfiguration.getUiSchemaFolderURI())
          .thenReturn(URI.createFileURI(getCWD().getAbsolutePath() + "/ui-schemas/"));
       schemaRepository = new SchemaRepository(serverConfiguration);
    }

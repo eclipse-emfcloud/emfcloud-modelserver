@@ -81,7 +81,7 @@ public final class CLIParser {
       return Optional.empty();
    }
 
-   public Optional<String> parseUISchemaFolder() throws ParseException {
+   public Optional<String> parseUiSchemaFolder() throws ParseException {
       String uiSchemaFolderArg = cmd.getOptionValue("u");
       if (uiSchemaFolderArg != null) {
          if (!ServerConfiguration.isValidFileURI(uiSchemaFolderArg)) {

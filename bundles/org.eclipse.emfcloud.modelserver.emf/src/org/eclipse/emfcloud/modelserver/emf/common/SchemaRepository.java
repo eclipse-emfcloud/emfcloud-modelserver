@@ -35,7 +35,7 @@ public class SchemaRepository {
 
    @Inject
    public SchemaRepository(final ServerConfiguration serverConfiguration) {
-      this.schemaRepositoryPath = serverConfiguration.getUISchemaFolderURI();
+      this.schemaRepositoryPath = serverConfiguration.getUiSchemaFolderURI();
    }
 
    public Optional<JsonNode> loadUISchema(final String schemaname) {

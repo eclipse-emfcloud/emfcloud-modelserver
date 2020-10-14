@@ -66,10 +66,10 @@ public class ServerConfigurationTest {
    public void getUISchemaFolder() {
       File cwd = getCWD();
 
-      serverConfiguration.setUISchemaFolder("./ui-schema-folder");
+      serverConfiguration.setUiSchemaFolder("./ui-schema-folder");
       URI expected = URI.createFileURI(cwd.getAbsolutePath() + "/ui-schema-folder").appendSegment(""); // trailing slash
-      assertThat(serverConfiguration.getUISchemaFolderURI(), is(expected));
-      assertThat(serverConfiguration.getUISchemaFolderURI().toFileString(),
+      assertThat(serverConfiguration.getUiSchemaFolderURI(), is(expected));
+      assertThat(serverConfiguration.getUiSchemaFolderURI().toFileString(),
          is(cwd.getAbsolutePath() + "/ui-schema-folder/"));
    }
 

@@ -26,24 +26,40 @@ public class ServerController {
    @Inject
    private ModelRepository modelRepository;
 
-   private final Handler pingHandler = ctx -> {
+   protected void ping(final Context ctx) {
       ctx.json(JsonResponse.success());
-   };
+   }
 
-   private final Handler configureHandler = ctx -> {
+   protected void configure(final Context ctx) {
       ServerConfiguration newConf = ctx.bodyAsClass(ServerConfiguration.class);
-      URI workspaceRootUri = newConf.getWorkspaceRootURI();
-      if (workspaceRootUri != null) {
-         String workspaceRoot = workspaceRootUri.toString();
-         if (ServerConfiguration.isValidFileURI(workspaceRoot)) {
-            serverConfiguration.setWorkspaceRoot(workspaceRoot);
-            modelRepository.initialize(newConf.getWorkspaceRootURI().toFileString(), true);
+      try {
+         if (updateServerConfiguration(newConf)) {
+            modelRepository.initialize();
             ctx.json(JsonResponse.success());
-         } else {
-            handleError(ctx, 400, "The given workspaceRoot is not a valid path: " + workspaceRoot);
          }
+      } catch (IllegalArgumentException exception) {
+         handleError(ctx, 400, exception.getMessage());
       }
-   };
+   }
+
+   protected boolean updateServerConfiguration(final ServerConfiguration newConfiguration) {
+      URI workspaceRootUri = newConfiguration.getWorkspaceRootURI();
+      if (workspaceRootUri == null) {
+         return false;
+      }
+      String workspaceRoot = workspaceRootUri.toString();
+      if (!ServerConfiguration.isValidFileURI(workspaceRoot)) {
+         throw new IllegalArgumentException("The given workspaceRoot is not a valid path: " + workspaceRoot);
+      }
+      serverConfiguration.setWorkspaceRoot(workspaceRoot);
+      if (newConfiguration.getUiSchemaFolderURI() != null
+         && ServerConfiguration.isValidFileURI(newConfiguration.getUiSchemaFolderURI().toString())) {
+         serverConfiguration.setUiSchemaFolder(newConfiguration.getUiSchemaFolderURI().toString());
+      } else {
+         serverConfiguration.setUiSchemaFolderURI(URI.createURI(""));
+      }
+      return true;
+   }
 
    private void handleError(final Context ctx, final int statusCode, final String errorMsg) {
       LOG.error(errorMsg);
@@ -52,8 +68,8 @@ public class ServerController {
          .json(JsonResponse.error());
    }
 
-   public Handler getPingHandler() { return pingHandler; }
+   public Handler getPingHandler() { return this::ping; }
 
-   public Handler getConfigureHandler() { return configureHandler; }
+   public Handler getConfigureHandler() { return this::configure; }
 
 }

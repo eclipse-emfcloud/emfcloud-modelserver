@@ -421,7 +421,13 @@ public class ModelServerClientTest {
          .respond(JsonResponse.success().toString());
       ModelServerClient client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.configure(() -> "/home/user/workspace");
+      final CompletableFuture<Response<Boolean>> f = client.configure(new ServerConfiguration() {
+         @Override
+         public String getWorkspaceRoot() { return "/home/user/workspace"; }
+
+         @Override
+         public String getUiSchemaFolder() { return "/home/user/workspace/.ui-schemas"; }
+      });
 
       assertThat(f.get().body(), equalTo(true));
    }
