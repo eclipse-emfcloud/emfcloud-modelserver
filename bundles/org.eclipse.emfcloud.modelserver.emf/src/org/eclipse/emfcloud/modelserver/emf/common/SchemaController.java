@@ -39,8 +39,8 @@ public class SchemaController {
          });
    }
 
-   public void getUISchema(final Context ctx, final String schemaname) {
-      this.schemaRepository.loadUISchema(schemaname).ifPresentOrElse(
+   public void getUiSchema(final Context ctx, final String schemaname) {
+      this.schemaRepository.loadUiSchema(schemaname).ifPresentOrElse(
          jsonNode -> ctx.json(JsonResponse.success(jsonNode)),
          () -> {
             ctx.status(404);

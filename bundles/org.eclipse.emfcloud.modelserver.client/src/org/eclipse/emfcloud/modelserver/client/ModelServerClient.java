@@ -332,7 +332,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
-   public CompletableFuture<Response<String>> getUISchema(final String schemaname) {
+   public CompletableFuture<Response<String>> getUiSchema(final String schemaname) {
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(UI_SCHEMA))

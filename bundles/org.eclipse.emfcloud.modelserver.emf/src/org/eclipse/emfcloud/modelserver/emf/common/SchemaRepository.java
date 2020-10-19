@@ -38,7 +38,7 @@ public class SchemaRepository {
       this.schemaRepositoryPath = serverConfiguration.getUiSchemaFolderURI();
    }
 
-   public Optional<JsonNode> loadUISchema(final String schemaname) {
+   public Optional<JsonNode> loadUiSchema(final String schemaname) {
       String schemaFilePath = this.schemaRepositoryPath.toFileString().concat(schemaname + ".json");
       ObjectMapper mapper = new ObjectMapper();
       JsonNode jsonNode = null;

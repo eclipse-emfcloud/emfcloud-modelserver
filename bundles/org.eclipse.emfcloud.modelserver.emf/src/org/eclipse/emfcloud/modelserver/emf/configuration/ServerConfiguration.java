@@ -59,7 +59,7 @@ public class ServerConfiguration {
          .ifPresent(uri -> setUiSchemaFolderURI(uri));
    }
 
-   public boolean isUISchemaFolder(final String folder) {
+   public boolean isUiSchemaFolder(final String folder) {
       return toFilePath(folder).map(getUiSchemaFolderURI()::equals).orElse(false);
    }
 

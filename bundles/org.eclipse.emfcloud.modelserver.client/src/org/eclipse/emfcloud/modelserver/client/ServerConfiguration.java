@@ -15,4 +15,14 @@ public interface ServerConfiguration {
    String getWorkspaceRoot();
 
    String getUiSchemaFolder();
+
+   static ServerConfiguration create(final String workspaceRoot, final String uiSchemaFolder) {
+      return new ServerConfiguration() {
+         @Override
+         public String getWorkspaceRoot() { return workspaceRoot; }
+
+         @Override
+         public String getUiSchemaFolder() { return uiSchemaFolder; }
+      };
+   }
 }

@@ -63,7 +63,7 @@ public class ServerConfigurationTest {
    }
 
    @Test
-   public void getUISchemaFolder() {
+   public void getUiSchemaFolder() {
       File cwd = getCWD();
 
       serverConfiguration.setUiSchemaFolder("./ui-schema-folder");
@@ -71,6 +71,22 @@ public class ServerConfigurationTest {
       assertThat(serverConfiguration.getUiSchemaFolderURI(), is(expected));
       assertThat(serverConfiguration.getUiSchemaFolderURI().toFileString(),
          is(cwd.getAbsolutePath() + "/ui-schema-folder/"));
+   }
+
+   @Test
+   public void isUiSchemaFolder() {
+      File cwd = getCWD();
+
+      serverConfiguration.setUiSchemaFolder("./ui-schema-folder");
+      String expected = cwd.getAbsolutePath() + "/ui-schema-folder";
+
+      // true with or without trailing slash
+      assertThat(serverConfiguration.isUiSchemaFolder(expected), is(true));
+      assertThat(serverConfiguration.isUiSchemaFolder(expected + "/"), is(true));
+
+      // false for: parent, child
+      assertThat(serverConfiguration.isUiSchemaFolder(cwd.getAbsolutePath()), is(false));
+      assertThat(serverConfiguration.isUiSchemaFolder(expected + "test/"), is(false));
    }
 
    @Test

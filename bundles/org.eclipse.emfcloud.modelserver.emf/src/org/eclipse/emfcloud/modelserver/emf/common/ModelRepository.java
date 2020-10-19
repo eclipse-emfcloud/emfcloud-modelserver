@@ -104,9 +104,7 @@ public class ModelRepository {
    }
 
    protected boolean isSourceDirectory(final File file) {
-      System.out.println("isSource[" + file.getAbsolutePath() + "] " + file.isDirectory() + " - "
-         + (!this.serverConfiguration.isUISchemaFolder(file.getAbsolutePath())));
-      return file.isDirectory() && !this.serverConfiguration.isUISchemaFolder(file.getAbsolutePath());
+      return file.isDirectory() && !this.serverConfiguration.isUiSchemaFolder(file.getAbsolutePath());
    }
 
    protected boolean hasModel(final String modeluri) {
