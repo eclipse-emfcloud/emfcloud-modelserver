@@ -46,7 +46,7 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<String>> getTypeSchema(String modelUri);
 
-   CompletableFuture<Response<String>> getUISchema(String schemaname);
+   CompletableFuture<Response<String>> getUiSchema(String schemaName);
 
    CompletableFuture<Response<Boolean>> configure(ServerConfiguration configuration);
 

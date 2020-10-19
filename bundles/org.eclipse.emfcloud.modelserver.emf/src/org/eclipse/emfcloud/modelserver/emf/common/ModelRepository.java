@@ -66,25 +66,34 @@ public class ModelRepository {
       this.domain = new AdapterFactoryEditingDomain(adapterFactory, new BasicCommandStack(), resourceSet);
       this.serverConfiguration = serverConfiguration;
       this.resourceManager = resourceManager;
-      initialize(serverConfiguration.getWorkspaceRootURI().toFileString(), true);
+      initialize();
    }
 
-   public void initialize(final String workspaceRoot, final boolean clearResources) {
-      if (workspaceRoot == null || workspaceRoot.isEmpty()) {
-         return;
-      }
-      if (clearResources) {
+   public void initialize() {
+      String workspacePath = this.serverConfiguration.getWorkspaceRootURI().toFileString();
+      if (workspacePath != null) {
          resourceSet.getResources().forEach(Resource::unload);
          resourceSet.getResources().clear();
+         loadSourceResources(workspacePath);
+         removeErroneousResources();
       }
-      File workspace = new File(workspaceRoot);
-      for (File file : workspace.listFiles()) {
-         if (file.isDirectory()) {
-            initialize(file.getAbsolutePath(), false);
-         } else {
+   }
+
+   protected void loadSourceResources(final String directoryPath) {
+      if (directoryPath == null || directoryPath.isEmpty()) {
+         return;
+      }
+      File directory = new File(directoryPath);
+      for (File file : directory.listFiles()) {
+         if (isSourceDirectory(file)) {
+            loadSourceResources(file.getAbsolutePath());
+         } else if (file.isFile()) {
             resourceManager.loadResource(createURI(file.getAbsolutePath()), resourceSet);
          }
       }
+   }
+
+   protected void removeErroneousResources() {
       // any resources loaded with errors are probably not resources in the first place
       final List<Resource> resourcesWithErrors = resourceSet.getResources().stream()
          .filter(resource -> !resource.getErrors().isEmpty())
@@ -94,7 +103,11 @@ public class ModelRepository {
       }
    }
 
-   boolean hasModel(final String modeluri) {
+   protected boolean isSourceDirectory(final File file) {
+      return file.isDirectory() && !this.serverConfiguration.isUiSchemaFolder(file.getAbsolutePath());
+   }
+
+   protected boolean hasModel(final String modeluri) {
       final URI uri = createURI(modeluri);
       return resourceSet.getResource(uri, false) != null;
    }
@@ -166,7 +179,11 @@ public class ModelRepository {
       }
       LinkedHashMap<URI, EObject> models = new LinkedHashMap<>();
       resources.forEach(resource -> {
-         models.put(resource.getURI(), resource.getContents().get(0));
+         if (!resource.getContents().isEmpty()) {
+            models.put(resource.getURI(), resource.getContents().get(0));
+         } else {
+            LOG.warn("Could not retrieve empty resource with URI: " + resource.getURI());
+         }
       });
       return models;
    }
@@ -228,10 +245,8 @@ public class ModelRepository {
    ResourceSet getResourceSet() { return resourceSet; }
 
    private URI createURI(final String modeluri) {
-      if (modeluri.startsWith("file:")) {
-         return URI.createURI(modeluri, true);
-      }
-
-      return URI.createFileURI(modeluri);
+      return modeluri.startsWith("file:")
+         ? URI.createURI(modeluri, true)
+         : URI.createFileURI(modeluri);
    }
 }

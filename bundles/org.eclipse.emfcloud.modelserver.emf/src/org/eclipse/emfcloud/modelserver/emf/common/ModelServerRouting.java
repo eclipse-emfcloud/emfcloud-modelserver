@@ -137,7 +137,7 @@ public class ModelServerRouting extends Routing {
             get(ModelServerPaths.UI_SCHEMA, ctx -> {
                getQueryParam(ctx.queryParamMap(), "schemaname")
                   .ifPresentOrElse(
-                     param -> getController(SchemaController.class).getUISchema(ctx, param),
+                     param -> getController(SchemaController.class).getUiSchema(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'schemaname'!"));
             });
 

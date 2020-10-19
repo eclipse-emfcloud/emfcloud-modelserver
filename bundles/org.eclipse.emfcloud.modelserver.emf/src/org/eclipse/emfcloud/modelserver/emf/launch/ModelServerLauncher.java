@@ -95,7 +95,7 @@ public class ModelServerLauncher {
          }
          configuration.setServerPort(parser.parsePort());
          parser.parseWorkspaceRoot().ifPresent(configuration::setWorkspaceRoot);
-         parser.parseUISchemaFolder().ifPresent(configuration::setUISchemaFolder);
+         parser.parseUiSchemaFolder().ifPresent(configuration::setUiSchemaFolder);
          return true;
       } catch (UnrecognizedOptionException e) {
          LOG.error("Unrecognized command line argument(s) used!\n");

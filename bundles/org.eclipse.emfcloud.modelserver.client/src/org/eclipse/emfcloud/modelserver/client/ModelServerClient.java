@@ -332,7 +332,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
-   public CompletableFuture<Response<String>> getUISchema(final String schemaname) {
+   public CompletableFuture<Response<String>> getUiSchema(final String schemaname) {
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(UI_SCHEMA))
@@ -349,7 +349,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    public CompletableFuture<Response<Boolean>> configure(final ServerConfiguration configuration) {
 
       ObjectNode config = Json.object(
-         Json.prop("workspaceRoot", Json.text(configuration.getWorkspaceRoot())));
+         Json.prop("workspaceRoot", Json.text(configuration.getWorkspaceRoot())),
+         Json.prop("uiSchemaFolder", Json.text(configuration.getUiSchemaFolder())));
 
       final Request request = new Request.Builder()
          .url(makeUrl(SERVER_CONFIGURE))

@@ -87,34 +87,34 @@ public final class ExampleServerLauncher {
          new File(workspaceRoot, COFFEE_TEST_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_ROOT + "/" + JSON_TEST_FILE,
          new File(workspaceRoot, JSON_TEST_FILE));
-      result &= setupTempUISchemaTestWorkspace(new File(workspaceRoot + "/" + UISCHEMA_FOLDER + "/"), result);
+      result &= setupTempUiSchemaTestWorkspace(new File(workspaceRoot + "/" + UISCHEMA_FOLDER + "/"), result);
       return result;
    }
 
    @SuppressWarnings("checkstyle:CyclomaticComplexity")
-   private static boolean setupTempUISchemaTestWorkspace(final File workspaceUISchemaRoot, boolean result) {
+   private static boolean setupTempUiSchemaTestWorkspace(final File workspaceUiSchemaRoot, boolean result) {
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_AUTOMATICTASK_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_AUTOMATICTASK_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_AUTOMATICTASK_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_BREWINGUNIT_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_BREWINGUNIT_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_BREWINGUNIT_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_CONTROLUNIT_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_CONTROLUNIT_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_CONTROLUNIT_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_DECISION_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_DECISION_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_DECISION_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_DIPTRAY_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_DIPTRAY_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_DIPTRAY_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_FLOW_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_FLOW_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_FLOW_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_MACHINE_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_MACHINE_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_MACHINE_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_MANUALTASK_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_MANUALTASK_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_MANUALTASK_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_MERGE_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_MERGE_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_MERGE_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_WATERTANK_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_WATERTANK_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_WATERTANK_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_UISCHEMA_FOLDER + "/" + UISCHEMA_WEIGHTEDFLOW_FILE,
-         new File(workspaceUISchemaRoot, UISCHEMA_WEIGHTEDFLOW_FILE));
+         new File(workspaceUiSchemaRoot, UISCHEMA_WEIGHTEDFLOW_FILE));
       return result;
    }
 

@@ -100,7 +100,7 @@ public class SchemaControllerTest {
    }
 
    @Test
-   public void getUISchema_schemaAvailable() {
+   public void getUiSchema_schemaAvailable() {
       final JsonNode machineUiSchema = Json.object(
          prop("type", Json.text("VerticalLayout")),
          prop("elements", Json.array(
@@ -112,9 +112,9 @@ public class SchemaControllerTest {
                prop("label", Json.text("Name")),
                prop("scope", Json.text("#/properties/name"))))));
 
-      when(schemaRepository.loadUISchema("machine")).thenReturn(Optional.of(machineUiSchema));
+      when(schemaRepository.loadUiSchema("machine")).thenReturn(Optional.of(machineUiSchema));
 
-      schemaController.getUISchema(context, "machine");
+      schemaController.getUiSchema(context, "machine");
 
       JsonNode expectedResponse = Json.object(
          prop("type", Json.text("success")),
@@ -124,11 +124,11 @@ public class SchemaControllerTest {
    }
 
    @Test
-   public void getUISchema_schemaUnavailable() {
+   public void getUiSchema_schemaUnavailable() {
       when(context.queryParam("schemaname")).thenReturn("brewing");
-      when(schemaRepository.loadUISchema("brewing")).thenReturn(Optional.empty());
+      when(schemaRepository.loadUiSchema("brewing")).thenReturn(Optional.empty());
 
-      schemaController.getUISchema(context, "brewing");
+      schemaController.getUiSchema(context, "brewing");
 
       String expectedErrorMsg = "UI schema 'brewing' not found!";
       JsonNode expectedResponse = Json.object(

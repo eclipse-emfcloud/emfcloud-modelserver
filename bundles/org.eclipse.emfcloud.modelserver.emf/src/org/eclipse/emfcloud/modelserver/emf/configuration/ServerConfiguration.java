@@ -49,14 +49,18 @@ public class ServerConfiguration {
          .ifPresent(uri -> setWorkspaceRootURI(uri));
    }
 
-   public URI getUISchemaFolderURI() { return this.uiSchemaFolderURI; }
+   public URI getUiSchemaFolderURI() { return this.uiSchemaFolderURI; }
 
-   public void setUISchemaFolderURI(final URI uri) { this.uiSchemaFolderURI = uri; }
+   public void setUiSchemaFolderURI(final URI uri) { this.uiSchemaFolderURI = uri; }
 
-   public void setUISchemaFolder(final String uiSchemaFolder) {
+   public void setUiSchemaFolder(final String uiSchemaFolder) {
       toFilePath(uiSchemaFolder)
          .map(ServerConfiguration::ensureDirectory)
-         .ifPresent(uri -> setUISchemaFolderURI(uri));
+         .ifPresent(uri -> setUiSchemaFolderURI(uri));
+   }
+
+   public boolean isUiSchemaFolder(final String folder) {
+      return toFilePath(folder).map(getUiSchemaFolderURI()::equals).orElse(false);
    }
 
    public Set<String> getWorkspaceEntries() {
@@ -85,6 +89,12 @@ public class ServerConfiguration {
 
    public void setServerPort(final int serverPort) { this.serverPort = serverPort; }
 
+   @Override
+   public String toString() {
+      return "ServerConfiguration [workspaceRootURI=" + workspaceRootURI + ", uiSchemaFolderURI=" + uiSchemaFolderURI
+         + ", serverPort=" + serverPort + "]";
+   }
+
    public static boolean isValidFileURI(final String fileUrl) {
       return toFilePath(fileUrl).map(uri -> new File(uri.toFileString()).exists()).orElse(false);
    }
@@ -99,7 +109,7 @@ public class ServerConfiguration {
          String decodedUrl = URLDecoder.decode(fileUrl, "UTF-8");
          URI uri = URI.createURI(decodedUrl, true);
          if (uri.scheme() == null) {
-            uri = URI.createFileURI(decodedUrl);
+            uri = ensureDirectory(URI.createFileURI(decodedUrl));
          }
          if (uri.isRelative()) {
             URI cwd = URI.createFileURI(System.getProperty("user.dir"));

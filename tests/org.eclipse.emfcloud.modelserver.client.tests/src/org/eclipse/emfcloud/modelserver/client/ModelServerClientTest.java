@@ -368,7 +368,7 @@ public class ModelServerClientTest {
 
    @Test
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
-   public void getUISchema() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
+   public void getUiSchema() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = JsonCodec.encode(Json.object(Json.prop("type", Json.text("object"))));
       String uiSchemaUrl = baseHttpUrlBuilder
          .addPathSegment(ModelServerPaths.UI_SCHEMA)
@@ -380,7 +380,7 @@ public class ModelServerClientTest {
          .respond(JsonResponse.success(expected).toString());
       ModelServerClient client = createClient();
 
-      final CompletableFuture<Response<String>> f = client.getUISchema("controlunit");
+      final CompletableFuture<Response<String>> f = client.getUiSchema("controlunit");
 
       assertThat(f.get().body(), equalTo(expected.toString()));
    }
@@ -421,7 +421,9 @@ public class ModelServerClientTest {
          .respond(JsonResponse.success().toString());
       ModelServerClient client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.configure(() -> "/home/user/workspace");
+      ServerConfiguration serverConfiguration = ServerConfiguration.create("/home/user/workspace",
+         "/home/user/workspace/.ui-schemas");
+      final CompletableFuture<Response<Boolean>> f = client.configure(serverConfiguration);
 
       assertThat(f.get().body(), equalTo(true));
    }

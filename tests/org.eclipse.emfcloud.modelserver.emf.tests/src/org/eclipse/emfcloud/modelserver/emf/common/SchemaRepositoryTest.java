@@ -42,14 +42,14 @@ public class SchemaRepositoryTest {
    @Before
    public void before() {
       serverConfiguration = mock(ServerConfiguration.class);
-      when(serverConfiguration.getUISchemaFolderURI())
+      when(serverConfiguration.getUiSchemaFolderURI())
          .thenReturn(URI.createFileURI(getCWD().getAbsolutePath() + "/ui-schemas/"));
       schemaRepository = new SchemaRepository(serverConfiguration);
    }
 
    @Test
-   public void loadUISchema_schemaAvailable() throws IOException {
-      final JsonNode expectedUISchema = Json.object(
+   public void loadUiSchema_schemaAvailable() throws IOException {
+      final JsonNode expectedUiSchema = Json.object(
          prop("type", Json.text("VerticalLayout")),
          prop("elements", Json.array(
             Json.object(
@@ -60,15 +60,15 @@ public class SchemaRepositoryTest {
                prop("label", Json.text("Name")),
                prop("scope", Json.text("#/properties/name"))))));
 
-      Optional<JsonNode> actualUISchema = schemaRepository.loadUISchema("machine");
+      Optional<JsonNode> actualUiSchema = schemaRepository.loadUiSchema("machine");
 
-      assertTrue(actualUISchema.isPresent());
-      assertEquals(expectedUISchema, actualUISchema.get());
+      assertTrue(actualUiSchema.isPresent());
+      assertEquals(expectedUiSchema, actualUiSchema.get());
    }
 
    @Test
-   public void loadUISchema_schemaUnvailable() throws IOException {
-      assertTrue(schemaRepository.loadUISchema("machine2").isEmpty());
+   public void loadUiSchema_schemaUnvailable() throws IOException {
+      assertTrue(schemaRepository.loadUiSchema("machine2").isEmpty());
    }
 
    //
