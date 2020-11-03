@@ -29,3 +29,6 @@ location "https://download.eclipse.org/tools/orbit/downloads/drops/R201911262232
 location "http://ghillairet.github.io/p2" {
 	org.emfjson.jackson lazy
 }
+location "https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/" {
+	org.eclipse.jetty.websocket.server lazy
+}
