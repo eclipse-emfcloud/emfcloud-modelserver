@@ -23,6 +23,7 @@ location "https://download.eclipse.org/tools/orbit/downloads/drops/R201911262232
 	net.bytebuddy.byte-buddy-agent [1.9.0,2.0.0)
 	org.objenesis [2.6.0,3.0.0)
 	org.hamcrest [1.1.0,2.0.0)
+	org.slf4j.api [1.7.10,2.0.0)
 }
 
 // EMF-JSON
