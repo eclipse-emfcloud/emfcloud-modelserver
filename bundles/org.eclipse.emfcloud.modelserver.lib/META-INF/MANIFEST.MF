@@ -64,3 +64,15 @@ Export-Package: io.javalin,
  org.eclipse.jetty.websocket.servlet,
  org.intellij.lang.annotations,
  org.jetbrains.annotations
+Import-Package: javax.servlet;version="3.1.0",
+ javax.servlet.http;version="3.1.0"
+Require-Bundle: org.eclipse.jetty.util;bundle-version="9.4.24",
+ org.eclipse.jetty.server;bundle-version="9.4.24",
+ org.eclipse.jetty.servlet;bundle-version="9.4.24",
+ org.eclipse.jetty.websocket.server;bundle-version="9.4.24",
+ org.eclipse.jetty.websocket.api;bundle-version="9.4.24",
+ org.eclipse.jetty.websocket.common;bundle-version="9.4.24",
+ org.eclipse.jetty.websocket.servlet;bundle-version="9.4.24",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.9.0",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.9.0",
+ org.slf4j.api;bundle-version="1.7.10"
