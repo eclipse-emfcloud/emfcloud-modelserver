@@ -265,6 +265,7 @@
 									<excludes>
 										<plugin id="org.apache.batik.pdf" />
 										<plugin id="org.eclipse.wst.common.project.facet.core" />
+										<plugin id="org.eclipse.emfcloud.modelserver.lib" />
 									</excludes>
 								</configuration>
 							</execution>
