@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.emf.common.command.Command;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 
 public interface ModelServerClientApiV1<A> {
@@ -22,7 +23,11 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<A>> get(String modelUri, String format);
 
-   CompletableFuture<Response<List<String>>> getAll();
+   CompletableFuture<Response<List<Model<String>>>> getAll();
+
+   CompletableFuture<Response<List<Model<EObject>>>> getAll(String format);
+
+   CompletableFuture<Response<List<String>>> getModelUris();
 
    CompletableFuture<Response<String>> getModelElementById(String modelUri, String elementid);
 

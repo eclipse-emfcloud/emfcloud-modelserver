@@ -119,7 +119,67 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
-   public CompletableFuture<Response<List<String>>> getAll() {
+   public CompletableFuture<Response<List<Model<String>>>> getAll() {
+      final Request request = new Request.Builder()
+         .url(makeUrl(MODEL_BASE_PATH))
+         .build();
+
+      return call(request)
+         .thenApply(this::getBodyOrThrow)
+         .thenApply(response -> response.mapBody(body -> {
+            List<Model<String>> models = new ArrayList<>();
+            try {
+               for (JsonNode modelNode : Json.parse(body)) {
+                  Optional<String> modelUri = getJsonField(modelNode, "modelUri");
+                  Optional<String> content = getJsonField(modelNode, "content");
+                  if (modelUri.isPresent() && content.isPresent()) {
+                     models.add(new Model<>(modelUri.get(), content.get()));
+                  } else {
+                     LOG.warn("Incomplete Model: " + modelNode);
+                  }
+               }
+               return models;
+            } catch (IOException e) {
+               throw new CompletionException(e);
+            }
+         }));
+   }
+
+   @Override
+   public CompletableFuture<Response<List<Model<EObject>>>> getAll(final String format) {
+      String checkedFormat = checkedFormat(format);
+
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
+               .addQueryParameter("format", format)
+               .build())
+         .build();
+
+      return call(request)
+         .thenApply(this::getBodyOrThrow)
+         .thenApply(response -> response.mapBody(body -> {
+            List<Model<EObject>> models = new ArrayList<>();
+            try {
+               for (JsonNode modelNode : Json.parse(body)) {
+                  Optional<String> modelUri = getJsonField(modelNode, "modelUri");
+                  Optional<EObject> content = getJsonField(modelNode, "content")
+                     .flatMap(contentText -> decode(contentText, checkedFormat));
+                  if (modelUri.isPresent() && content.isPresent()) {
+                     models.add(new Model<>(modelUri.get(), content.get()));
+                  } else {
+                     LOG.warn("Incomplete Model: " + modelNode);
+                  }
+               }
+               return models;
+            } catch (IOException e) {
+               throw new CompletionException(e);
+            }
+         }));
+   }
+
+   @Override
+   public CompletableFuture<Response<List<String>>> getModelUris() {
       final Request request = new Request.Builder()
          .url(makeUrl(MODEL_URIS))
          .build();
@@ -509,18 +569,23 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
 
    private Optional<String> parseJsonField(final String jsonAsString, final String field) {
       try {
-         final JsonNode data = Json.parse(jsonAsString).get(field);
-         if (data == null) {
-            return Optional.empty();
-         }
-         if (data.isTextual()) {
-            return Optional.of(data.textValue());
-         }
-         return Optional.of(data.toString());
+         final JsonNode node = Json.parse(jsonAsString);
+         return getJsonField(node, field);
       } catch (IOException e) {
          LOG.error("Could not parse JSON", e);
          return Optional.empty();
       }
+   }
+
+   private Optional<String> getJsonField(final JsonNode node, final String field) {
+      JsonNode data = node.get(field);
+      if (data == null) {
+         return Optional.empty();
+      }
+      if (data.isTextual()) {
+         return Optional.of(data.textValue());
+      }
+      return Optional.of(data.toString());
    }
 
    private <A> Response<A> getBodyOrThrow(final Response<Optional<A>> response) {

@@ -56,8 +56,8 @@ The following table shows the current HTTP endpoints:
 
 |Category|Description|HTTP method|Path|Input
 |-|-|:-:|-|-
-|__Models__|Get all available models in the workspace|__GET__|`/models`| -
-| |Get model|__GET__|`/models`|query parameter: `[?modeluri=...[&format=...]]`
+|__Models__|Get all available models in the workspace|__GET__|`/models`|query parameter: `[?format=...]`
+| |Get model|__GET__|`/models`|query parameter: `?modeluri=...[&format=...]`
 | |Create new model|__POST__|`/models`|query parameter: `?modeluri=...[&format=...]` <br> application/json
 | |Update model|__PATCH__|`/models`|query parameter: `?modeluri=...[&format=...]` <br> application/json
 | |Delete model|__DELETE__|`/models`|query parameter: `?modeluri=...`
@@ -91,7 +91,7 @@ The following table shows the current WS endpoints:
 ## Java Client API
 
 The model server project features a Java-based client API that eases integration with the model server.
-The interface declaration looks as follows
+The interface declaration is as defined below. Please note that the `Model` class is a POJO with a model uri and content.
 
 ```Java
 public interface ModelServerClientApiV1<A> {
@@ -100,7 +100,11 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<A>> get(String modelUri, String format);
 
-   CompletableFuture<Response<List<String>>> getAll();
+   CompletableFuture<Response<List<Model<String>>>> getAll();
+
+   CompletableFuture<Response<List<Model<EObject>>>> getAll(String format);
+
+   CompletableFuture<Response<List<String>>> getModelUris();
 
    CompletableFuture<Response<String>> getModelElementById(String modelUri, String elementid);
 
@@ -143,7 +147,6 @@ public interface ModelServerClientApiV1<A> {
    EditingContext edit();
 
    boolean close(EditingContext editingContext);
-
 }
 ```
 

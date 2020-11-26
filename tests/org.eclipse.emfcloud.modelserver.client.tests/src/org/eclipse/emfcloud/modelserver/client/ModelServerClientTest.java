@@ -52,6 +52,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 
 import okhttp3.HttpUrl;
@@ -124,19 +126,66 @@ public class ModelServerClientTest {
 
    @Test
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
-   public void getAll() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
-      String getAllUrl = baseHttpUrlBuilder
+   public void getModelUris()
+      throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
+      String getModelUrisUrl = baseHttpUrlBuilder
          .addPathSegment(ModelServerPaths.MODEL_URIS)
          .build().toString();
       interceptor.addRule()
          .get()
-         .url(getAllUrl)
+         .url(getModelUrisUrl)
          .respond(
             JsonResponse.success(JsonCodec.encode(Collections.singletonList("http://fake-model.com"))).toString());
       ModelServerClient client = createClient();
 
-      final CompletableFuture<Response<List<String>>> f = client.getAll();
+      final CompletableFuture<Response<List<String>>> f = client.getModelUris();
       assertThat(f.get().body(), equalTo(Collections.singletonList("http://fake-model.com")));
+   }
+
+   @Test
+   @SuppressWarnings({ "checkstyle:ThrowsCount" })
+   public void getAll() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
+      String modelUri = "http://fake-model.com";
+      final JsonNode content = jsonCodec.encode(eClass);
+      ObjectNode model = Json.object(Json.prop("modelUri", Json.text(modelUri)), Json.prop("content", content));
+      ArrayNode allModels = Json.array(model);
+
+      String getAllUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
+         .build().toString();
+      interceptor.addRule()
+         .get()
+         .url(getAllUrl)
+         .respond(JsonResponse.success(allModels).toString());
+      ModelServerClient client = createClient();
+
+      final CompletableFuture<Response<List<Model<String>>>> f = client.getAll();
+      assertThat(f.get().body(), equalTo(Collections.singletonList(new Model<>(modelUri, content.toString()))));
+   }
+
+   @Test
+   @SuppressWarnings({ "checkstyle:ThrowsCount" })
+   public void getAllXmi() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
+      String modelUri = "http://fake-model.com";
+      final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
+
+      String getAllXmiUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
+         .addQueryParameter("format", "xmi")
+         .build().toString();
+      interceptor.addRule()
+         .get()
+         .url(getAllXmiUrl)
+         .respond(JsonResponse.success(JsonCodec
+            .encode(Collections.singletonList(new Model<>(modelUri, new XmiCodec().encode(eClass)))))
+            .toString());
+      ModelServerClient client = createClient();
+
+      final CompletableFuture<Response<List<Model<EObject>>>> f = client.getAll("xmi");
+      List<Model<EObject>> response = f.get().body();
+      assertThat(response.size(), is(1));
+      assertThat(response.get(0).getModelUri(), is(modelUri));
+      assertTrue(EcoreUtil.equals(response.get(0).getContent(), eClass));
    }
 
    @Test
