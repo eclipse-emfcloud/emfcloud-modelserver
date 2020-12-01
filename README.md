@@ -102,7 +102,7 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<List<Model<String>>>> getAll();
 
-   CompletableFuture<Response<List<Model<EObject>>>> getAll(String format);
+   CompletableFuture<Response<List<Model<A>>>> getAll(String format);
 
    CompletableFuture<Response<List<String>>> getModelUris();
 
