@@ -22,7 +22,11 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<A>> get(String modelUri, String format);
 
-   CompletableFuture<Response<List<String>>> getAll();
+   CompletableFuture<Response<List<Model<String>>>> getAll();
+
+   CompletableFuture<Response<List<Model<A>>>> getAll(String format);
+
+   CompletableFuture<Response<List<String>>> getModelUris();
 
    CompletableFuture<Response<String>> getModelElementById(String modelUri, String elementid);
 
