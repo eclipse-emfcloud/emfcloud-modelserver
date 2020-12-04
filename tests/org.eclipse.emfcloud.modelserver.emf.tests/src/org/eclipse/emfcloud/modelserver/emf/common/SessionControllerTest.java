@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -27,6 +28,7 @@ import org.eclipse.emfcloud.modelserver.command.CommandKind;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.ResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.eclipse.jetty.websocket.api.Session;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -35,13 +37,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.internal.util.reflection.FieldSetter;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import io.javalin.websocket.WsContext;
 
+import io.javalin.websocket.WsContext;
+import io.javalin.websocket.WsMessageContext;
+
+@SuppressWarnings("restriction")
 @RunWith(MockitoJUnitRunner.class)
 public class SessionControllerTest {
 
@@ -56,23 +62,31 @@ public class SessionControllerTest {
    @Mock
    private WsContext invalidClientCtx;
    @Mock
+   private WsMessageContext messageClientCtx;
+   @Mock
+   private Session session;
+   @Mock
    private ModelRepository repository;
 
    private SessionController sessionController;
 
    @Test
-   public void testSubscribeToValidModelUri() {
+   @SuppressWarnings({ "checkstyle:ThrowsCount" })
+   public void testSubscribeToValidModelUri() throws NoSuchFieldException, SecurityException {
       // try to subscribe to a valid modeluri
       //
-      initializeValidClientContext();
+      String sessionId = UUID.randomUUID().toString();
+      initializeValidClientContext(sessionId);
 
       assertTrue(sessionController.subscribe(validClientCtx, validClientCtx.pathParam("modeluri")));
       assertTrue(sessionController.isClientSubscribed(validClientCtx));
-      verify(validClientCtx).send(argThat(jsonNodeThat(containsRegex("(?i)\"type\":\"success\""))));
+      verify(validClientCtx).send(argThat(jsonNodeThat(
+         containsRegex("\"type\":\"success\",\"data\":\"" + sessionId + "\""))));
    }
 
    @Test
-   public void testSubscribeToInvalidModelUri() {
+   @SuppressWarnings({ "checkstyle:ThrowsCount" })
+   public void testSubscribeToInvalidModelUri() throws NoSuchFieldException, SecurityException {
       // try to subscribe to an invalid modeluri
       //
       initializeInvalidClientContext();
@@ -82,12 +96,17 @@ public class SessionControllerTest {
    }
 
    @Test
-   public void testUnsubscribeFromValidSession() {
+   @SuppressWarnings({ "checkstyle:ThrowsCount" })
+   public void testUnsubscribeFromValidSession() throws NoSuchFieldException, SecurityException {
       // try to subscribe to a valid modeluri
       //
-      initializeValidClientContext();
+      String sessionId = UUID.randomUUID().toString();
+      initializeValidClientContext(sessionId);
       assertTrue(sessionController.subscribe(validClientCtx, validClientCtx.pathParam("modeluri")));
       assertTrue(sessionController.isClientSubscribed(validClientCtx));
+
+      verify(validClientCtx).send(argThat(jsonNodeThat(
+         containsRegex("\"type\":\"success\",\"data\":\"" + sessionId + "\""))));
 
       // try to unsubscribe from this valid session
       //
@@ -106,32 +125,74 @@ public class SessionControllerTest {
 
    @Test
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
-   public void testCommandSubscription()
-      throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
-
-      initializeValidClientContext();
+   public void testCommandSubscription() throws NoSuchFieldException, SecurityException {
+      String sessionId = UUID.randomUUID().toString();
+      initializeValidClientContext(sessionId);
+      when(validClientCtx.session.isOpen()).thenReturn(true);
       when(repository.getModel("fancytesturi")).thenReturn(Optional.of(EcoreFactory.eINSTANCE.createEClass()));
 
       sessionController.subscribe(validClientCtx, validClientCtx.pathParam("modeluri"));
+      verify(validClientCtx).send(argThat(jsonNodeThat(
+         containsRegex(".\"type\":\"success\",\"data\":\"" + sessionId + "\"."))));
+
       CCommand command = CCommandFactory.eINSTANCE.createCommand();
       command.setType(CommandKind.SET);
       sessionController.modelChanged("fancytesturi", command);
 
-      verify(validClientCtx).send(argThat(jsonNodeThat(containsRegex("(?i)\"type\":\"set\""))));
+      verify(validClientCtx).send(argThat(jsonNodeThat(
+         containsRegex(".\"type\":\"incrementalUpdate\",\"data\":.\"type\":\"SET\".*"))));
+
+      verify(validClientCtx).send(argThat(jsonNodeThat(
+         containsRegex(".\"type\":\"dirtyState\",\"data\":true."))));
+   }
+
+   @Test
+   @SuppressWarnings({ "checkstyle:ThrowsCount" })
+   public void testSubscribeAndSendKeepAlive() throws NoSuchFieldException, SecurityException {
+      // try to subscribe to a valid modeluri
+      //
+      String sessionId = UUID.randomUUID().toString();
+      initializeWsMessageContext(sessionId);
+      assertTrue(sessionController.subscribe(messageClientCtx, messageClientCtx.pathParam("modeluri")));
+      verify(messageClientCtx)
+         .send(argThat(jsonNodeThat(containsRegex(
+            "(?i)\"type\":\"success\",\"data\":\"" + sessionId + "\""))));
+      assertTrue(sessionController.isClientSubscribed(messageClientCtx));
+      // client sends keepAlive message
+      when(messageClientCtx.message()).thenReturn("{\"type\":\"keepAlive\",\"data\":\"\"}");
+      assertTrue(sessionController.handleMessage(messageClientCtx));
+      verify(messageClientCtx)
+         .send(argThat(jsonNodeThat(containsRegex(
+            "(?i)\"type\":\"keepAlive\",\"data\":\"" + sessionId + " stayin' alive!\""))));
    }
 
    //
    // Test framework
    //
-
-   private void initializeValidClientContext() {
-      when(validClientCtx.getSessionId()).thenReturn(UUID.randomUUID().toString());
+   @SuppressWarnings({ "checkstyle:ThrowsCount" })
+   private void initializeValidClientContext(final String sessionId) throws NoSuchFieldException, SecurityException {
+      when(validClientCtx.getSessionId()).thenReturn(sessionId);
       when(validClientCtx.pathParam("modeluri")).thenReturn("fancytesturi");
+      Field sessionField = WsContext.class.getDeclaredField("session");
+      FieldSetter.setField(validClientCtx, sessionField, session);
+
       when(repository.hasModel("fancytesturi")).thenReturn(true);
    }
 
-   private void initializeInvalidClientContext() {
+   @SuppressWarnings({ "checkstyle:ThrowsCount" })
+   private void initializeWsMessageContext(final String sessionId) throws NoSuchFieldException, SecurityException {
+      when(messageClientCtx.getSessionId()).thenReturn(sessionId);
+      when(messageClientCtx.pathParam("modeluri")).thenReturn("fancytesturi");
+      when(repository.hasModel("fancytesturi")).thenReturn(true);
+
+      Field sessionField = WsContext.class.getDeclaredField("session");
+      FieldSetter.setField(messageClientCtx, sessionField, session);
+   }
+
+   @SuppressWarnings({ "checkstyle:ThrowsCount" })
+   private void initializeInvalidClientContext() throws NoSuchFieldException, SecurityException {
       when(invalidClientCtx.pathParam("modeluri")).thenReturn("tedioustesturi");
+      FieldSetter.setField(invalidClientCtx, WsContext.class.getDeclaredField("session"), session);
    }
 
    @Before
@@ -147,8 +208,6 @@ public class SessionControllerTest {
          }
       }).getInstance(SessionController.class);
 
-      // Mock sessions are always open
-      sessionController.setIsOnlyPredicate(ctx -> true);
    }
 
    Matcher<Object> jsonNodeThat(final Matcher<String> data) {

@@ -16,7 +16,8 @@ public enum JsonResponseType {
    ERROR("error"),
    FULLUPDATE("fullUpdate"),
    INCREMENTALUPDATE("incrementalUpdate"),
-   DIRTYSTATE("dirtyState");
+   DIRTYSTATE("dirtyState"),
+   KEEPALIVE("keepAlive");
 
    private String typeString;
 

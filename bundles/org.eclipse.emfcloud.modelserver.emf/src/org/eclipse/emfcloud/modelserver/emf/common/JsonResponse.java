@@ -10,9 +10,9 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.jetbrains.annotations.Nullable;
 
-import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -78,5 +78,9 @@ public final class JsonResponse {
 
    public static JsonNode dirtyState(final Boolean isDirty) {
       return Json.merge(type(JsonResponseType.DIRTYSTATE), data(isDirty));
+   }
+
+   public static JsonNode keepAlive(final String message) {
+      return Json.merge(type(JsonResponseType.KEEPALIVE), data(message));
    }
 }

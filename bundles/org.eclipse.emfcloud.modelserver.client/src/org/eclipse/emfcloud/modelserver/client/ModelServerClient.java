@@ -475,18 +475,37 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
-   public void subscribe(final String modelUri, final SubscriptionListener subscriptionListener, final String format) {
-      String checkedFormat = checkedFormat(format);
+   public void subscribe(final String modelUri, final SubscriptionListener subscriptionListener) {
       Request request = new Request.Builder()
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
                   .addQueryParameter("modeluri", modelUri)
-                  .addQueryParameter("format", checkedFormat)
                   .build()
                   .toString()))
          .build();
 
+      subscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribe(final String modelUri, final SubscriptionListener subscriptionListener,
+      final long timeout) {
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter("modeluri", modelUri)
+                  .addQueryParameter("timeout", String.valueOf(timeout))
+                  .build()
+                  .toString()))
+         .build();
+
+      subscribe(modelUri, subscriptionListener, request);
+   }
+
+   private void subscribe(final String modelUri, final SubscriptionListener subscriptionListener,
+      final Request request) {
       @SuppressWarnings({ "checkstyle:AnonInnerLength" })
       final WebSocket socket = client.newWebSocket(request, new WebSocketListener() {
          @Override
@@ -523,6 +542,15 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          }
       });
       openSockets.put(modelUri, socket);
+   }
+
+   @Override
+   public boolean send(final String modelUri, final String message) {
+      final WebSocket webSocket = openSockets.get(modelUri);
+      if (webSocket != null) {
+         return webSocket.send(message);
+      }
+      return false;
    }
 
    @Override

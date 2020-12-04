@@ -150,10 +150,23 @@ public class ModelServerRouting extends Routing {
                      .map(this::adaptModelUri)
                      .ifPresentOrElse(
                         modeluri -> {
-                           if (!getController(SessionController.class).subscribe(ctx, modeluri)) {
-                              handleWsErrorAndCloseSession(ctx, String
-                                 .format("Cannot subscribe to '%s': modeluri is not a valid model resource", modeluri));
-                           }
+                           getQueryParam(ctx.queryParamMap(), "timeout")
+                              .ifPresentOrElse(
+                                 timeout -> {
+                                    if (!getController(SessionController.class).subscribe(ctx, modeluri,
+                                       Long.parseLong(timeout))) {
+                                       handleWsErrorAndCloseSession(ctx, String
+                                          .format("Cannot subscribe to '%s': modeluri is not a valid model resource",
+                                             modeluri));
+                                    }
+                                 },
+                                 () -> {
+                                    if (!getController(SessionController.class).subscribe(ctx, modeluri)) {
+                                       handleWsErrorAndCloseSession(ctx, String
+                                          .format("Cannot subscribe to '%s': modeluri is not a valid model resource",
+                                             modeluri));
+                                    }
+                                 });
                         },
                         () -> handleWsErrorAndCloseSession(ctx, "Missing parameter 'modeluri'!"));
                });
@@ -162,8 +175,12 @@ public class ModelServerRouting extends Routing {
                      handleWsError(ctx, "Cannot unsubscribe: invalid session");
                   }
                });
-               wsHandler.onError(ctx -> ctx.error());
-               wsHandler.onMessage(ctx -> {}); // we do not handle messages from subscribers at the moment
+               wsHandler.onError(ctx -> handleWsError(ctx, ctx.error().getMessage()));
+               wsHandler.onMessage(ctx -> {
+                  if (!getController(SessionController.class).handleMessage(ctx)) {
+                     handleWsError(ctx, "Cannot handle message: " + ctx.message());
+                  }
+               });
             });
 
             // TODO: ws for the commands
