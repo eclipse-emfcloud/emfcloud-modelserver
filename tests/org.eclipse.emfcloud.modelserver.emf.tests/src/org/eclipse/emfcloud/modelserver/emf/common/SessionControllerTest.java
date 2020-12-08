@@ -26,7 +26,6 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CommandKind;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
-import org.eclipse.emfcloud.modelserver.emf.ResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.jetty.websocket.api.Session;
 import org.hamcrest.CustomTypeSafeMatcher;
@@ -54,8 +53,6 @@ public class SessionControllerTest {
    @Mock
    private ServerConfiguration serverConfig;
    @Mock
-   private ResourceManager resourceManager;
-   @Mock
    private CommandCodec commandCodec;
    @Mock
    private WsContext validClientCtx;
@@ -67,6 +64,8 @@ public class SessionControllerTest {
    private Session session;
    @Mock
    private ModelRepository repository;
+   @Mock
+   private ModelResourceLoader modelResourceLoader;
 
    private SessionController sessionController;
 
@@ -202,9 +201,9 @@ public class SessionControllerTest {
          @Override
          protected void configure() {
             bind(ServerConfiguration.class).toInstance(serverConfig);
-            bind(ResourceManager.class).toInstance(resourceManager);
             bind(CommandCodec.class).toInstance(commandCodec);
             bind(ModelRepository.class).toInstance(repository);
+            bind(ModelResourceLoader.class).toInstance(modelResourceLoader);
          }
       }).getInstance(SessionController.class);
 

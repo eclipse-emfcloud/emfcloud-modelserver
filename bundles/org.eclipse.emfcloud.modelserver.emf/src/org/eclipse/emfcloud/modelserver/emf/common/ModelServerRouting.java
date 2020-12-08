@@ -68,6 +68,7 @@ public class ModelServerRouting extends Routing {
                      param -> getController(ModelController.class).getOne(ctx, param),
                      () -> getController(ModelController.class).getAll(ctx));
             });
+
             // GET MODEL ELEMENT
             get(ModelServerPaths.MODEL_ELEMENT, ctx -> {
                getQueryParam(ctx.queryParamMap(), "modeluri")
@@ -85,6 +86,7 @@ public class ModelServerRouting extends Routing {
                      },
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
+
             // UPDATE
             patch(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
                getQueryParam(ctx.queryParamMap(), "modeluri")
@@ -103,7 +105,7 @@ public class ModelServerRouting extends Routing {
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
 
-            // Execute commands
+            // EDIT - execute commands
             patch(ModelServerPaths.EDIT, ctx -> {
                getQueryParam(ctx.queryParamMap(), "modeluri")
                   .map(this::adaptModelUri)
@@ -121,8 +123,26 @@ public class ModelServerRouting extends Routing {
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
 
+            // UNDO
+            get(ModelServerPaths.UNDO, ctx -> {
+               getQueryParam(ctx.queryParamMap(), "modeluri")
+                  .map(this::adaptModelUri)
+                  .ifPresentOrElse(
+                     param -> getController(ModelController.class).undo(ctx, param),
+                     () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
+            });
+
+            // REDO
+            get(ModelServerPaths.REDO, ctx -> {
+               getQueryParam(ctx.queryParamMap(), "modeluri")
+                  .map(this::adaptModelUri)
+                  .ifPresentOrElse(
+                     param -> getController(ModelController.class).redo(ctx, param),
+                     () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
+            });
+
             // GET MODELURIS
-            get(ModelServerPaths.MODEL_URIS, getController(ModelController.class).getModelUrisHandler());
+            get(ModelServerPaths.MODEL_URIS, ctx -> getController(ModelController.class).getModelUris(ctx));
 
             // GET JSON TYPE SCHEMA
             get(ModelServerPaths.TYPE_SCHEMA, ctx -> {
@@ -141,9 +161,13 @@ public class ModelServerRouting extends Routing {
                      () -> handleHttpError(ctx, 400, "Missing parameter 'schemaname'!"));
             });
 
+            // SERVER CONFIGURATION
             put(ModelServerPaths.SERVER_CONFIGURE, getController(ServerController.class).getConfigureHandler());
+
+            // PING SERVER
             get(ModelServerPaths.SERVER_PING, getController(ServerController.class).getPingHandler());
 
+            // WEBSOCKET
             ws(ModelServerPaths.SUBSCRIPTION, wsHandler -> {
                wsHandler.onConnect(ctx -> {
                   getQueryParam(ctx.queryParamMap(), "modeluri")

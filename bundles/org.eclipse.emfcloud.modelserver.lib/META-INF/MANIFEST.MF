@@ -3,7 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: ModelServer Third-Party Libraries
 Bundle-SymbolicName: org.eclipse.emfcloud.modelserver.lib
 Bundle-Version: 0.7.0.qualifier
-Automatic-Module-Name: com.squareup.okhttp3
+Bundle-Vendor: EclipseSource
+Automatic-Module-Name: org.eclipse.emfcloud.modelserver.lib
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath:  .,
  lib/annotations-13.0.jar,

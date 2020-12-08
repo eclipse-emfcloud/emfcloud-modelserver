@@ -10,25 +10,16 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
-public enum JsonResponseType {
+import org.apache.log4j.Logger;
+import org.eclipse.emf.common.command.BasicCommandStack;
 
-   SUCCESS("success"),
-   WARNING("warning"),
-   ERROR("error"),
-   FULLUPDATE("fullUpdate"),
-   INCREMENTALUPDATE("incrementalUpdate"),
-   DIRTYSTATE("dirtyState"),
-   KEEPALIVE("keepAlive");
+public class ModelServerCommandStack extends BasicCommandStack {
 
-   private String typeString;
-
-   JsonResponseType(final String typeString) {
-      this.typeString = typeString;
-   }
+   private static Logger LOG = Logger.getLogger(ModelServerCommandStack.class.getSimpleName());
 
    @Override
-   public String toString() {
-      return typeString;
+   protected void handleError(final Exception exception) {
+      LOG.error("Error while executing command", exception);
    }
 
 }
