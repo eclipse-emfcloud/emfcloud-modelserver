@@ -485,7 +485,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
                   .toString()))
          .build();
 
-      subscribe(modelUri, subscriptionListener, request);
+      doSubscribe(modelUri, subscriptionListener, request);
    }
 
    @Override
@@ -501,10 +501,10 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
                   .toString()))
          .build();
 
-      subscribe(modelUri, subscriptionListener, request);
+      doSubscribe(modelUri, subscriptionListener, request);
    }
 
-   private void subscribe(final String modelUri, final SubscriptionListener subscriptionListener,
+   private void doSubscribe(final String modelUri, final SubscriptionListener subscriptionListener,
       final Request request) {
       @SuppressWarnings({ "checkstyle:AnonInnerLength" })
       final WebSocket socket = client.newWebSocket(request, new WebSocketListener() {
