@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -24,6 +25,7 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
+import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.Codecs;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -33,14 +35,13 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 import io.javalin.http.Context;
-import io.javalin.http.Handler;
 import io.javalin.plugin.json.JavalinJackson;
 
 public class ModelController {
 
    private static final Logger LOG = Logger.getLogger(ModelController.class.getSimpleName());
 
-   private ModelRepository modelRepository;
+   private final ModelRepository modelRepository;
    private final SessionController sessionController;
    private final ServerConfiguration serverConfiguration;
    private final Codecs codecs;
@@ -173,14 +174,46 @@ public class ModelController {
       }
    }
 
-   private final Handler modelUrisHandler = ctx -> ctx
-      .json(JsonResponse.success(JsonCodec.encode(this.modelRepository.getAllModelUris())));
+   public void undo(final Context ctx, final String modeluri) {
+      Command undoCommand = modelRepository.undo(modeluri);
+      if (undoCommand != null) {
+         CCommand encodedCommand;
+         try {
+            encodedCommand = new DefaultCommandCodec().encode(undoCommand);
+            ctx.json(JsonResponse.success("Successful undo."));
+            sessionController.modelChanged(modeluri, encodedCommand);
+         } catch (EncodingException e) {
+            LOG.error("Encoding of " + undoCommand + " failed: " + e.getMessage());
+            throw new IllegalArgumentException(e);
+         }
+      } else {
+         handleWarning(ctx, 202, "Cannot undo.");
+      }
+   }
 
-   public Handler getModelUrisHandler() { return modelUrisHandler; }
+   public void redo(final Context ctx, final String modeluri) {
+      Command redoCommand = modelRepository.redo(modeluri);
+      if (redoCommand != null) {
+         CCommand encodedCommand;
+         try {
+            encodedCommand = new DefaultCommandCodec().encode(redoCommand);
+            ctx.json(JsonResponse.success("Successful redo."));
+            sessionController.modelChanged(modeluri, encodedCommand);
+         } catch (EncodingException e) {
+            LOG.error("Encoding of " + redoCommand + " failed: " + e.getMessage());
+            throw new IllegalArgumentException(e);
+         }
+      } else {
+         handleWarning(ctx, 202, "Cannot redo");
+      }
+   }
 
-   // #FIXME Very ugly solution to prevent Eclipse from adding the final modifier. Look for a better solution!
-   protected void preventFinal() {
-      this.modelRepository = null;
+   public void getModelUris(final Context ctx) {
+      try {
+         ctx.json(JsonResponse.success(JsonCodec.encode(this.modelRepository.getAllModelUris())));
+      } catch (EncodingException ex) {
+         handleEncodingError(ctx, ex);
+      }
    }
 
    private Optional<EObject> readPayload(final Context ctx) {
@@ -220,8 +253,7 @@ public class ModelController {
                         URI uri = URI.createURI("$command.res")
                            .resolve(serverConfiguration.getWorkspaceRootURI());
                         Resource resource = new ResourceImpl(uri);
-                        modelRepository.getResourceSet().getResources().add(resource);
-                        resource.getContents().add(cmd);
+                        modelRepository.addTemporaryCommandResource(modelURI, resource, cmd);
 
                         try {
                            EcoreUtil.resolveAll(resource);
@@ -233,7 +265,7 @@ public class ModelController {
                            ctx.json(JsonResponse.success());
                         } finally {
                            resource.unload();
-                           modelRepository.getResourceSet().getResources().remove(resource);
+                           modelRepository.removeTemporaryCommandResource(modelURI, resource);
                         }
                      } catch (DecodingException e) {
                         handleDecodingError(ctx, e);
@@ -243,6 +275,11 @@ public class ModelController {
             }
          },
          () -> handleError(ctx, 404, String.format("Model '%s' not found!", modelURI)));
+   }
+
+   private void handleWarning(final Context ctx, final int statusCode, final String warnMsg) {
+      LOG.warn(warnMsg);
+      ctx.status(statusCode).json(JsonResponse.warning(warnMsg));
    }
 
    private void handleEncodingError(final Context context, final EncodingException ex) {

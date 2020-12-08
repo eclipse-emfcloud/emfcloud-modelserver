@@ -35,7 +35,7 @@ public class ModelServerLauncher {
 
    private final Collection<Module> modules;
    private Injector injector;
-   private String[] args;
+   private final String[] args;
    private ServerConfiguration configuration;
 
    public static void configureLogger() {
@@ -44,18 +44,13 @@ public class ModelServerLauncher {
          root.addAppender(new ConsoleAppender(
             new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN)));
       }
-      root.setLevel(Level.DEBUG);
+      root.setLevel(Level.INFO);
 
    }
 
-   public ModelServerLauncher() {
-      modules = Sets.newHashSet(ModelServerModule.create());
-
-   }
-
-   public ModelServerLauncher(final String[] args) {
-      this();
+   public ModelServerLauncher(final String[] args, final ModelServerModule modelServerModule) {
       this.args = args;
+      modules = Sets.newHashSet(modelServerModule);
    }
 
    protected Injector doSetup() {

@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 /*
  * Structure of JsonResponse
  * {
- * "type": "success" | "error" | "fullUpdate" | "incrementalUpdate" | "dirtyState"
+ * "type": "success" | "warning" | "error" | "fullUpdate" | "incrementalUpdate" | "dirtyState"
  * "data": String | Boolean | EObject
  * }
  */
@@ -58,6 +58,14 @@ public final class JsonResponse {
 
    public static JsonNode success(final String message) {
       return Json.merge(success(), data(message));
+   }
+
+   public static ObjectNode warning() {
+      return type(JsonResponseType.WARNING);
+   }
+
+   public static JsonNode warning(final String message) {
+      return Json.merge(warning(), data(message));
    }
 
    public static ObjectNode error() {

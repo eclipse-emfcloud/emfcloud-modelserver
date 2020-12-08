@@ -573,6 +573,20 @@ public class ModelServerClientTest {
       assertThat(f.get().body(), is(true));
    }
 
+   @Test
+   public void undo() throws ExecutionException, InterruptedException, MalformedURLException {
+      String pingUrl = baseHttpUrlBuilder.addPathSegments(ModelServerPaths.SERVER_PING).build().toString();
+      interceptor.addRule()
+         .url(pingUrl)
+         .get()
+         .respond(JsonResponse.error().toString());
+      ModelServerClient client = createClient();
+
+      final CompletableFuture<Response<Boolean>> f = client.undo();
+
+      assertThat(f.get().body(), equalTo(false));
+   }
+
    private ModelServerClient createClient() throws MalformedURLException {
       return new ModelServerClient(
          new OkHttpClient.Builder().addInterceptor(interceptor).build(),

@@ -687,4 +687,28 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       }
       return false;
    }
+
+   @Override
+   public CompletableFuture<Response<Boolean>> undo() {
+      final Request request = new Request.Builder()
+         .url(createHttpUrlBuilder(makeUrl(UNDO)).build())
+         .build();
+
+      return makeCall(request)
+         .thenApply(response -> parseField(response, "type"))
+         .thenApply(this::getBodyOrThrow)
+         .thenApply(response -> response.mapBody(body -> body.equals("success")));
+   }
+
+   @Override
+   public CompletableFuture<Response<Boolean>> redo() {
+      final Request request = new Request.Builder()
+         .url(createHttpUrlBuilder(makeUrl(REDO)).build())
+         .build();
+
+      return makeCall(request)
+         .thenApply(response -> parseField(response, "type"))
+         .thenApply(this::getBodyOrThrow)
+         .thenApply(response -> response.mapBody(body -> body.equals("success")));
+   }
 }

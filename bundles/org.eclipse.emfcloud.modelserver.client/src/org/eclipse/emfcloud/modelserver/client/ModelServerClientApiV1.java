@@ -74,4 +74,7 @@ public interface ModelServerClientApiV1<A> {
 
    boolean close(EditingContext editingContext);
 
+   CompletableFuture<Response<Boolean>> undo();
+
+   CompletableFuture<Response<Boolean>> redo();
 }

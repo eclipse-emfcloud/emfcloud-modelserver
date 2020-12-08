@@ -18,7 +18,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,6 +52,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
@@ -66,18 +66,21 @@ import io.javalin.http.Context;
 @RunWith(MockitoJUnitRunner.class)
 public class ModelControllerTest {
 
+   @Mock
    private ModelRepository modelRepository;
+   @Mock
+   private ModelResourceLoader modelResourceLoader;
+   @Mock
    private Context context;
-   private ModelController modelController;
+   @Mock
    private SessionController sessionController;
+   @Mock
    private ServerConfiguration serverConfiguration;
+
+   private ModelController modelController;
 
    @Before
    public void before() {
-      modelRepository = mock(ModelRepository.class);
-      context = mock(Context.class);
-      sessionController = mock(SessionController.class);
-      serverConfiguration = mock(ServerConfiguration.class);
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI("/home/modelserver/workspace/"));
       modelController = new ModelController(modelRepository, sessionController, serverConfiguration);
    }
@@ -148,18 +151,19 @@ public class ModelControllerTest {
       when(context.queryParamMap()).thenReturn(queryParams);
       when(context.body()).thenReturn(
          Json.object(Json.prop("data", new XmiCodec().encode(brewingUnit))).toString());
-      when(modelRepository.getResourceSet()).thenReturn(new ResourceSetImpl());
-      modelController.update(context, "SuperBrewer3000.json");
+      String modeluri = "SuperBrewer3000.json";
+      when(modelResourceLoader.getResourceSet(modeluri)).thenReturn(new ResourceSetImpl());
+      modelController.update(context, modeluri);
       verify(modelRepository, times(1))
-         .updateModel(eq("SuperBrewer3000.json"), any(EClass.class));
+         .updateModel(eq(modeluri), any(EClass.class));
    }
 
    @Test
    public void executeCommand() throws EncodingException, DecodingException {
       ResourceSet rset = new ResourceSetImpl();
-      when(modelRepository.getResourceSet()).thenReturn(rset);
+      String modeluri = "SuperBrewer3000.json";
       JsonResource res = new JsonResource(
-         URI.createURI("SuperBrewer3000.json").resolve(serverConfiguration.getWorkspaceRootURI()));
+         URI.createURI(modeluri).resolve(serverConfiguration.getWorkspaceRootURI()));
       rset.getResources().add(res);
       final EClass task = EcoreFactory.eINSTANCE.createEClass();
       res.getContents().add(task);
@@ -172,25 +176,24 @@ public class ModelControllerTest {
       cmdRes.getContents().add(setCommand);
 
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put("modeluri", Collections.singletonList("SuperBrewer3000.json"));
+      queryParams.put("modeluri", Collections.singletonList(modeluri));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(context.body()).thenReturn(Json.object(Json.prop("data", new JsonCodec().encode(setCommand))).toString());
-      when(modelRepository.getResourceSet()).thenReturn(rset);
-      when(modelRepository.getModel("SuperBrewer3000.json")).thenReturn(Optional.of(task));
-      modelController.executeCommand(context, "SuperBrewer3000.json");
+      when(modelRepository.getModel(modeluri)).thenReturn(Optional.of(task));
+      modelController.executeCommand(context, modeluri);
 
       // unload to proxify
       res.unload();
-      verify(modelRepository).updateModel(eq("SuperBrewer3000.json"), argThat(eEqualTo(setCommand)));
-      verify(sessionController).modelChanged(eq("SuperBrewer3000.json"), argThat(eEqualTo(setCommand)));
+      verify(modelRepository).updateModel(eq(modeluri), argThat(eEqualTo(setCommand)));
+      verify(sessionController).modelChanged(eq(modeluri), argThat(eEqualTo(setCommand)));
    }
 
    @Test
    public void addCommandNotification() throws EncodingException, DecodingException {
       ResourceSet rset = new ResourceSetImpl();
-      when(modelRepository.getResourceSet()).thenReturn(rset);
+      String modeluri = "SuperBrewer3000.json";
       JsonResource res = new JsonResource(
-         URI.createURI("SuperBrewer3000.json").resolve(serverConfiguration.getWorkspaceRootURI()));
+         URI.createURI(modeluri).resolve(serverConfiguration.getWorkspaceRootURI()));
       rset.getResources().add(res);
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
       res.getContents().add(eClass);
@@ -208,17 +211,16 @@ public class ModelControllerTest {
          .toString();
 
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put("modeluri", Collections.singletonList("SuperBrewer3000.json"));
+      queryParams.put("modeluri", Collections.singletonList(modeluri));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(context.body()).thenReturn(commandAsString);
-      when(modelRepository.getResourceSet()).thenReturn(rset);
-      when(modelRepository.getModel("SuperBrewer3000.json")).thenReturn(Optional.of(attribute));
-      modelController.executeCommand(context, "SuperBrewer3000.json");
+      when(modelRepository.getModel(modeluri)).thenReturn(Optional.of(attribute));
+      modelController.executeCommand(context, modeluri);
 
       // unload to proxify
       res.unload();
-      verify(modelRepository).updateModel(eq("SuperBrewer3000.json"), argThat(eEqualTo(addCommand)));
-      verify(sessionController).modelChanged(eq("SuperBrewer3000.json"), argThat(eEqualTo(addCommand)));
+      verify(modelRepository).updateModel(eq(modeluri), argThat(eEqualTo(addCommand)));
+      verify(sessionController).modelChanged(eq(modeluri), argThat(eEqualTo(addCommand)));
    }
 
    @Test

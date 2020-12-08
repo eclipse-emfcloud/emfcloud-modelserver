@@ -1,0 +1,14 @@
+{
+	"type": "VerticalLayout",
+	"elements": [
+		{
+			"type": "Label",
+			"text": "Workflow"
+		},
+		{
+			"type": "Control",
+			"label": "Name",
+			"scope": "#/properties/name"
+		}
+	]
+}

@@ -17,6 +17,7 @@ import java.util.Arrays;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.emfcloud.modelserver.emf.di.DefaultModelServerModule;
 import org.eclipse.emfcloud.modelserver.emf.launch.CLIParser;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerLauncher;
 import org.eclipse.emfcloud.modelserver.example.util.ResourceUtil;
@@ -73,7 +74,7 @@ public final class ExampleServerLauncher {
          CLIParser.create(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME);
       }
 
-      final ModelServerLauncher launcher = new ModelServerLauncher(args);
+      final ModelServerLauncher launcher = new ModelServerLauncher(args, new DefaultModelServerModule());
       launcher.addEPackageConfigurations(Lists.newArrayList(CoffeePackageConfiguration.class));
       launcher.start();
    }
