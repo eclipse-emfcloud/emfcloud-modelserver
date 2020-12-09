@@ -53,7 +53,7 @@ public class SessionController extends WsHandler {
    }
 
    public boolean subscribe(final WsContext ctx, final String modeluri) {
-      return this.subscribe(ctx, modeluri, ctx.session.getIdleTimeout()); // returns default timeout of 300000ms
+      return this.subscribe(ctx, modeluri, -1); // Do not set an IdleTimeout, keep socket open until client disconnects
    }
 
    public boolean subscribe(final WsContext ctx, final String modeluri, final long timeout) {
