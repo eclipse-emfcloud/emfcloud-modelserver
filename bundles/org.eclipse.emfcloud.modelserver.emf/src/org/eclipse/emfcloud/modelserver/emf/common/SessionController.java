@@ -12,28 +12,30 @@ package org.eclipse.emfcloud.modelserver.emf.common;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.TestOnly;
-
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.Codecs;
+import org.jetbrains.annotations.Nullable;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
+import io.javalin.plugin.json.JavalinJackson;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsHandler;
+import io.javalin.websocket.WsMessageContext;
 
 public class SessionController extends WsHandler {
 
@@ -46,16 +48,18 @@ public class SessionController extends WsHandler {
 
    private final Codecs encoder;
 
-   // Primarily for testability because the final session field cannot be mocked
-   private Predicate<? super WsContext> isOpenPredicate = ctx -> ctx.session.isOpen();
-
    public SessionController() {
       this.encoder = new Codecs();
    }
 
    public boolean subscribe(final WsContext ctx, final String modeluri) {
+      return this.subscribe(ctx, modeluri, -1); // Do not set an IdleTimeout, keep socket open until client disconnects
+   }
+
+   public boolean subscribe(final WsContext ctx, final String modeluri, final long timeout) {
       if (this.modelRepository.hasModel(modeluri)) {
          modelUrisToClients.computeIfAbsent(modeluri, clients -> ConcurrentHashMap.newKeySet()).add(ctx);
+         ctx.session.setIdleTimeout(timeout);
          ctx.send(JsonResponse.success(ctx.getSessionId()));
          return true;
       }
@@ -79,6 +83,39 @@ public class SessionController extends WsHandler {
       }
 
       return true;
+   }
+
+   public boolean handleMessage(final WsMessageContext ctx) {
+      if (!this.isClientSubscribed(ctx)) {
+         return false;
+      }
+
+      if (readMessageType(ctx).equals(JsonResponseType.KEEPALIVE.toString())) {
+         ctx.send(JsonResponse.keepAlive(ctx.getSessionId() + " stayin' alive!"));
+         return true;
+      }
+
+      return false;
+   }
+
+   private String readMessageType(final WsMessageContext ctx) {
+      try {
+         JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.message());
+         if (!json.has("type")) {
+            handleError(ctx, "Empty JSON");
+            return "";
+         }
+         JsonNode jsonTypeNode = json.get("type");
+         String jsonType = !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : jsonTypeNode.toString();
+         if (jsonType.equals("{}")) {
+            handleError(ctx, "Empty JSON");
+            return "";
+         }
+         return jsonType;
+      } catch (IOException e) {
+         handleError(ctx, "Invalid JSON");
+      }
+      return "";
    }
 
    public void modelChanged(final String modeluri) {
@@ -109,7 +146,7 @@ public class SessionController extends WsHandler {
 
    private Stream<WsContext> getOpenSessions(final String modeluri) {
       return modelUrisToClients.getOrDefault(modeluri, Collections.emptySet()).stream()
-         .filter(isOpenPredicate);
+         .filter(ctx -> ctx.session.isOpen());
    }
 
    private void broadcastFullUpdate(final String modeluri, @Nullable final EObject updatedModel) {
@@ -158,8 +195,9 @@ public class SessionController extends WsHandler {
          .isEmpty();
    }
 
-   @TestOnly
-   void setIsOnlyPredicate(final Predicate<? super WsContext> isOpen) {
-      this.isOpenPredicate = isOpen == null ? ctx -> ctx.session.isOpen() : isOpen;
+   private void handleError(final WsContext ctx, final String errorMsg) {
+      LOG.error(errorMsg);
+      ctx.send(JsonResponse.error(errorMsg));
    }
+
 }
