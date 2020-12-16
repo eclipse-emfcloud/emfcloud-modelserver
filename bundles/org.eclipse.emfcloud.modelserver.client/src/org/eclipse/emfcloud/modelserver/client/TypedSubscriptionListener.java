@@ -13,6 +13,8 @@ package org.eclipse.emfcloud.modelserver.client;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
+
 public class TypedSubscriptionListener<T> implements NotificationSubscriptionListener<T> {
    private final Function<? super String, Optional<T>> updateFunction;
 
@@ -23,23 +25,23 @@ public class TypedSubscriptionListener<T> implements NotificationSubscriptionLis
    @Override
    public void onNotification(final ModelServerNotification notification) {
       switch (notification.getType()) {
-         case "success":
+         case JsonResponseType.SUCCESS:
             onSuccess(notification.getData());
             break;
-         case "error":
+         case JsonResponseType.ERROR:
             onError(notification.getData());
             break;
-         case "dirtyState":
+         case JsonResponseType.DIRTYSTATE:
             Boolean isDirty = notification.getData().map(Boolean::parseBoolean)
                .orElseThrow(() -> new RuntimeException("Could not parse 'data' field"));
             onDirtyChange(isDirty);
             break;
-         case "fullUpdate":
+         case JsonResponseType.FULLUPDATE:
             T fullUpdateData = notification.getData().flatMap(updateFunction)
                .orElseThrow(() -> new RuntimeException("Could not parse 'data' field"));
             onFullUpdate(fullUpdateData);
             break;
-         case "incrementalUpdate":
+         case JsonResponseType.INCREMENTALUPDATE:
             T incrementalUpdateData = notification.getData().flatMap(updateFunction)
                .orElseThrow(() -> new RuntimeException("Could not parse 'data' field"));
             onIncrementalUpdate(incrementalUpdateData);

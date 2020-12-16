@@ -41,6 +41,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CommandKind;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
@@ -69,7 +70,7 @@ public class ModelControllerTest {
    @Mock
    private ModelRepository modelRepository;
    @Mock
-   private ModelResourceLoader modelResourceLoader;
+   private ModelResourceManager modelResourceManager;
    @Mock
    private Context context;
    @Mock
@@ -95,13 +96,14 @@ public class ModelControllerTest {
       };
       doAnswer(answer).when(context).json(any(JsonNode.class));
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put("format", Collections.singletonList("xmi"));
+      queryParams.put(ModelServerPathParameters.FORMAT,
+         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(modelRepository.getModel("test")).thenReturn(Optional.of(brewingUnit));
 
       modelController.getOne(context, "test");
 
-      assertThat(response.get().get("data"), is(equalTo(new XmiCodec().encode(brewingUnit))));
+      assertThat(response.get().get(JsonResponseMember.DATA), is(equalTo(new XmiCodec().encode(brewingUnit))));
    }
 
    @Test
@@ -114,14 +116,15 @@ public class ModelControllerTest {
       };
       doAnswer(answer).when(context).json(any(JsonNode.class));
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put("format", Collections.singletonList("xmi"));
+      queryParams.put(ModelServerPathParameters.FORMAT,
+         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       final Map<URI, EObject> allModels = Collections.singletonMap(URI.createURI("test"), brewingUnit);
       when(modelRepository.getAllModels()).thenReturn(allModels);
 
       modelController.getAll(context);
 
-      assertThat(response.get().get("data"), is(equalTo(
+      assertThat(response.get().get(JsonResponseMember.DATA), is(equalTo(
          Json.object(
             Json.prop("test", new XmiCodec().encode(brewingUnit))))));
    }
@@ -139,7 +142,7 @@ public class ModelControllerTest {
 
       modelController.getOne(context, "test");
 
-      assertThat(response.get().get("data"), is(equalTo(new JsonCodec().encode(brewingUnit))));
+      assertThat(response.get().get(JsonResponseMember.DATA), is(equalTo(new JsonCodec().encode(brewingUnit))));
    }
 
    @Ignore
@@ -147,12 +150,13 @@ public class ModelControllerTest {
    public void updateXmi() throws EncodingException {
       final EClass brewingUnit = EcoreFactory.eINSTANCE.createEClass();
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put("format", Collections.singletonList("xmi"));
+      queryParams.put(ModelServerPathParameters.FORMAT,
+         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(context.body()).thenReturn(
-         Json.object(Json.prop("data", new XmiCodec().encode(brewingUnit))).toString());
+         Json.object(Json.prop(JsonResponseMember.DATA, new XmiCodec().encode(brewingUnit))).toString());
       String modeluri = "SuperBrewer3000.json";
-      when(modelResourceLoader.getResourceSet(modeluri)).thenReturn(new ResourceSetImpl());
+      when(modelResourceManager.getResourceSet(modeluri)).thenReturn(new ResourceSetImpl());
       modelController.update(context, modeluri);
       verify(modelRepository, times(1))
          .updateModel(eq(modeluri), any(EClass.class));
@@ -176,9 +180,10 @@ public class ModelControllerTest {
       cmdRes.getContents().add(setCommand);
 
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put("modeluri", Collections.singletonList(modeluri));
+      queryParams.put(ModelServerPathParameters.MODEL_URI, Collections.singletonList(modeluri));
       when(context.queryParamMap()).thenReturn(queryParams);
-      when(context.body()).thenReturn(Json.object(Json.prop("data", new JsonCodec().encode(setCommand))).toString());
+      when(context.body())
+         .thenReturn(Json.object(Json.prop(JsonResponseMember.DATA, new JsonCodec().encode(setCommand))).toString());
       when(modelRepository.getModel(modeluri)).thenReturn(Optional.of(task));
       modelController.executeCommand(context, modeluri);
 
@@ -207,11 +212,12 @@ public class ModelControllerTest {
       addCommand.getObjectValues().add(attribute);
       JsonResource cmdRes = new JsonResource(URI.createURI("$command.json"));
       cmdRes.getContents().add(addCommand);
-      String commandAsString = Json.object(Json.prop("data", Json.text(new JsonCodec().encode(addCommand).toString())))
+      String commandAsString = Json
+         .object(Json.prop(JsonResponseMember.DATA, Json.text(new JsonCodec().encode(addCommand).toString())))
          .toString();
 
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put("modeluri", Collections.singletonList(modeluri));
+      queryParams.put(ModelServerPathParameters.MODEL_URI, Collections.singletonList(modeluri));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(context.body()).thenReturn(commandAsString);
       when(modelRepository.getModel(modeluri)).thenReturn(Optional.of(attribute));
@@ -232,8 +238,8 @@ public class ModelControllerTest {
       modelController.getModelElementById(context, "test", "//@workflows.0");
 
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("success")),
-         prop("data", Json.object(
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
+         prop(JsonResponseMember.DATA, Json.object(
             prop("eClass", Json.text("http://www.eclipse.org/emf/2002/Ecore#//EClass")),
             prop("name", Json.text("SimpleWorkflow")))));
 
@@ -245,7 +251,8 @@ public class ModelControllerTest {
       final EClass simpleWorkflow = EcoreFactory.eINSTANCE.createEClass();
       simpleWorkflow.setName("SimpleWorkflow");
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put("format", Collections.singletonList("xmi"));
+      queryParams.put(ModelServerPathParameters.FORMAT,
+         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(modelRepository.getModelElementById("test", "//@workflows.0")).thenReturn(Optional.of(simpleWorkflow));
 
@@ -253,8 +260,8 @@ public class ModelControllerTest {
 
       String expectedXmiSnippet = "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n<ecore:EClass xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:ecore=\"http://www.eclipse.org/emf/2002/Ecore\" name=\"SimpleWorkflow\"/>\n";
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("success")),
-         prop("data", Json.text(expectedXmiSnippet)));
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
+         prop(JsonResponseMember.DATA, Json.text(expectedXmiSnippet)));
 
       verify(context).json(expectedResponse);
    }
@@ -268,8 +275,8 @@ public class ModelControllerTest {
       modelController.getModelElementById(context, "test", "PreHeat");
 
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("success")),
-         prop("data", Json.object(
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
+         prop(JsonResponseMember.DATA, Json.object(
             prop("eClass", Json.text("http://www.eclipse.org/emf/2002/Ecore#//EClass")),
             prop("name", Json.text("PreHeat")))));
 
@@ -281,7 +288,8 @@ public class ModelControllerTest {
       final EClass preHeatTask = EcoreFactory.eINSTANCE.createEClass();
       preHeatTask.setName("PreHeat");
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put("format", Collections.singletonList("xmi"));
+      queryParams.put(ModelServerPathParameters.FORMAT,
+         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(modelRepository.getModelElementById("test", "PreHeat")).thenReturn(Optional.of(preHeatTask));
 
@@ -289,8 +297,8 @@ public class ModelControllerTest {
 
       String expectedXmiSnippet = "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n<ecore:EClass xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:ecore=\"http://www.eclipse.org/emf/2002/Ecore\" name=\"PreHeat\"/>\n";
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("success")),
-         prop("data", Json.text(expectedXmiSnippet)));
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
+         prop(JsonResponseMember.DATA, Json.text(expectedXmiSnippet)));
 
       verify(context).json(expectedResponse);
    }

@@ -19,7 +19,8 @@ interface ModelServerPathsV1 {
 
    String SUBSCRIPTION = "subscribe"; // accepts query parameter "modeluri"
    String EDIT = "edit"; // accepts query parameter "modeluri"
-   String SAVE = "save";
+   String SAVE = "save"; // accepts query parameter "modeluri"
+   String SAVE_ALL = "saveall";
    String UNDO = "undo";
    String REDO = "redo";
 

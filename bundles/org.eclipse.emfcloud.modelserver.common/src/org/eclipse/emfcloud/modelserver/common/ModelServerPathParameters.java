@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2020 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -8,16 +8,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-package org.eclipse.emfcloud.modelserver.emf.common;
+package org.eclipse.emfcloud.modelserver.common;
 
-public interface JsonResponseType {
-
-   String SUCCESS = "success";
-   String WARNING = "warning";
-   String ERROR = "error";
-   String FULLUPDATE = "fullUpdate";
-   String INCREMENTALUPDATE = "incrementalUpdate";
-   String DIRTYSTATE = "dirtyState";
-   String KEEPALIVE = "keepAlive";
-
-}
+public interface ModelServerPathParameters extends ModelServerPathParametersV1 {}

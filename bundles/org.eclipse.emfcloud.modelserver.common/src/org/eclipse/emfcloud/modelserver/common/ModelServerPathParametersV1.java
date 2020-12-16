@@ -8,16 +8,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-package org.eclipse.emfcloud.modelserver.emf.common;
+package org.eclipse.emfcloud.modelserver.common;
 
-public interface JsonResponseType {
+interface ModelServerPathParametersV1 {
 
-   String SUCCESS = "success";
-   String WARNING = "warning";
-   String ERROR = "error";
-   String FULLUPDATE = "fullUpdate";
-   String INCREMENTALUPDATE = "incrementalUpdate";
-   String DIRTYSTATE = "dirtyState";
-   String KEEPALIVE = "keepAlive";
+   String MODEL_URI = "modeluri";
+   String FORMAT = "format";
+   String FORMAT_JSON = "json";
+   String FORMAT_XMI = "xmi";
+   String ELEMENT_ID = "elementid";
+   String ELEMENT_NAME = "elementname";
+   String SCHEMA_NAME = "schemaname";
+   String TIMEOUT = "timeout";
 
 }

@@ -10,6 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
 
 import com.google.inject.Inject;
@@ -35,7 +36,8 @@ public class SchemaController {
          instance -> ctx.json(JsonResponse.success(this.jsonSchemaconverter.from(instance))),
          () -> {
             ctx.status(404);
-            ctx.json(JsonResponse.error(String.format("Type schema for '%s' not found!", ctx.queryParam("modeluri"))));
+            ctx.json(JsonResponse.error(
+               String.format("Type schema for '%s' not found!", ctx.queryParam(ModelServerPathParameters.MODEL_URI))));
          });
    }
 
@@ -44,7 +46,8 @@ public class SchemaController {
          jsonNode -> ctx.json(JsonResponse.success(jsonNode)),
          () -> {
             ctx.status(404);
-            ctx.json(JsonResponse.error(String.format("UI schema '%s' not found!", ctx.queryParam("schemaname"))));
+            ctx.json(JsonResponse.error(
+               String.format("UI schema '%s' not found!", ctx.queryParam(ModelServerPathParameters.SCHEMA_NAME))));
          });
    }
 

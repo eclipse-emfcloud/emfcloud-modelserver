@@ -14,8 +14,8 @@ import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
-import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceLoader;
-import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceLoader;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 
 public class DefaultModelServerModule extends ModelServerModule {
 
@@ -30,8 +30,8 @@ public class DefaultModelServerModule extends ModelServerModule {
    }
 
    @Override
-   protected Class<? extends ModelResourceLoader> bindModelResourceLoader() {
-      return DefaultModelResourceLoader.class;
+   protected Class<? extends ModelResourceManager> bindModelResourceManager() {
+      return DefaultModelResourceManager.class;
    }
 
 }

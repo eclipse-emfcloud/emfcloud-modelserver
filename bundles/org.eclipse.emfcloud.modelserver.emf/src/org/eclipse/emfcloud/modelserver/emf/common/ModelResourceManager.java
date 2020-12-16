@@ -23,7 +23,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 
-public interface ModelResourceLoader {
+public interface ModelResourceManager {
 
    void initialize();
 
@@ -54,6 +54,8 @@ public interface ModelResourceLoader {
    Command redo(String modeluri);
 
    boolean save(String modeluri);
+
+   boolean saveAll();
 
    boolean getDirtyState(String modeluri);
 

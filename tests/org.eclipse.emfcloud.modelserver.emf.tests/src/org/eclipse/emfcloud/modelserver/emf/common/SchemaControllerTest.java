@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
 import org.junit.Before;
@@ -77,23 +78,23 @@ public class SchemaControllerTest {
       schemaController.getTypeSchema(context, "SuperBrewer3000.json");
 
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("success")),
-         prop("data", expectedMachineTypeSchema));
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
+         prop(JsonResponseMember.DATA, expectedMachineTypeSchema));
 
       verify(context).json(expectedResponse);
    }
 
    @Test
    public void getTypeSchema_modelUnavailable() {
-      when(context.queryParam("modeluri")).thenReturn("SuperBrewer3000.json");
+      when(context.queryParam(ModelServerPathParameters.MODEL_URI)).thenReturn("SuperBrewer3000.json");
       when(modelRepository.getModel("SuperBrewer3000.json")).thenReturn(Optional.empty());
 
       schemaController.getTypeSchema(context, "SuperBrewer3000.json");
 
       String expectedErrorMsg = "Type schema for 'SuperBrewer3000.json' not found!";
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("error")),
-         prop("data", Json.text(expectedErrorMsg)));
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.ERROR)),
+         prop(JsonResponseMember.DATA, Json.text(expectedErrorMsg)));
 
       verify(context).status(404);
       verify(context).json(expectedResponse);
@@ -117,23 +118,23 @@ public class SchemaControllerTest {
       schemaController.getUiSchema(context, "machine");
 
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("success")),
-         prop("data", machineUiSchema));
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
+         prop(JsonResponseMember.DATA, machineUiSchema));
 
       verify(context).json(expectedResponse);
    }
 
    @Test
    public void getUiSchema_schemaUnavailable() {
-      when(context.queryParam("schemaname")).thenReturn("brewing");
+      when(context.queryParam(ModelServerPathParameters.SCHEMA_NAME)).thenReturn("brewing");
       when(schemaRepository.loadUiSchema("brewing")).thenReturn(Optional.empty());
 
       schemaController.getUiSchema(context, "brewing");
 
       String expectedErrorMsg = "UI schema 'brewing' not found!";
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("error")),
-         prop("data", Json.text(expectedErrorMsg)));
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.ERROR)),
+         prop(JsonResponseMember.DATA, Json.text(expectedErrorMsg)));
 
       verify(context).status(404);
       verify(context).json(expectedResponse);

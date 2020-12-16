@@ -17,11 +17,12 @@ import java.util.Optional;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.javalin.http.Context;
@@ -55,7 +56,7 @@ public class Codecs {
 
    private Codec findFormat(final Map<String, List<String>> queryParams) {
       return Optional
-         .ofNullable(queryParams.get("format"))
+         .ofNullable(queryParams.get(ModelServerPathParameters.FORMAT))
          .filter(list -> !list.isEmpty())
          .flatMap(f -> Optional.ofNullable(formatToCodec.get(f.get(0))))
          .orElse(new JsonCodec());

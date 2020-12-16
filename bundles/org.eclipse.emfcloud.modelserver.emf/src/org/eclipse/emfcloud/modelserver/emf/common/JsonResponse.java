@@ -19,33 +19,31 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /*
  * Structure of JsonResponse
- * {
- * "type": "success" | "warning" | "error" | "fullUpdate" | "incrementalUpdate" | "dirtyState"
- * "data": String | Boolean | EObject
- * }
+ * - members are defined in JsonResponseMember ('type' and 'data')
+ * -- member type is defined in JsonResponseType
  */
 
 public final class JsonResponse {
 
    private JsonResponse() {}
 
-   private static ObjectNode type(final JsonResponseType type) {
-      return Json.object(Json.prop("type", Json.text(type.toString())));
+   private static ObjectNode type(final String responseType) {
+      return Json.object(Json.prop(JsonResponseMember.TYPE, Json.text(responseType)));
    }
 
    private static JsonNode data(@Nullable final JsonNode jsonNode) {
       return Json.object(
-         Json.prop("data", jsonNode == null ? NullNode.getInstance() : jsonNode));
+         Json.prop(JsonResponseMember.DATA, jsonNode == null ? NullNode.getInstance() : jsonNode));
    }
 
    private static JsonNode data(final String message) {
       return Json.object(
-         Json.prop("data", Json.text(message)));
+         Json.prop(JsonResponseMember.DATA, Json.text(message)));
    }
 
    private static JsonNode data(final Boolean b) {
       return Json.object(
-         Json.prop("data", Json.bool(b)));
+         Json.prop(JsonResponseMember.DATA, Json.bool(b)));
    }
 
    public static ObjectNode success() {

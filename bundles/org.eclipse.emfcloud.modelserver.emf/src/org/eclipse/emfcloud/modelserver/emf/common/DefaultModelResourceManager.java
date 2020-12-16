@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
-import org.eclipse.emf.common.command.CompoundCommand;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.URI;
@@ -31,11 +30,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.eclipse.emf.edit.command.AddCommand;
-import org.eclipse.emf.edit.command.MoveCommand;
-import org.eclipse.emf.edit.command.RemoveCommand;
-import org.eclipse.emf.edit.command.ReplaceCommand;
-import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
@@ -47,22 +41,22 @@ import org.emfjson.jackson.resource.JsonResourceFactory;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
-public class DefaultModelResourceLoader implements ModelResourceLoader {
+public class DefaultModelResourceManager implements ModelResourceManager {
 
-   private static Logger LOG = Logger.getLogger(DefaultModelResourceLoader.class.getSimpleName());
-
-   @Inject
-   private CommandCodec commandCodec;
-   @Inject
-   private final ServerConfiguration serverConfiguration;
-
-   private final Set<EPackageConfiguration> configurations;
-   private final AdapterFactory adapterFactory;
-   private final Map<URI, ResourceSet> resourceSets = Maps.newLinkedHashMap();
-   private final Map<ResourceSet, ModelServerEditingDomain> editingDomains = Maps.newLinkedHashMap();
+   private static Logger LOG = Logger.getLogger(DefaultModelResourceManager.class.getSimpleName());
 
    @Inject
-   public DefaultModelResourceLoader(final Set<EPackageConfiguration> configurations,
+   protected CommandCodec commandCodec;
+   @Inject
+   protected final ServerConfiguration serverConfiguration;
+
+   protected final Set<EPackageConfiguration> configurations;
+   protected final AdapterFactory adapterFactory;
+   protected final Map<URI, ResourceSet> resourceSets = Maps.newLinkedHashMap();
+   protected final Map<ResourceSet, ModelServerEditingDomain> editingDomains = Maps.newLinkedHashMap();
+
+   @Inject
+   public DefaultModelResourceManager(final Set<EPackageConfiguration> configurations,
       final AdapterFactory adapterFactory, final ServerConfiguration serverConfiguration) {
 
       this.configurations = configurations;
@@ -79,13 +73,14 @@ public class DefaultModelResourceLoader implements ModelResourceLoader {
       String workspacePath = this.serverConfiguration.getWorkspaceRootURI().toFileString();
       if (workspacePath != null) {
          resourceSets.clear();
+         editingDomains.clear();
          loadSourceResources(workspacePath);
          removeErroneousResources();
          initializeEditingDomains();
       }
    }
 
-   private void registerExtensions(final Set<EPackageConfiguration> configurations) {
+   protected void registerExtensions(final Set<EPackageConfiguration> configurations) {
       Map<String, Object> map = Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap();
       // register default ResourceFactories (XMI and JSON)
       map.put("*", new XMIResourceFactoryImpl());
@@ -94,7 +89,7 @@ public class DefaultModelResourceLoader implements ModelResourceLoader {
       configurations.forEach(conf -> map.putAll(registerExtensions(conf)));
    }
 
-   private Map<String, Object> registerExtensions(final EPackageConfiguration configuration) {
+   protected Map<String, Object> registerExtensions(final EPackageConfiguration configuration) {
       Map<String, Object> map = Maps.newHashMap();
       configuration.getFileExtensions().forEach(ext -> {
          configuration.getResourceFactory(ext).ifPresent(fac -> map.put(ext, fac));
@@ -105,8 +100,7 @@ public class DefaultModelResourceLoader implements ModelResourceLoader {
 
    @Override
    public ResourceSet getResourceSet(final String modeluri) {
-      URI u = createURI(modeluri);
-      return resourceSets.get(u);
+      return resourceSets.get(createURI(modeluri));
    }
 
    @Override
@@ -124,7 +118,7 @@ public class DefaultModelResourceLoader implements ModelResourceLoader {
             loadSourceResources(file.getAbsolutePath());
          } else if (file.isFile()) {
             resourceSets.put(createURI(file.getAbsolutePath()), new ResourceSetImpl());
-            loadResource(file.getAbsolutePath());
+            loadResource(file.getAbsolutePath(), false /* do not remove unloadable resources on workspace startup */);
          }
       }
    }
@@ -158,28 +152,34 @@ public class DefaultModelResourceLoader implements ModelResourceLoader {
       return getResourceSet(modeluri).getResource(uri, false) != null;
    }
 
-   private URI createURI(final String modeluri) {
+   protected URI createURI(final String modeluri) {
       return modeluri.startsWith("file:")
          ? URI.createURI(modeluri, true)
          : URI.createFileURI(modeluri);
    }
 
    @Override
-   @SuppressWarnings("checkstyle:IllegalCatch")
    public Optional<Resource> loadResource(final String modeluri) {
+      return loadResource(modeluri, true);
+   }
+
+   @SuppressWarnings("checkstyle:IllegalCatch")
+   protected Optional<Resource> loadResource(final String modeluri, final boolean removeUnloadableResources) {
       try {
          Resource resource = getResourceSet(modeluri).getResource(createURI(modeluri), true);
          resource.load(Collections.EMPTY_MAP);
          return Optional.of(resource);
       } catch (final Throwable e) {
-         // properly remove model again so the resource set does not hold a broken resource
          LOG.error("Could not load resource with URI: " + modeluri);
-         removeResourceSafe(modeluri);
+         if (removeUnloadableResources) {
+            // properly remove model again so the resource set does not hold a broken resource
+            removeResourceSafe(modeluri);
+         }
          return Optional.empty();
       }
    }
 
-   private void removeResourceSafe(final String modeluri) {
+   protected void removeResourceSafe(final String modeluri) {
       try {
          removeResource(modeluri);
       } catch (IOException exception) {
@@ -255,64 +255,34 @@ public class DefaultModelResourceLoader implements ModelResourceLoader {
 
    @Override
    public Command undo(final String modeluri) {
-      ModelServerEditingDomain editingDomain = getEditingDomain(getResourceSet(modeluri));
-      Command undoCommand = editingDomain.getCommandStack().getUndoCommand();
-      if (editingDomain.canUndo()) {
-         editingDomain.undo();
-         return createInverseCommand(undoCommand);
-      }
-      return null;
-   }
-
-   @SuppressWarnings("checkstyle:CyclomaticComplexity")
-   private Command createInverseCommand(final Command undoCommand) {
-      if (undoCommand instanceof CompoundCommand) {
-         CompoundCommand undoCompoundCommand = (CompoundCommand) undoCommand;
-
-         CompoundCommand inverseCompoundCommand = new CompoundCommand();
-         for (Command next : undoCompoundCommand.getCommandList()) {
-            inverseCompoundCommand.append(createInverseCommand(next));
-         }
-         return inverseCompoundCommand;
-
-      } else if (undoCommand instanceof AddCommand) {
-         AddCommand undoAddCommand = (AddCommand) undoCommand;
-         return RemoveCommand.create(undoAddCommand.getDomain(), undoAddCommand.getOwner(),
-            undoAddCommand.getFeature(), undoAddCommand.getResult());
-
-      } else if (undoCommand instanceof RemoveCommand) {
-         RemoveCommand undoRemoveCommand = (RemoveCommand) undoCommand;
-         return AddCommand.create(undoRemoveCommand.getDomain(), undoRemoveCommand.getOwner(),
-            undoRemoveCommand.getFeature(), undoRemoveCommand.getResult());
-      } else if (undoCommand instanceof SetCommand) {
-         // FIXME: Handle the UNSET value, see also DefaultCommandCodec where it is also not yet implemented
-         SetCommand undoSetCommand = (SetCommand) undoCommand;
-         return SetCommand.create(undoSetCommand.getDomain(), undoSetCommand.getOwner(),
-            undoSetCommand.getFeature(), undoSetCommand.getOldValue(), undoSetCommand.getIndex());
-      } else if (undoCommand instanceof ReplaceCommand) {
-         // TODO see also DefaultCommandCodec
-      } else if (undoCommand instanceof MoveCommand) {
-         // TODO see also DefaultCommandCodec
-      }
-      return undoCommand;
+      return getEditingDomain(getResourceSet(modeluri)).undo();
    }
 
    @Override
    public Command redo(final String modeluri) {
-      ModelServerEditingDomain editingDomain = getEditingDomain(getResourceSet(modeluri));
-      Command redoCommand = editingDomain.getCommandStack().getRedoCommand();
-      if (editingDomain.canRedo()) {
-         editingDomain.redo();
-         return redoCommand;
-      }
-      return null;
+      return getEditingDomain(getResourceSet(modeluri)).redo();
    }
 
    @Override
    public boolean save(final String modeluri) {
-      ResourceSet resourceSet = getResourceSet(modeluri);
-      boolean result = resourceSet.getResources().stream().allMatch(this::saveResource);
-      getEditingDomain(resourceSet).saveIsDone();
+      Resource resource = getResourceSet(modeluri).getResource(createURI(modeluri), true);
+      boolean result = saveResource(resource);
+      if (result) {
+         getEditingDomain(getResourceSet(modeluri)).saveIsDone();
+      }
+      return result;
+   }
+
+   @Override
+   public boolean saveAll() {
+      boolean result = false;
+      for (ResourceSet rs : resourceSets.values()) {
+         boolean tempResult = rs.getResources().stream().allMatch(this::saveResource);
+         if (tempResult) {
+            getEditingDomain(rs).saveIsDone();
+         }
+         result = tempResult;
+      }
       return result;
    }
 
