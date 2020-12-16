@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPaths;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -48,12 +49,13 @@ public class ModelServerRouting extends Routing {
    }
 
    @Override
+   @SuppressWarnings("checkstyle:MethodLength")
    public void bindRoutes() {
       javalin.routes(() -> {
          path("api/v1", () -> {
             // CREATE
             post(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).create(ctx, param),
@@ -62,7 +64,7 @@ public class ModelServerRouting extends Routing {
 
             // GET ONE MODEL/GET ALL MODELS
             get(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).getOne(ctx, param),
@@ -71,25 +73,26 @@ public class ModelServerRouting extends Routing {
 
             // GET MODEL ELEMENT
             get(ModelServerPaths.MODEL_ELEMENT, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      modelUriParam -> {
-                        getQueryParam(ctx.queryParamMap(), "elementid").ifPresentOrElse(
+                        getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.ELEMENT_ID).ifPresentOrElse(
                            elementIdParam -> getController(ModelController.class).getModelElementById(ctx,
                               modelUriParam,
                               elementIdParam),
-                           () -> getQueryParam(ctx.queryParamMap(), "elementname").ifPresentOrElse(
-                              elementnameParam -> getController(ModelController.class).getModelElementByName(ctx,
-                                 modelUriParam, elementnameParam),
-                              () -> handleHttpError(ctx, 400, "Missing parameter 'elementid' or 'elementname'")));
+                           () -> getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.ELEMENT_NAME)
+                              .ifPresentOrElse(
+                                 elementnameParam -> getController(ModelController.class).getModelElementByName(ctx,
+                                    modelUriParam, elementnameParam),
+                                 () -> handleHttpError(ctx, 400, "Missing parameter 'elementid' or 'elementname'")));
                      },
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
 
             // UPDATE
             patch(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).update(ctx, param),
@@ -98,7 +101,7 @@ public class ModelServerRouting extends Routing {
 
             // DELETE
             delete(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).delete(ctx, param),
@@ -107,7 +110,7 @@ public class ModelServerRouting extends Routing {
 
             // EDIT - execute commands
             patch(ModelServerPaths.EDIT, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).executeCommand(ctx, param),
@@ -116,16 +119,19 @@ public class ModelServerRouting extends Routing {
 
             // SAVE
             get(ModelServerPaths.SAVE, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).save(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
 
+            // SAVE ALL
+            get(ModelServerPaths.SAVE_ALL, ctx -> getController(ModelController.class).saveAll(ctx));
+
             // UNDO
             get(ModelServerPaths.UNDO, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).undo(ctx, param),
@@ -134,7 +140,7 @@ public class ModelServerRouting extends Routing {
 
             // REDO
             get(ModelServerPaths.REDO, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).redo(ctx, param),
@@ -146,7 +152,7 @@ public class ModelServerRouting extends Routing {
 
             // GET JSON TYPE SCHEMA
             get(ModelServerPaths.TYPE_SCHEMA, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(SchemaController.class).getTypeSchema(ctx, param),
@@ -155,7 +161,7 @@ public class ModelServerRouting extends Routing {
 
             // GET JSONFORMS UI SCHEMA
             get(ModelServerPaths.UI_SCHEMA, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "schemaname")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.SCHEMA_NAME)
                   .ifPresentOrElse(
                      param -> getController(SchemaController.class).getUiSchema(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'schemaname'!"));
@@ -170,11 +176,11 @@ public class ModelServerRouting extends Routing {
             // WEBSOCKET
             ws(ModelServerPaths.SUBSCRIPTION, wsHandler -> {
                wsHandler.onConnect(ctx -> {
-                  getQueryParam(ctx.queryParamMap(), "modeluri")
+                  getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                      .map(this::adaptModelUri)
                      .ifPresentOrElse(
                         modeluri -> {
-                           getQueryParam(ctx.queryParamMap(), "timeout")
+                           getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.TIMEOUT)
                               .ifPresentOrElse(
                                  timeout -> {
                                     if (!getController(SessionController.class).subscribe(ctx, modeluri,

@@ -90,7 +90,7 @@ public class SessionController extends WsHandler {
          return false;
       }
 
-      if (readMessageType(ctx).equals(JsonResponseType.KEEPALIVE.toString())) {
+      if (readMessageType(ctx).equals(JsonResponseType.KEEPALIVE)) {
          ctx.send(JsonResponse.keepAlive(ctx.getSessionId() + " stayin' alive!"));
          return true;
       }
@@ -101,11 +101,11 @@ public class SessionController extends WsHandler {
    private String readMessageType(final WsMessageContext ctx) {
       try {
          JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.message());
-         if (!json.has("type")) {
+         if (!json.has(JsonResponseMember.TYPE)) {
             handleError(ctx, "Empty JSON");
             return "";
          }
-         JsonNode jsonTypeNode = json.get("type");
+         JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
          String jsonType = !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : jsonTypeNode.toString();
          if (jsonType.equals("{}")) {
             handleError(ctx, "Empty JSON");
@@ -142,6 +142,12 @@ public class SessionController extends WsHandler {
 
    public void modelSaved(final String modeluri) {
       broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
+   }
+
+   public void allModelSaved() {
+      for (String modeluri : modelRepository.getAbsoluteModelUris()) {
+         broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
+      }
    }
 
    private Stream<WsContext> getOpenSessions(final String modeluri) {

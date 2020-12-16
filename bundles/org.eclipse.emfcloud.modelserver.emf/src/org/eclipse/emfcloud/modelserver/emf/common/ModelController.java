@@ -174,6 +174,15 @@ public class ModelController {
       }
    }
 
+   public void saveAll(final Context ctx) {
+      if (this.modelRepository.saveAllModels()) {
+         ctx.json(JsonResponse.success("All models successfully saved"));
+         sessionController.allModelSaved();
+      } else {
+         handleError(ctx, 500, "Saving all models failed!");
+      }
+   }
+
    public void undo(final Context ctx, final String modeluri) {
       Command undoCommand = modelRepository.undo(modeluri);
       if (undoCommand != null) {
@@ -219,11 +228,11 @@ public class ModelController {
    private Optional<EObject> readPayload(final Context ctx) {
       try {
          JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.body());
-         if (!json.has("data")) {
+         if (!json.has(JsonResponseMember.DATA)) {
             handleError(ctx, 400, "Empty JSON");
             return Optional.empty();
          }
-         JsonNode jsonDataNode = json.get("data");
+         JsonNode jsonDataNode = json.get(JsonResponseMember.DATA);
          String jsonData = !jsonDataNode.asText().isEmpty() ? jsonDataNode.asText() : jsonDataNode.toString();
          if (jsonData.equals("{}")) {
             handleError(ctx, 400, "Empty JSON");

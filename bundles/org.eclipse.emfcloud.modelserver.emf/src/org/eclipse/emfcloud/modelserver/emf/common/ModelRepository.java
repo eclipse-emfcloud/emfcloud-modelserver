@@ -41,7 +41,7 @@ public class ModelRepository {
    @Inject
    private final ServerConfiguration serverConfiguration;
    @Inject
-   private ModelResourceLoader modelResourceLoader;
+   private ModelResourceManager modelResourceManager;
 
    @Inject
    public ModelRepository(final ServerConfiguration serverConfiguration) {
@@ -49,15 +49,15 @@ public class ModelRepository {
    }
 
    public void initialize() {
-      modelResourceLoader.initialize();
+      modelResourceManager.initialize();
    }
 
    protected boolean hasModel(final String modeluri) {
-      return modelResourceLoader.isResourceLoaded(modeluri);
+      return modelResourceManager.isResourceLoaded(modeluri);
    }
 
    public Optional<EObject> getModel(final String modeluri) {
-      return modelResourceLoader.loadResource(modeluri)
+      return modelResourceManager.loadResource(modeluri)
          .flatMap(res -> {
             List<EObject> contents = res.getContents();
             return contents.isEmpty() ? Optional.empty() : Optional.of(contents.get(0));
@@ -66,7 +66,7 @@ public class ModelRepository {
 
    @SuppressWarnings("checkstyle:IllegalCatch")
    public Optional<EObject> getModelElementById(final String modeluri, final String elementid) {
-      return modelResourceLoader.loadResource(modeluri)
+      return modelResourceManager.loadResource(modeluri)
          .flatMap(res -> {
             try {
                EObject modelElement = res.getEObject(elementid);
@@ -79,7 +79,7 @@ public class ModelRepository {
    }
 
    public Optional<EObject> getModelElementByName(final String modeluri, final String elementname) {
-      return modelResourceLoader.loadResource(modeluri)
+      return modelResourceManager.loadResource(modeluri)
          .flatMap(res -> {
             TreeIterator<EObject> contentIterator = res.getAllContents();
             while (contentIterator.hasNext()) {
@@ -97,7 +97,7 @@ public class ModelRepository {
 
    public Map<URI, EObject> getAllModels() throws IOException {
       LinkedHashMap<URI, EObject> models = new LinkedHashMap<>();
-      modelResourceLoader.getAllLoadedResourceSets().forEach(resourceSet -> {
+      modelResourceManager.getAllLoadedResourceSets().forEach(resourceSet -> {
          resourceSet.getResources().forEach(resource -> {
             if (!resource.getContents().isEmpty()) {
                models.put(resource.getURI(), resource.getContents().get(0));
@@ -110,7 +110,7 @@ public class ModelRepository {
    }
 
    public void addModel(final String modeluri, final EObject model) throws IOException {
-      modelResourceLoader.addResource(modeluri, model);
+      modelResourceManager.addResource(modeluri, model);
    }
 
    /**
@@ -122,36 +122,40 @@ public class ModelRepository {
     *         does not exist
     */
    public Optional<Resource> updateModel(final String modeluri, final EObject model) {
-      return modelResourceLoader.updateResource(modeluri, model);
+      return modelResourceManager.updateResource(modeluri, model);
    }
 
    public void updateModel(final String modeluri, final CCommand command) throws DecodingException {
-      modelResourceLoader.updateResource(modeluri, command);
+      modelResourceManager.updateResource(modeluri, command);
    }
 
    public void removeModel(final String modeluri) throws IOException {
-      modelResourceLoader.removeResource(modeluri);
+      modelResourceManager.removeResource(modeluri);
    }
 
    public boolean saveModel(final String modeluri) {
-      return modelResourceLoader.save(modeluri);
+      return modelResourceManager.save(modeluri);
+   }
+
+   public boolean saveAllModels() {
+      return modelResourceManager.saveAll();
    }
 
    public boolean getDirtyState(final String modeluri) {
-      return modelResourceLoader.getDirtyState(modeluri);
+      return modelResourceManager.getDirtyState(modeluri);
    }
 
    public Command undo(final String modeluri) {
-      return modelResourceLoader.undo(modeluri);
+      return modelResourceManager.undo(modeluri);
    }
 
    public Command redo(final String modeluri) {
-      return modelResourceLoader.redo(modeluri);
+      return modelResourceManager.redo(modeluri);
    }
 
    public Set<String> getAllModelUris() {
       Set<String> modeluris = new HashSet<>();
-      for (URI uri : modelResourceLoader.getAllLoadedModelURIs()) {
+      for (URI uri : modelResourceManager.getAllLoadedModelURIs()) {
          modeluris.add(uri.deresolve(serverConfiguration.getWorkspaceRootURI()).toString());
       }
       return modeluris;
@@ -159,18 +163,18 @@ public class ModelRepository {
 
    public Set<String> getAbsoluteModelUris() {
       Set<String> modeluris = new HashSet<>();
-      for (URI uri : modelResourceLoader.getAllLoadedModelURIs()) {
+      for (URI uri : modelResourceManager.getAllLoadedModelURIs()) {
          modeluris.add(uri.toString());
       }
       return modeluris;
    }
 
    public void addTemporaryCommandResource(final String modeluri, final Resource resource, final CCommand command) {
-      modelResourceLoader.getResourceSet(modeluri).getResources().add(resource);
+      modelResourceManager.getResourceSet(modeluri).getResources().add(resource);
       resource.getContents().add(command);
    }
 
    public void removeTemporaryCommandResource(final String modeluri, final Resource resource) {
-      modelResourceLoader.getResourceSet(modeluri).getResources().remove(resource);
+      modelResourceManager.getResourceSet(modeluri).getResources().remove(resource);
    }
 }

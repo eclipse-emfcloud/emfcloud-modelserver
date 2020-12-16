@@ -49,6 +49,9 @@ options:
 
 ## Model Server API
 
+- The query parameter `?modeluri=` accepts files in the loaded workspace as well as absolute file paths.
+- Parameters in brackets `[]` are optional.
+
 ### HTTP Endpoints
 If the model server is up and running, you can access the model server API via `http://localhost:8081/api/v1/*`.
 
@@ -64,19 +67,14 @@ The following table shows the current HTTP endpoints:
 | |Save|__GET__|`/save`|query parameter: `?modeluri=...`
 | |Execute commands|__PATCH__|`/edit`|query parameter: `?modeluri=...`
 | |Get all available model URIs in the workspace|__GET__|`/modeluris`| -
-| |Get model element by id|__GET__|`/modelelement`|query parameter: `[?modeluri=...&elementid=...[&format=...]]`
-| |Get model element by name <br> (Returns the first element that matches the given `elementname`)|__GET__|`/modelelement`|query parameter: `[?modeluri=...&elementname=...[&format=...]]`
+| |Get model element by id|__GET__|`/modelelement`|query parameter: `?modeluri=...&elementid=...[&format=...]`
+| |Get model element by name <br> (Returns the first element that matches the given `elementname`)|__GET__|`/modelelement`|query parameter: `?modeluri=...&elementname=...[&format=...]`
 |__JSON schema__ |Get the type schema of a model as a JSON schema|__GET__|`/typeschema`|query parameter: `?modeluri=...`
 | |Get the UI schema of a certain view element|__GET__|`/uischema`|query parameter: `?schemaname=...`
 |__Server actions__|Ping server|__GET__|`/server/ping`| -
 | |Update server configuration|__PUT__|`/server/configure`|application/json
 
-<br>
-
-- The query parameter `?modeluri=` accepts files in the loaded workspace as well as absolute file paths.
-- Parameters in brackets `[]` are optional.
-
-<br>
+<br/>
 
 ### WebSocket Endpoints
 
@@ -86,7 +84,8 @@ The following table shows the current WS endpoints:
 
 |Description|Path|Input|Returns
 |-|-|-|-
-|Subscribe to model changes|`/subscribe`|query parameter: `?modeluri=...[&format=...]`|`sessionId`
+|Subscribe to model changes|`/subscribe`|query parameter: `?modeluri=...[&timeout=...]`|`sessionId`
+
 
 ## Java Client API
 
@@ -191,7 +190,7 @@ client.update("SuperBrewer3000.json", brewingUnit_EObject, "xmi")
 }
 ```
 
-#### Executing Commands
+### Executing Commands
 
 To perform changes on the model, clients may issue `PATCH` requests to update
 the model state incrementally in the server.  These updates are broadcast to
@@ -264,7 +263,7 @@ To execute this command, issue a `PATCH` request to the `edit` endpoint like:
     { "data" : <payload> }
 ```
 
-### Subscriptions Example
+### WebSocket Subscriptions Example
 
 If you want to be notified about any changes happening on a certain model, 
 you can subscribe with a `SubscriptionListener` and define a format for the responses, which is `"xmi"` in this example.

@@ -52,7 +52,7 @@ public class ModelRepositoryTest extends AbstractResourceTest {
    @Mock
    private Command command;
    @Mock
-   private ModelResourceLoader modelResourceLoader;
+   private ModelResourceManager modelResourceManager;
 
    private ModelRepository repository;
 
@@ -88,7 +88,7 @@ public class ModelRepositoryTest extends AbstractResourceTest {
    public void getModelElementById() throws DecodingException, IOException {
       String modelUri = getModelUri("Test1.ecore").toString();
       Resource testResource = loadResource("Test1.ecore");
-      when(modelResourceLoader.loadResource(modelUri)).thenReturn(Optional.of(testResource));
+      when(modelResourceManager.loadResource(modelUri)).thenReturn(Optional.of(testResource));
       repository.getModelElementById(modelUri, "//@eClassifiers.0/@eStructuralFeatures.0").ifPresentOrElse(
          result -> {
             assertTrue(result.eClass().equals(EcorePackage.eINSTANCE.getEAttribute()));
@@ -102,11 +102,11 @@ public class ModelRepositoryTest extends AbstractResourceTest {
    public void getModelElementByName() throws DecodingException, IOException {
       String modelUri = getModelUri("Test1.ecore").toString();
       Resource testResource = loadResource("Test1.ecore");
-      when(modelResourceLoader.loadResource(modelUri)).thenReturn(Optional.of(testResource));
-      repository.getModelElementByName(modelUri, "type").ifPresentOrElse(
+      when(modelResourceManager.loadResource(modelUri)).thenReturn(Optional.of(testResource));
+      repository.getModelElementByName(modelUri, JsonResponseMember.TYPE).ifPresentOrElse(
          result -> {
             assertTrue(result.eClass().equals(EcorePackage.eINSTANCE.getEAttribute()));
-            assertTrue(((EAttribute) result).getName().equals("type"));
+            assertTrue(((EAttribute) result).getName().equals(JsonResponseMember.TYPE));
             assertTrue(((EAttribute) result).getEType().equals(EcorePackage.eINSTANCE.getEString()));
          },
          () -> assertTrue("Model not found in repository", false));
@@ -129,7 +129,7 @@ public class ModelRepositoryTest extends AbstractResourceTest {
          @Override
          protected void configure() {
             bind(ServerConfiguration.class).toInstance(serverConfig);
-            bind(ModelResourceLoader.class).toInstance(modelResourceLoader);
+            bind(ModelResourceManager.class).toInstance(modelResourceManager);
          }
       }).getInstance(ModelRepository.class);
    }

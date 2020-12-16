@@ -21,7 +21,7 @@ import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
-import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceLoader;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRouting;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
@@ -76,7 +76,7 @@ public abstract class ModelServerModule extends AbstractModule {
       bind(Javalin.class).toInstance(bindJavalin());
       bind(AdapterFactory.class).toInstance(bindAdapterFactory());
       bind(CommandCodec.class).to(bindCommandCodec()).in(Singleton.class);
-      bind(ModelResourceLoader.class).to(bindModelResourceLoader()).in(Singleton.class);
+      bind(ModelResourceManager.class).to(bindModelResourceManager()).in(Singleton.class);
 
    }
 
@@ -103,6 +103,6 @@ public abstract class ModelServerModule extends AbstractModule {
 
    protected abstract Class<? extends CommandCodec> bindCommandCodec();
 
-   protected abstract Class<? extends ModelResourceLoader> bindModelResourceLoader();
+   protected abstract Class<? extends ModelResourceManager> bindModelResourceManager();
 
 }

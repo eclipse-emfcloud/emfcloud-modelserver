@@ -48,6 +48,8 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<Boolean>> save(String modelUri);
 
+   CompletableFuture<Response<Boolean>> saveAll();
+
    CompletableFuture<Response<String>> getTypeSchema(String modelUri);
 
    CompletableFuture<Response<String>> getUiSchema(String schemaName);

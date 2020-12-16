@@ -28,12 +28,15 @@ import org.apache.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPaths;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
+import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
+import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
 import org.eclipse.emfcloud.modelserver.internal.client.EditingContextImpl;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.jetbrains.annotations.NotNull;
@@ -57,7 +60,8 @@ import okhttp3.WebSocketListener;
 
 public class ModelServerClient implements ModelServerClientApi<EObject>, ModelServerPaths {
 
-   private static final Set<String> SUPPORTED_FORMATS = ImmutableSet.of("json", "xmi");
+   private static final Set<String> SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
+      ModelServerPathParameters.FORMAT_XMI);
    private static final String PATCH = "PATCH";
    private static final String POST = "POST";
 
@@ -87,13 +91,11 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
                .build())
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"))
-         .thenApply(this::getBodyOrThrow);
+      return makeCallAndGetDataBody(request);
    }
 
    @Override
@@ -103,19 +105,14 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter("modeluri", modelUri)
-               .addQueryParameter("format", checkedFormat)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
                .build())
          .build();
 
-      return call(request)
+      return makeCallAndParseDataField(request)
          .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
          .thenApply(this::getBodyOrThrow);
-   }
-
-   private CompletableFuture<Response<Optional<String>>> call(final Request request) {
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"));
    }
 
    @Override
@@ -124,13 +121,13 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(makeUrl(MODEL_BASE_PATH))
          .build();
 
-      return call(request)
+      return makeCallAndParseDataField(request)
          .thenApply(this::getBodyOrThrow)
          .thenApply(response -> response.mapBody(body -> {
             List<Model<String>> models = new ArrayList<>();
             try {
                for (JsonNode modelNode : Json.parse(body)) {
-                  Optional<String> modelUri = getJsonField(modelNode, "modelUri");
+                  Optional<String> modelUri = getJsonField(modelNode, ModelServerPathParameters.MODEL_URI);
                   Optional<String> content = getJsonField(modelNode, "content");
                   if (modelUri.isPresent() && content.isPresent()) {
                      models.add(new Model<>(modelUri.get(), content.get()));
@@ -152,11 +149,11 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter("format", format)
+               .addQueryParameter(ModelServerPathParameters.FORMAT, format)
                .build())
          .build();
 
-      return call(request)
+      return makeCallAndParseDataField(request)
          .thenApply(this::getBodyOrThrow)
          .thenApply(response -> response.mapBody(body -> {
             List<Model<EObject>> models = new ArrayList<>();
@@ -184,8 +181,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(makeUrl(MODEL_URIS))
          .build();
 
-      return call(request)
-         .thenApply(this::getBodyOrThrow)
+      return makeCallAndGetDataBody(request)
          .thenApply(response -> response.mapBody(body -> {
             List<String> uris = new ArrayList<>();
             try {
@@ -202,14 +198,12 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
-               .addQueryParameter("modeluri", modelUri)
-               .addQueryParameter("elementid", elementid)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParameters.ELEMENT_ID, elementid)
                .build())
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"))
-         .thenApply(this::getBodyOrThrow);
+      return makeCallAndGetDataBody(request);
    }
 
    @Override
@@ -220,13 +214,13 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
-               .addQueryParameter("modeluri", modelUri)
-               .addQueryParameter("elementid", elementid)
-               .addQueryParameter("format", checkedFormat)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParameters.ELEMENT_ID, elementid)
+               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
                .build())
          .build();
 
-      return call(request)
+      return makeCallAndParseDataField(request)
          .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
          .thenApply(this::getBodyOrThrow);
    }
@@ -236,14 +230,12 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
-               .addQueryParameter("modeluri", modelUri)
-               .addQueryParameter("elementname", elementname)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParameters.ELEMENT_NAME, elementname)
                .build())
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"))
-         .thenApply(this::getBodyOrThrow);
+      return makeCallAndGetDataBody(request);
    }
 
    @Override
@@ -254,13 +246,13 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
-               .addQueryParameter("modeluri", modelUri)
-               .addQueryParameter("elementname", elementname)
-               .addQueryParameter("format", checkedFormat)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParameters.ELEMENT_NAME, elementname)
+               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
                .build())
          .build();
 
-      return call(request)
+      return makeCallAndParseDataField(request)
          .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
          .thenApply(this::getBodyOrThrow);
    }
@@ -270,25 +262,21 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
                .build())
          .delete()
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "type"))
-         .thenApply(this::getBodyOrThrow)
-         .thenApply(response -> response.mapBody(body -> body.equals("success")));
+      return makeCallAndExpectSuccess(request);
    }
 
    @Override
    public CompletableFuture<Response<String>> create(final String modelUri, final String createdModelAsJsonText) {
       TextNode dataNode = Json.text(createdModelAsJsonText);
-      final Request request = buildCreateOrUpdateRequest(modelUri, POST, "json", dataNode);
+      final Request request = buildCreateOrUpdateRequest(modelUri, POST, ModelServerPathParameters.FORMAT_JSON,
+         dataNode);
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"))
-         .thenApply(this::getBodyOrThrow);
+      return makeCallAndGetDataBody(request);
    }
 
    @Override
@@ -304,8 +292,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       TextNode dataNode = Json.text(encode(model, checkedFormat));
       final Request request = buildCreateOrUpdateRequest(modelUri, httpMethod, checkedFormat, dataNode);
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"))
+      return makeCallAndParseDataField(request)
          .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
          .thenApply(this::getBodyOrThrow);
    }
@@ -317,13 +304,13 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter("modeluri", modelUri)
-               .addQueryParameter("format", checkedFormat)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
                .build())
          .method(httpMethod,
             RequestBody.create(
                Json.object(
-                  Json.prop("data", dataNode)).toString(),
+                  Json.prop(JsonResponseMember.DATA, dataNode)).toString(),
                MediaType.parse("application/json")))
          .build();
    }
@@ -331,11 +318,10 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    @Override
    public CompletableFuture<Response<String>> update(final String modelUri, final String updatedModelAsJsonText) {
       TextNode dataNode = Json.text(updatedModelAsJsonText);
-      final Request request = buildCreateOrUpdateRequest(modelUri, PATCH, "json", dataNode);
+      final Request request = buildCreateOrUpdateRequest(modelUri, PATCH, ModelServerPathParameters.FORMAT_JSON,
+         dataNode);
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"))
-         .thenApply(this::getBodyOrThrow);
+      return makeCallAndGetDataBody(request);
    }
 
    @Override
@@ -346,7 +332,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
 
    private String checkedFormat(final String format) {
       if (Strings.isNullOrEmpty(format)) {
-         return "json";
+         return ModelServerPathParameters.FORMAT_JSON;
       }
 
       String result = format.toLowerCase();
@@ -367,14 +353,20 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(SAVE))
-               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
                .build())
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "type"))
-         .thenApply(this::getBodyOrThrow)
-         .thenApply(response -> response.mapBody(body -> body.equals("success")));
+      return makeCallAndExpectSuccess(request);
+   }
+
+   @Override
+   public CompletableFuture<Response<Boolean>> saveAll() {
+      final Request request = new Request.Builder()
+         .url(makeUrl(SAVE_ALL))
+         .build();
+
+      return makeCallAndExpectSuccess(request);
    }
 
    @Override
@@ -382,13 +374,11 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(TYPE_SCHEMA))
-               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
                .build())
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"))
-         .thenApply(this::getBodyOrThrow);
+      return makeCallAndGetDataBody(request);
    }
 
    @Override
@@ -396,13 +386,11 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(UI_SCHEMA))
-               .addQueryParameter("schemaname", schemaname)
+               .addQueryParameter(ModelServerPathParameters.SCHEMA_NAME, schemaname)
                .build())
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "data"))
-         .thenApply(this::getBodyOrThrow);
+      return makeCallAndGetDataBody(request);
    }
 
    @Override
@@ -417,10 +405,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .put(RequestBody.create(config.toString(), MediaType.parse("application/json")))
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "type"))
-         .thenApply(this::getBodyOrThrow)
-         .thenApply(response -> response.mapBody(body -> body.equals("success")));
+      return makeCallAndExpectSuccess(request);
    }
 
    @Override
@@ -429,15 +414,12 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(makeUrl(SERVER_PING))
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "type"))
-         .thenApply(this::getBodyOrThrow)
-         .thenApply(response -> response.mapBody(body -> body.equals("success")));
+      return makeCallAndExpectSuccess(request);
    }
 
    @Override
    public CompletableFuture<Response<Boolean>> edit(final String modelUri, final Command command) {
-      return edit(modelUri, command, "json");
+      return edit(modelUri, command, ModelServerPathParameters.FORMAT_JSON);
    }
 
    @Override
@@ -459,19 +441,17 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(EDIT))
-               .addQueryParameter("modeluri", modelUri)
-               .addQueryParameter("format", checkedFormat)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
                .build())
          .patch(
             RequestBody.create(
                Json.object(
-                  Json.prop("data", Json.text(encode(command, checkedFormat)))).toString(),
+                  Json.prop(JsonResponseMember.DATA, Json.text(encode(command, checkedFormat)))).toString(),
                MediaType.parse("application/json")))
          .build();
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "type"))
-         .thenApply(this::getBodyOrThrow)
-         .thenApply(response -> response.mapBody(body -> body.equals("success")));
+
+      return makeCallAndExpectSuccess(request);
    }
 
    @Override
@@ -480,7 +460,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter("modeluri", modelUri)
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
                   .build()
                   .toString()))
          .build();
@@ -495,8 +475,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter("modeluri", modelUri)
-                  .addQueryParameter("timeout", String.valueOf(timeout))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
                   .build()
                   .toString()))
          .build();
@@ -516,8 +496,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
 
          @Override
          public void onMessage(@NotNull final WebSocket webSocket, @NotNull final String text) {
-            Optional<String> type = ModelServerClient.this.parseJsonField(text, "type");
-            Optional<String> data = ModelServerClient.this.parseJsonField(text, "data");
+            Optional<String> type = ModelServerClient.this.parseJsonField(text, JsonResponseMember.TYPE);
+            Optional<String> data = ModelServerClient.this.parseJsonField(text, JsonResponseMember.DATA);
             subscriptionListener.onNotification(new ModelServerNotification(type.orElse("unknown"), data));
          }
 
@@ -625,12 +605,12 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    public String encode(final EObject eObject) {
-      return encode(eObject, "json");
+      return encode(eObject, ModelServerPathParameters.FORMAT_JSON);
    }
 
    public String encode(final EObject eObject, final String format) {
       try {
-         if (format.equals("xmi")) {
+         if (format.equals(ModelServerPathParameters.FORMAT_XMI)) {
             return new XmiCodec().encode(eObject).asText();
          }
          return new DefaultJsonCodec().encode(eObject).toString();
@@ -641,12 +621,12 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    public Optional<EObject> decode(final String payload) {
-      return decode(payload, "json");
+      return decode(payload, ModelServerPathParameters.FORMAT_JSON);
    }
 
    public Optional<EObject> decode(final String payload, final String format) {
       try {
-         if (format.equals("xmi")) {
+         if (format.equals(ModelServerPathParameters.FORMAT_XMI)) {
             return new XmiCodec().decode(payload);
          }
          return new DefaultJsonCodec().decode(payload);
@@ -694,10 +674,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(createHttpUrlBuilder(makeUrl(UNDO)).build())
          .build();
 
-      return makeCall(request)
-         .thenApply(response -> parseField(response, "type"))
-         .thenApply(this::getBodyOrThrow)
-         .thenApply(response -> response.mapBody(body -> body.equals("success")));
+      return makeCallAndExpectSuccess(request);
    }
 
    @Override
@@ -706,9 +683,24 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(createHttpUrlBuilder(makeUrl(REDO)).build())
          .build();
 
+      return makeCallAndExpectSuccess(request);
+
+   }
+
+   private CompletableFuture<Response<Boolean>> makeCallAndExpectSuccess(final Request request) {
       return makeCall(request)
-         .thenApply(response -> parseField(response, "type"))
+         .thenApply(response -> parseField(response, JsonResponseMember.TYPE))
          .thenApply(this::getBodyOrThrow)
-         .thenApply(response -> response.mapBody(body -> body.equals("success")));
+         .thenApply(response -> response.mapBody(body -> body.equals(JsonResponseType.SUCCESS)));
+   }
+
+   private CompletableFuture<Response<Optional<String>>> makeCallAndParseDataField(final Request request) {
+      return makeCall(request)
+         .thenApply(response -> parseField(response, JsonResponseMember.DATA));
+   }
+
+   private CompletableFuture<Response<String>> makeCallAndGetDataBody(final Request request) {
+      return makeCallAndParseDataField(request)
+         .thenApply(this::getBodyOrThrow);
    }
 }

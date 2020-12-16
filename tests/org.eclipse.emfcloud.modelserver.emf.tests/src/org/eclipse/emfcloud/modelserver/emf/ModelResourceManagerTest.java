@@ -36,8 +36,8 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
-import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceLoader;
-import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceLoader;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
@@ -54,7 +54,7 @@ import com.google.inject.Guice;
 import com.google.inject.multibindings.Multibinder;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ModelResourceLoaderTest extends AbstractResourceTest {
+public class ModelResourceManagerTest extends AbstractResourceTest {
 
    @Mock
    private CommandCodec commandCodec;
@@ -63,9 +63,9 @@ public class ModelResourceLoaderTest extends AbstractResourceTest {
    @Mock
    private ServerConfiguration serverConfig;
 
-   private static ModelResourceLoader modelResourceLoader;
+   private static ModelResourceManager modelResourceManager;
 
-   public ModelResourceLoaderTest() {
+   public ModelResourceManagerTest() {
       super();
    }
 
@@ -75,7 +75,7 @@ public class ModelResourceLoaderTest extends AbstractResourceTest {
       when(commandCodec.decode(any(), any())).thenReturn(command);
       when(serverConfig.getWorkspaceRootURI())
          .thenReturn(URI.createFileURI(getCWD().getAbsolutePath() + "/" + RESOURCE_PATH));
-      modelResourceLoader = Guice.createInjector(new AbstractModule() {
+      modelResourceManager = Guice.createInjector(new AbstractModule() {
 
          private Multibinder<EPackageConfiguration> ePackageConfigurationBinder;
          private ArrayList<Class<? extends EPackageConfiguration>> ePackageConfigurations;
@@ -92,13 +92,13 @@ public class ModelResourceLoaderTest extends AbstractResourceTest {
             bind(CommandCodec.class).toInstance(commandCodec);
             bind(AdapterFactory.class).toInstance(new EcoreAdapterFactory());
          }
-      }).getInstance(DefaultModelResourceLoader.class);
+      }).getInstance(DefaultModelResourceManager.class);
    }
 
    @Test
    public void testLoadModelFromJson() throws IOException {
       Resource expectedResource = loadResource("Test1.ecore");
-      Optional<Resource> result = modelResourceLoader.loadResource(adaptModelUri("Test1.json"));
+      Optional<Resource> result = modelResourceManager.loadResource(adaptModelUri("Test1.json"));
       assertTrue(result.isPresent());
       assertTrue(EcoreUtil.equals(expectedResource.getContents(), result.get().getContents()));
    }
@@ -106,19 +106,19 @@ public class ModelResourceLoaderTest extends AbstractResourceTest {
    @Test
    public void testLoadModelFromEcore() throws IOException {
       Resource expectedResource = loadResource("Coffee.ecore");
-      Optional<Resource> result = modelResourceLoader.loadResource(adaptModelUri("Coffee.ecore"));
+      Optional<Resource> result = modelResourceManager.loadResource(adaptModelUri("Coffee.ecore"));
       assertTrue(result.isPresent());
       assertTrue(EcoreUtil.equals(expectedResource.getContents(), result.get().getContents()));
    }
 
    @Test(expected = NullPointerException.class)
    public void testLoadModelFromInvalidModelUri() throws IOException {
-      modelResourceLoader.loadResource(adaptModelUri("Test2.ecore"));
+      modelResourceManager.loadResource(adaptModelUri("Test2.ecore"));
    }
 
    @Test
    public void testLoadModelCastToExactType() {
-      Optional<EPackage> result = modelResourceLoader.loadModel(adaptModelUri("Test1.ecore"), EPackage.class);
+      Optional<EPackage> result = modelResourceManager.loadModel(adaptModelUri("Test1.ecore"), EPackage.class);
       assertNotNull(result);
       assertTrue(result.isPresent());
       assertEquals("test1", result.get().getName());
@@ -126,14 +126,14 @@ public class ModelResourceLoaderTest extends AbstractResourceTest {
 
    @Test
    public void testLoadModelCastToSupertype() {
-      Optional<EObject> result = modelResourceLoader.loadModel(adaptModelUri("Test1.ecore"), EObject.class);
+      Optional<EObject> result = modelResourceManager.loadModel(adaptModelUri("Test1.ecore"), EObject.class);
       assertNotNull(result);
       assertTrue(result.isPresent());
    }
 
    @Test
    public void testLoadModelInvalidCast() {
-      Optional<EClass> result = modelResourceLoader.loadModel(adaptModelUri("Test1.ecore"), EClass.class);
+      Optional<EClass> result = modelResourceManager.loadModel(adaptModelUri("Test1.ecore"), EClass.class);
       assertNotNull(result);
       assertFalse(result.isPresent());
    }
@@ -141,45 +141,45 @@ public class ModelResourceLoaderTest extends AbstractResourceTest {
    @Test
    public void addResource() throws IOException {
       String modelUri = "SuperBrewer3000.json";
-      modelResourceLoader.addResource(modelUri, EcoreFactory.eINSTANCE.createEClass());
-      assertTrue(modelResourceLoader.isResourceLoaded(modelUri));
+      modelResourceManager.addResource(modelUri, EcoreFactory.eINSTANCE.createEClass());
+      assertTrue(modelResourceManager.isResourceLoaded(modelUri));
 
-      cleanUpResource();
+      cleanUpResource(modelUri);
    }
 
    @Test
    public void updateResource() throws DecodingException {
-      modelResourceLoader.updateResource(adaptModelUri("Test1.json"),
+      modelResourceManager.updateResource(adaptModelUri("Test1.json"),
          CCommandFactory.eINSTANCE.createCommand());
       verify(command).execute();
    }
 
    @Test
    public void removeResource() throws IOException {
-      modelResourceLoader.addResource(adaptModelUri("Test2.json").toString(), EcoreFactory.eINSTANCE.createEClass());
-      assertTrue(modelResourceLoader.isResourceLoaded(adaptModelUri("Test2.json").toString()));
-      modelResourceLoader.removeResource(adaptModelUri("Test2.json").toString());
-      assertFalse(modelResourceLoader.isResourceLoaded(adaptModelUri("Test2.json").toString()));
+      modelResourceManager.addResource(adaptModelUri("Test2.json").toString(), EcoreFactory.eINSTANCE.createEClass());
+      assertTrue(modelResourceManager.isResourceLoaded(adaptModelUri("Test2.json").toString()));
+      modelResourceManager.removeResource(adaptModelUri("Test2.json").toString());
+      assertFalse(modelResourceManager.isResourceLoaded(adaptModelUri("Test2.json").toString()));
    }
 
    @Test
    public void hasResource() {
-      assertTrue(modelResourceLoader.isResourceLoaded(adaptModelUri("Coffee.ecore").toString()));
-      assertTrue(modelResourceLoader.isResourceLoaded(adaptModelUri("Coffee.json").toString()));
-      assertTrue(modelResourceLoader.isResourceLoaded(adaptModelUri("Test1.ecore").toString()));
-      assertTrue(modelResourceLoader.isResourceLoaded(adaptModelUri("Test1.json").toString()));
+      assertTrue(modelResourceManager.isResourceLoaded(adaptModelUri("Coffee.ecore").toString()));
+      assertTrue(modelResourceManager.isResourceLoaded(adaptModelUri("Coffee.json").toString()));
+      assertTrue(modelResourceManager.isResourceLoaded(adaptModelUri("Test1.ecore").toString()));
+      assertTrue(modelResourceManager.isResourceLoaded(adaptModelUri("Test1.json").toString()));
    }
 
    @Test(expected = NullPointerException.class)
    public void hasResourceNot() {
-      assertFalse(modelResourceLoader.isResourceLoaded("SuperBrewer3000.json"));
+      assertFalse(modelResourceManager.isResourceLoaded("SuperBrewer3000.json"));
    }
 
    @Test
    public void loadModel() throws DecodingException, IOException {
       String modelUri = adaptModelUri("Test1.json").toString();
-      assertTrue(modelResourceLoader.isResourceLoaded(modelUri));
-      modelResourceLoader.loadModel(modelUri, EObject.class).ifPresentOrElse(
+      assertTrue(modelResourceManager.isResourceLoaded(modelUri));
+      modelResourceManager.loadModel(modelUri, EObject.class).ifPresentOrElse(
          result -> {
             assertTrue(((EPackage) result).getName().equals("test1"));
             assertTrue(((EPackage) result).getEClassifiers().size() == 2);
@@ -194,10 +194,9 @@ public class ModelResourceLoaderTest extends AbstractResourceTest {
       return URI.createFileURI(getCWD().getAbsolutePath() + "/" + RESOURCE_PATH + modelUri).toString();
    }
 
-   private void cleanUpResource() {
-      String modelUri = "SuperBrewer3000.json";
-      if (modelResourceLoader.isResourceLoaded(modelUri)) {
-         modelResourceLoader.loadModel(modelUri, EObject.class).ifPresent(r -> {
+   private void cleanUpResource(final String modelUri) {
+      if (modelResourceManager.isResourceLoaded(modelUri)) {
+         modelResourceManager.loadModel(modelUri, EObject.class).ifPresent(r -> {
             try {
                r.eResource().delete(null);
             } catch (IOException e) {
