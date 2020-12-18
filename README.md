@@ -65,6 +65,7 @@ The following table shows the current HTTP endpoints:
 | |Update model|__PATCH__|`/models`|query parameter: `?modeluri=...[&format=...]` <br> application/json
 | |Delete model|__DELETE__|`/models`|query parameter: `?modeluri=...`
 | |Save|__GET__|`/save`|query parameter: `?modeluri=...`
+| |SaveAll|__GET__|`/saveall`| -
 | |Execute commands|__PATCH__|`/edit`|query parameter: `?modeluri=...`
 | |Get all available model URIs in the workspace|__GET__|`/modeluris`| -
 | |Get model element by id|__GET__|`/modelelement`|query parameter: `?modeluri=...&elementid=...[&format=...]`
@@ -124,6 +125,8 @@ public interface ModelServerClientApiV1<A> {
    CompletableFuture<Response<A>> update(String modelUri, A updatedModel, String format);
 
    CompletableFuture<Response<Boolean>> save(String modelUri);
+
+   CompletableFuture<Response<Boolean>> saveAll();
 
    CompletableFuture<Response<String>> getTypeSchema(String modelUri);
 
