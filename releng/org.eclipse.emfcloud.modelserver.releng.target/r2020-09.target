@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
 <!-- generated with https://github.com/eclipse-cbi/targetplatform-dsl -->
-<target name="2019-12 - Release" sequenceNumber="1605191547">
+<target name="2020-09 - Release" sequenceNumber="1608395278">
   <locations>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
-      <unit id="org.eclipse.platform.feature.group" version="4.14.0.v20191210-0610"/>
-      <unit id="org.eclipse.sdk.feature.group" version="4.14.0.v20191210-0610"/>
-      <unit id="org.eclipse.rcp.feature.group" version="4.14.0.v20191210-0610"/>
-      <unit id="org.eclipse.jdt.feature.group" version="3.18.200.v20191210-0610"/>
-      <unit id="org.eclipse.equinox.p2.discovery.feature.feature.group" version="1.2.400.v20191014-1907"/>
-      <unit id="org.eclipse.equinox.executable.feature.group" version="3.8.600.v20191014-2025"/>
-      <unit id="org.eclipse.emf.sdk.feature.group" version="2.20.0.v20191028-0905"/>
-      <repository location="http://download.eclipse.org/releases/2019-12"/>
+      <unit id="org.eclipse.platform.feature.group" version="4.17.0.v20200902-1800"/>
+      <unit id="org.eclipse.sdk.feature.group" version="4.17.0.v20200902-1800"/>
+      <unit id="org.eclipse.rcp.feature.group" version="4.17.0.v20200902-1800"/>
+      <unit id="org.eclipse.jdt.feature.group" version="3.18.500.v20200902-1800"/>
+      <unit id="org.eclipse.equinox.p2.discovery.feature.feature.group" version="1.2.700.v20200705-1016"/>
+      <unit id="org.eclipse.equinox.executable.feature.group" version="3.8.900.v20200819-0940"/>
+      <unit id="org.eclipse.emf.sdk.feature.group" version="2.23.0.v20200822-0801"/>
+      <repository location="http://download.eclipse.org/releases/2020-09"/>
     </location>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.apache.log4j" version="1.2.15.v201012070815"/>
@@ -19,15 +19,15 @@
       <unit id="com.google.inject" version="3.0.0.v201605172100"/>
       <unit id="com.google.inject.multibindings" version="3.0.0.v201605172100"/>
       <unit id="com.google.guava" version="27.1.0.v20190517-1946"/>
-      <unit id="ch.qos.logback.slf4j" version="1.1.2.v20160301-0943"/>
+      <unit id="ch.qos.logback.slf4j" version="1.2.3.v20200428-2012"/>
       <unit id="org.apache.commons.io" version="2.6.0.v20190123-2029"/>
-      <unit id="org.mockito" version="2.23.0.v20190527-1420"/>
+      <unit id="org.mockito" version="2.23.0.v20200310-1642"/>
       <unit id="net.bytebuddy.byte-buddy" version="1.9.0.v20181107-1410"/>
       <unit id="net.bytebuddy.byte-buddy-agent" version="1.9.0.v20181106-1534"/>
       <unit id="org.objenesis" version="2.6.0.v20180420-1519"/>
       <unit id="org.hamcrest" version="1.1.0.v20090501071000"/>
-      <unit id="org.slf4j.api" version="1.7.10.v20170428-1633"/>
-      <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20191126223242/repository/"/>
+      <unit id="org.slf4j.api" version="1.7.30.v20200204-2150"/>
+      <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20200831200620/repository/"/>
     </location>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.emfjson.jackson" version="0.0.0"/>

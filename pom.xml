@@ -205,7 +205,7 @@
 								<artifact>
 									<groupId>org.eclipse.emfcloud.modelserver</groupId>
 									<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
-									<classifier>releng/org.eclipse.emfcloud.modelserver.releng.target/r2019-12</classifier>
+									<classifier>releng/org.eclipse.emfcloud.modelserver.releng.target/r2020-09</classifier>
 									<version>${target.version}</version>
 								</artifact>
 							</target>
