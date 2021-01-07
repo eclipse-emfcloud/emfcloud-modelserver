@@ -582,16 +582,114 @@ public class ModelServerClientTest {
 
    @Test
    public void undo() throws ExecutionException, InterruptedException, MalformedURLException {
-      String pingUrl = baseHttpUrlBuilder.addPathSegments(ModelServerPaths.SERVER_PING).build().toString();
+      String modelUri = "SuperBrewer3000.coffee";
+      String undoUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPaths.UNDO)
+         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .build().toString();
+
       interceptor.addRule()
-         .url(pingUrl)
+         .url(undoUrl)
          .get()
-         .respond(JsonResponse.error().toString());
+         .respond(JsonResponse.success("Successful undo.").toString());
+
       ModelServerClient client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.undo();
+      final CompletableFuture<Response<Boolean>> f = client.undo(modelUri);
+      assertThat(f.get().body(), equalTo(true));
+   }
 
+   @Test
+   public void cannotUndo() throws ExecutionException, InterruptedException, MalformedURLException {
+      String modelUri = "SuperBrewer3000.coffee";
+      String undoUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPaths.UNDO)
+         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .build().toString();
+
+      interceptor.addRule()
+         .url(undoUrl)
+         .get()
+         .respond(JsonResponse.warning("Cannot undo.").toString());
+
+      ModelServerClient client = createClient();
+
+      final CompletableFuture<Response<Boolean>> f = client.undo(modelUri);
       assertThat(f.get().body(), equalTo(false));
+   }
+
+   @Test
+   public void redo() throws ExecutionException, InterruptedException, MalformedURLException {
+      String modelUri = "SuperBrewer3000.coffee";
+      String redoUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPaths.REDO)
+         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .build().toString();
+
+      interceptor.addRule()
+         .url(redoUrl)
+         .get()
+         .respond(JsonResponse.success("Successful redo.").toString());
+
+      ModelServerClient client = createClient();
+
+      final CompletableFuture<Response<Boolean>> f = client.redo(modelUri);
+      assertThat(f.get().body(), equalTo(true));
+   }
+
+   @Test
+   public void cannotRedo() throws ExecutionException, InterruptedException, MalformedURLException {
+      String modelUri = "SuperBrewer3000.coffee";
+      String redoUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPaths.REDO)
+         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .build().toString();
+
+      interceptor.addRule()
+         .url(redoUrl)
+         .get()
+         .respond(JsonResponse.warning("Cannot redo.").toString());
+
+      ModelServerClient client = createClient();
+
+      final CompletableFuture<Response<Boolean>> f = client.redo(modelUri);
+      assertThat(f.get().body(), equalTo(false));
+   }
+
+   @Test
+   public void save() throws ExecutionException, InterruptedException, MalformedURLException {
+      String modelUri = "SuperBrewer3000.coffee";
+      String redoUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPaths.SAVE)
+         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .build().toString();
+
+      interceptor.addRule()
+         .url(redoUrl)
+         .get()
+         .respond(JsonResponse.success("Model 'SuperBrewer3000.coffee' successfully saved").toString());
+
+      ModelServerClient client = createClient();
+
+      final CompletableFuture<Response<Boolean>> f = client.save(modelUri);
+      assertThat(f.get().body(), equalTo(true));
+   }
+
+   @Test
+   public void saveAll() throws ExecutionException, InterruptedException, MalformedURLException {
+      String redoUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPaths.SAVE_ALL)
+         .build().toString();
+
+      interceptor.addRule()
+         .url(redoUrl)
+         .get()
+         .respond(JsonResponse.success("All models successfully saved").toString());
+
+      ModelServerClient client = createClient();
+
+      final CompletableFuture<Response<Boolean>> f = client.saveAll();
+      assertThat(f.get().body(), equalTo(true));
    }
 
    private ModelServerClient createClient() throws MalformedURLException {

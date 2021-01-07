@@ -469,13 +469,46 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
-   public void subscribe(final String modelUri, final SubscriptionListener subscriptionListener,
-      final long timeout) {
+   public void subscribe(final String modelUri, final SubscriptionListener subscriptionListener, final String format) {
+      String checkedFormat = checkedFormat(format);
       Request request = new Request.Builder()
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
                   .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribe(final String modelUri, final SubscriptionListener subscriptionListener, final long timeout) {
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribe(final String modelUri, final SubscriptionListener subscriptionListener, final String format,
+      final long timeout) {
+      String checkedFormat = checkedFormat(format);
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
                   .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
                   .build()
                   .toString()))
@@ -669,18 +702,24 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
-   public CompletableFuture<Response<Boolean>> undo() {
+   public CompletableFuture<Response<Boolean>> undo(final String modelUri) {
       final Request request = new Request.Builder()
-         .url(createHttpUrlBuilder(makeUrl(UNDO)).build())
+         .url(
+            createHttpUrlBuilder(makeUrl(UNDO))
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .build())
          .build();
 
       return makeCallAndExpectSuccess(request);
    }
 
    @Override
-   public CompletableFuture<Response<Boolean>> redo() {
+   public CompletableFuture<Response<Boolean>> redo(final String modelUri) {
       final Request request = new Request.Builder()
-         .url(createHttpUrlBuilder(makeUrl(REDO)).build())
+         .url(
+            createHttpUrlBuilder(makeUrl(REDO))
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .build())
          .build();
 
       return makeCallAndExpectSuccess(request);

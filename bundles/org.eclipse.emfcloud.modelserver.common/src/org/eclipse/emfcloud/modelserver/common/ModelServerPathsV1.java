@@ -21,8 +21,8 @@ interface ModelServerPathsV1 {
    String EDIT = "edit"; // accepts query parameter "modeluri"
    String SAVE = "save"; // accepts query parameter "modeluri"
    String SAVE_ALL = "saveall";
-   String UNDO = "undo";
-   String REDO = "redo";
+   String UNDO = "undo"; // accepts query parameter "modeluri"
+   String REDO = "redo"; // accepts query parameter "modeluri"
 
    String TYPE_SCHEMA = "typeschema"; // accepts query parameter "modeluri"
    String UI_SCHEMA = "uischema"; // accepts query parameter "schemaname"
