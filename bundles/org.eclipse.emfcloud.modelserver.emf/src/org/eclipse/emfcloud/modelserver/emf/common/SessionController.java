@@ -58,6 +58,7 @@ public class SessionController extends WsHandler {
          modelUrisToClients.computeIfAbsent(modeluri, clients -> ConcurrentHashMap.newKeySet()).add(ctx);
          ctx.session.setIdleTimeout(timeout);
          ctx.send(JsonResponse.success(ctx.getSessionId()));
+         ctx.send(JsonResponse.dirtyState(modelRepository.getDirtyState(modeluri)));
          return true;
       }
       return false;
@@ -133,6 +134,15 @@ public class SessionController extends WsHandler {
          () -> broadcastError(modeluri, "Could not load changed object"));
    }
 
+   public void broadcastUndoRedo(final String modeluri, final Map<String, JsonNode> encodings) {
+      modelRepository.getModel(modeluri).ifPresentOrElse(
+         eObject -> {
+            broadcastUndoRedoCommands(modeluri, encodings);
+            broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
+         },
+         () -> broadcastError(modeluri, "Could not load changed object"));
+   }
+
    public void modelDeleted(final String modeluri) {
       broadcastFullUpdate(modeluri, null);
    }
@@ -152,6 +162,18 @@ public class SessionController extends WsHandler {
          .filter(ctx -> ctx.session.isOpen());
    }
 
+   public Map<String, JsonNode> getCommandEncodings(final String modeluri, final CCommand command) {
+      Map<String, JsonNode> encodings = null;
+      if (modelUrisToClients.containsKey(modeluri)) {
+         try {
+            encodings = encoder.encode(command);
+         } catch (EncodingException e) {
+            LOG.error("Pre encoding of undo/redo command for " + modeluri + " failed", e);
+         }
+      }
+      return encodings;
+   }
+
    private void broadcastFullUpdate(final String modeluri, @Nullable final EObject updatedModel) {
       if (modelUrisToClients.containsKey(modeluri)) {
          getOpenSessions(modeluri)
@@ -166,6 +188,15 @@ public class SessionController extends WsHandler {
                } catch (EncodingException e) {
                   LOG.error("Broadcast full update of " + modeluri + " failed", e);
                }
+            });
+      }
+   }
+
+   private void broadcastUndoRedoCommands(final String modeluri, final Map<String, JsonNode> encodedUndoRedoCommands) {
+      if (modelUrisToClients.containsKey(modeluri)) {
+         getOpenSessions(modeluri)
+            .forEach(session -> {
+               session.send(JsonResponse.incrementalUpdate(encodedUndoRedoCommands.get(encoder.findFormat(session))));
             });
       }
    }

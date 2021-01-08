@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -145,11 +144,19 @@ public class ModelRepository {
       return modelResourceManager.getDirtyState(modeluri);
    }
 
-   public Command undo(final String modeluri) {
+   public CCommand getUndoCommand(final String modeluri) {
+      return modelResourceManager.getUndoCommand(modeluri);
+   }
+
+   public boolean undo(final String modeluri) {
       return modelResourceManager.undo(modeluri);
    }
 
-   public Command redo(final String modeluri) {
+   public CCommand getRedoCommand(final String modeluri) {
+      return modelResourceManager.getRedoCommand(modeluri);
+   }
+
+   public boolean redo(final String modeluri) {
       return modelResourceManager.redo(modeluri);
    }
 

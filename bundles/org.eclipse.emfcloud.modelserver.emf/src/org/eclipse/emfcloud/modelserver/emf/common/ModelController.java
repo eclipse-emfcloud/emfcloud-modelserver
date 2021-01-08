@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -184,37 +183,31 @@ public class ModelController {
    }
 
    public void undo(final Context ctx, final String modeluri) {
-      Command undoCommand = modelRepository.undo(modeluri);
+      CCommand undoCommand = modelRepository.getUndoCommand(modeluri);
       if (undoCommand != null) {
-         CCommand encodedCommand;
-         try {
-            encodedCommand = new DefaultCommandCodec().encode(undoCommand);
+         Map<String, JsonNode> encodings = sessionController.getCommandEncodings(modeluri, undoCommand);
+         boolean undoSuccess = modelRepository.undo(modeluri);
+         if (undoSuccess) {
             ctx.json(JsonResponse.success("Successful undo."));
-            sessionController.modelChanged(modeluri, encodedCommand);
-         } catch (EncodingException e) {
-            LOG.error("Encoding of " + undoCommand + " failed: " + e.getMessage());
-            throw new IllegalArgumentException(e);
+            sessionController.broadcastUndoRedo(modeluri, encodings);
+            return;
          }
-      } else {
-         handleWarning(ctx, 202, "Cannot undo.");
       }
+      handleWarning(ctx, 202, "Cannot undo.");
    }
 
    public void redo(final Context ctx, final String modeluri) {
-      Command redoCommand = modelRepository.redo(modeluri);
+      CCommand redoCommand = modelRepository.getRedoCommand(modeluri);
       if (redoCommand != null) {
-         CCommand encodedCommand;
-         try {
-            encodedCommand = new DefaultCommandCodec().encode(redoCommand);
+         Map<String, JsonNode> encodings = sessionController.getCommandEncodings(modeluri, redoCommand);
+         boolean redoSuccess = modelRepository.redo(modeluri);
+         if (redoSuccess) {
             ctx.json(JsonResponse.success("Successful redo."));
-            sessionController.modelChanged(modeluri, encodedCommand);
-         } catch (EncodingException e) {
-            LOG.error("Encoding of " + redoCommand + " failed: " + e.getMessage());
-            throw new IllegalArgumentException(e);
+            sessionController.broadcastUndoRedo(modeluri, encodings);
+            return;
          }
-      } else {
-         handleWarning(ctx, 202, "Cannot redo");
       }
+      handleWarning(ctx, 202, "Cannot redo");
    }
 
    public void getModelUris(final Context ctx) {
