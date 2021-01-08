@@ -48,7 +48,6 @@ import com.google.inject.Guice;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
-@SuppressWarnings("restriction")
 @RunWith(MockitoJUnitRunner.class)
 public class SessionControllerTest {
 
