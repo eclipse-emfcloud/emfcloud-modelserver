@@ -1,6 +1,6 @@
-target "2019-12 - Release" with source, requirements
+target "2020-09 - Release" with source, requirements
 
-location "http://download.eclipse.org/releases/2019-12" {
+location "http://download.eclipse.org/releases/2020-09" {
 	org.eclipse.platform.feature.group
 	org.eclipse.sdk.feature.group
 	org.eclipse.rcp.feature.group
@@ -10,7 +10,7 @@ location "http://download.eclipse.org/releases/2019-12" {
 	org.eclipse.emf.sdk.feature.group
 }
 
-location "https://download.eclipse.org/tools/orbit/downloads/drops/R20191126223242/repository/" {
+location "https://download.eclipse.org/tools/orbit/downloads/drops/R20200831200620/repository/" {
 	org.apache.log4j [1.2.15,2.0.0)
 	com.google.gson [2.7.0,2.7.1)
 	com.google.inject [3.0.0,3.0.1)

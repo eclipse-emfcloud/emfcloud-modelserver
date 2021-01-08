@@ -51,6 +51,7 @@ options:
 
 - The query parameter `?modeluri=` accepts files in the loaded workspace as well as absolute file paths.
 - Parameters in brackets `[]` are optional.
+  - If no format is specified, the default format is JSON.
 
 ### HTTP Endpoints
 If the model server is up and running, you can access the model server API via `http://localhost:8081/api/v1/*`.
@@ -85,8 +86,17 @@ The following table shows the current WS endpoints:
 
 |Description|Path|Input|Returns
 |-|-|-|-
-|Subscribe to model changes|`/subscribe`|query parameter: `?modeluri=...[&timeout=...]`|`sessionId`
+|Subscribe to model changes|`/subscribe`|query parameter: `?modeluri=...[&format=...][&timeout=...]`|`sessionId`
 
+<br/>
+
+The following table shows accepted messages from a valid WS connection:
+
+|Type|Description|Example message
+|-|-|-|-
+`keepAlive`|Keep WS connection alive if timeout is defined|`{ type: 'keepAlive', data: '' }`
+
+<br/>
 
 ## Java Client API
 
@@ -144,7 +154,11 @@ public interface ModelServerClientApiV1<A> {
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener);
 
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format);
+
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, long timeout);
+
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format, long timeout);
 
    boolean send(String modelUri, String message);
 
@@ -154,9 +168,9 @@ public interface ModelServerClientApiV1<A> {
 
    boolean close(EditingContext editingContext);
 
-   CompletableFuture<Response<Boolean>> undo();
+   CompletableFuture<Response<Boolean>> undo(String modelUri);
 
-   CompletableFuture<Response<Boolean>> redo();
+   CompletableFuture<Response<Boolean>> redo(String modelUri);
 }
 ```
 
@@ -270,6 +284,8 @@ To execute this command, issue a `PATCH` request to the `edit` endpoint like:
 
 If you want to be notified about any changes happening on a certain model, 
 you can subscribe with a `SubscriptionListener` and define a format for the responses, which is `"xmi"` in this example.
+
+Please also see a basic running example in `org.eclipse.emfcloud.modelserver.example.client`.
 
 ```Java
 ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v1/");

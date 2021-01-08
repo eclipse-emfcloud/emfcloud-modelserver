@@ -66,7 +66,11 @@ public interface ModelServerClientApiV1<A> {
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener);
 
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format);
+
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, long timeout);
+
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format, long timeout);
 
    boolean send(String modelUri, String message);
 
@@ -76,7 +80,7 @@ public interface ModelServerClientApiV1<A> {
 
    boolean close(EditingContext editingContext);
 
-   CompletableFuture<Response<Boolean>> undo();
+   CompletableFuture<Response<Boolean>> undo(String modelUri);
 
-   CompletableFuture<Response<Boolean>> redo();
+   CompletableFuture<Response<Boolean>> redo(String modelUri);
 }

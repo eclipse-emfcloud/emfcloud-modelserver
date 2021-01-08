@@ -61,10 +61,10 @@ public class TypedSubscriptionListener<T> implements NotificationSubscriptionLis
    public void onDirtyChange(final boolean isDirty) {}
 
    @Override
-   public void onFullUpdate(final T root) {}
+   public void onFullUpdate(final T fullUpdate) {}
 
    @Override
-   public void onIncrementalUpdate(final T command) {}
+   public void onIncrementalUpdate(final T incrementalUpdate) {}
 
    @Override
    public void onUnknown(final ModelServerNotification notification) {}
