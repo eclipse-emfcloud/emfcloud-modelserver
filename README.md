@@ -93,7 +93,7 @@ The following table shows the current WS endpoints:
 The following table shows accepted messages from a valid WS connection:
 
 |Type|Description|Example message
-|-|-|-|-
+|-|-|-
 `keepAlive`|Keep WS connection alive if timeout is defined|`{ type: 'keepAlive', data: '' }`
 
 <br/>
