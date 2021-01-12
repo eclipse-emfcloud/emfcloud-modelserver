@@ -24,17 +24,44 @@ import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import io.javalin.http.Context;
 import io.javalin.websocket.WsContext;
 
 public class Codecs {
 
+   /** The constant to tell which is the preferred formats in codecs. */
+   public static final String PREFERRED_FORMAT = "PreferredFormat";
+
+   @Inject(optional = true)
+   @Named(PREFERRED_FORMAT)
+   private final String preferredFormat = ModelServerPathParameters.FORMAT_JSON;
+
    private final Map<String, Codec> formatToCodec = new LinkedHashMap<>();
 
+   /**
+    * Legacy constructor in case users were instanciating Codecs class manually.
+    * Prefer injecting it with the correct guice bindings.
+    *
+    * @deprecated
+    */
+   @Deprecated
    public Codecs() {
-      formatToCodec.put("xmi", new XmiCodec());
-      formatToCodec.put("json", new JsonCodec());
+
+      formatToCodec.put(ModelServerPathParameters.FORMAT_XMI, new XmiCodec());
+      formatToCodec.put(ModelServerPathParameters.FORMAT_JSON, new JsonCodec());
+   }
+
+   /**
+    * Injected constructor.
+    *
+    * @param emfCodecs the emf codecs per format
+    */
+   @Inject
+   public Codecs(final Map<String, Codec> emfCodecs) {
+      formatToCodec.putAll(emfCodecs);
    }
 
    public JsonNode encode(final Context context, final EObject eObject) throws EncodingException {
@@ -59,6 +86,6 @@ public class Codecs {
          .ofNullable(queryParams.get(ModelServerPathParameters.FORMAT))
          .filter(list -> !list.isEmpty())
          .flatMap(f -> Optional.ofNullable(formatToCodec.get(f.get(0))))
-         .orElse(new JsonCodec());
+         .orElseGet(() -> Optional.ofNullable(formatToCodec.get(preferredFormat)).orElseGet(() -> new JsonCodec()));
    }
 }

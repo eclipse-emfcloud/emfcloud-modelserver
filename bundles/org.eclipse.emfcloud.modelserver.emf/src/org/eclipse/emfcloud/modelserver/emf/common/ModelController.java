@@ -48,13 +48,13 @@ public class ModelController {
 
    @Inject
    public ModelController(final ModelRepository modelRepository, final SessionController sessionController,
-      final ServerConfiguration serverConfiguration) {
+      final ServerConfiguration serverConfiguration, final Codecs codecs) {
 
       JavalinJackson.configure(EMFJsonConverter.setupDefaultMapper());
-      codecs = new Codecs();
       this.modelRepository = modelRepository;
       this.sessionController = sessionController;
       this.serverConfiguration = serverConfiguration;
+      this.codecs = codecs;
    }
 
    public void create(final Context ctx, final String modeluri) {

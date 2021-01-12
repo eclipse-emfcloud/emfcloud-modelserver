@@ -46,11 +46,10 @@ public class SessionController extends WsHandler {
    @Inject
    private ModelRepository modelRepository;
 
-   private final Codecs encoder;
+   @Inject
+   private Codecs encoder;
 
-   public SessionController() {
-      this.encoder = new Codecs();
-   }
+   public SessionController() {}
 
    public boolean subscribe(final WsContext ctx, final String modeluri) {
       return this.subscribe(ctx, modeluri, -1); // Do not set an IdleTimeout, keep socket open until client disconnects

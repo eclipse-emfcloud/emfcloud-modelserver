@@ -60,7 +60,7 @@ import okhttp3.WebSocketListener;
 
 public class ModelServerClient implements ModelServerClientApi<EObject>, ModelServerPaths {
 
-   private static final Set<String> SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
+   private static final Set<String> DEFAULT_SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
       ModelServerPathParameters.FORMAT_XMI);
    private static final String PATCH = "PATCH";
    private static final String POST = "POST";
@@ -332,7 +332,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
 
    private String checkedFormat(final String format) {
       if (Strings.isNullOrEmpty(format)) {
-         return ModelServerPathParameters.FORMAT_JSON;
+         return getDefaultFormat();
       }
 
       String result = format.toLowerCase();
@@ -344,9 +344,24 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return result;
    }
 
-   private boolean isSupportedFormat(final String format) {
-      return SUPPORTED_FORMATS.contains(format);
+   /**
+    * Test whether format is supported. You may override this method if your model server has specific format and codecs
+    * configuration.
+    *
+    * @param format the format to test.
+    * @return true when supported.
+    */
+   protected boolean isSupportedFormat(final String format) {
+      return DEFAULT_SUPPORTED_FORMATS.contains(format);
    }
+
+   /**
+    * Get the default format to use. You may override this method if your model server has specific format and codecs
+    * configuration.
+    *
+    * @return default format
+    */
+   protected String getDefaultFormat() { return ModelServerPathParameters.FORMAT_JSON; }
 
    @Override
    public CompletableFuture<Response<Boolean>> save(final String modelUri) {
