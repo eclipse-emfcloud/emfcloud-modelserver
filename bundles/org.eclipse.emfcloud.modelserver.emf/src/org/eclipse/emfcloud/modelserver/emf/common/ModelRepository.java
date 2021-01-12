@@ -57,6 +57,10 @@ public class ModelRepository {
       return modelResourceManager.isResourceLoaded(modeluri);
    }
 
+   public Optional<Resource> loadResource(final String modeluri) {
+      return modelResourceManager.loadResource(modeluri);
+   }
+
    public Optional<EObject> getModel(final String modeluri) {
       return modelResourceManager.loadResource(modeluri)
          .flatMap(res -> {
