@@ -10,7 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.common;
 
-interface ModelServerPathParametersV1 {
+public interface ModelServerPathParametersV1 {
 
    String MODEL_URI = "modeluri";
    String FORMAT = "format";

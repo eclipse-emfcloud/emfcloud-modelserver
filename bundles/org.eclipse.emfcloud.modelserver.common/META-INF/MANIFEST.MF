@@ -14,5 +14,7 @@ Require-Bundle: com.fasterxml.jackson.core.jackson-core;bundle-version="[2.9.0,3
  org.emfjson.jackson;bundle-version="[1.2.0,2.0.0)"
 Export-Package: org.eclipse.emfcloud.modelserver.common,
  org.eclipse.emfcloud.modelserver.common.codecs,
+ org.eclipse.emfcloud.modelserver.common.utils,
  org.eclipse.emfcloud.modelserver.jsonschema
 Bundle-Vendor: EclipseSource
+Import-Package: com.google.inject.multibindings;version="1.3.0"

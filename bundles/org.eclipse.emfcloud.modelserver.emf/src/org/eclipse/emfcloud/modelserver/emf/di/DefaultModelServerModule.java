@@ -10,16 +10,14 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.di;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
+import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
+import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
-import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
+import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
+import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultFacetConfig;
@@ -27,18 +25,13 @@ import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelValidator;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelValidator;
-import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRouting;
-import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
+import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.FacetConfig;
-import org.emfjson.jackson.module.EMFModule;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
 
 public class DefaultModelServerModule extends ModelServerModule {
 
    @Override
-   protected AdapterFactory bindAdapterFactory() {
+   protected AdapterFactory provideAdapterFactory() {
       return new ComposedAdapterFactory();
    }
 
@@ -63,23 +56,22 @@ public class DefaultModelServerModule extends ModelServerModule {
    }
 
    @Override
-   protected ObjectMapper bindObjectMapper() {
-      return EMFModule.setupDefaultMapper();
+   protected void configureEPackages(final MultiBinding<EPackageConfiguration> binding) {
+      binding.addAll(MultiBindingDefaults.DEFAULT_EPACKAGE_CONFIGURATIONS);
    }
 
    @Override
-   protected Map<String, Class<? extends Codec>> bindFormatCodecs() {
-      Map<String, Class<? extends Codec>> codecs = Maps.newHashMapWithExpectedSize(2);
-      codecs.put(ModelServerPathParameters.FORMAT_XMI, XmiCodec.class);
-      codecs.put(ModelServerPathParameters.FORMAT_JSON, JsonCodec.class);
-      return codecs;
+   protected void configureRoutings(final MultiBinding<Routing> binding) {
+      binding.addAll(MultiBindingDefaults.DEFAULT_ROUTINGS);
    }
 
    @Override
-   protected Set<Class<? extends Routing>> bindModelServerRoutings() {
-      Set<Class<? extends Routing>> routings = new HashSet<>();
-      routings.add(ModelServerRouting.class);
-      return routings;
+   protected void configureAppEntryPoints(final MapBinding<EntryPointType, AppEntryPoint> binding) {
+      binding.putAll(MultiBindingDefaults.DEFAULT_APP_ENTRY_POINTS);
    }
 
+   @Override
+   protected void configureCodecs(final MapBinding<String, Codec> binding) {
+      binding.putAll(MultiBindingDefaults.DEFAULT_CODECS);
+   }
 }

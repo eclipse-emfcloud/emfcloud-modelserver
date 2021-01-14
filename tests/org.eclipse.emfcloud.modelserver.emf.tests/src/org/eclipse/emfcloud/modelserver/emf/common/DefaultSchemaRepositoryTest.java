@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * Unit tests for the {@link SchemaRepository} class.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SchemaRepositoryTest {
+public class DefaultSchemaRepositoryTest {
 
    private SchemaRepository schemaRepository;
    private ServerConfiguration serverConfiguration;
@@ -44,7 +44,7 @@ public class SchemaRepositoryTest {
       serverConfiguration = mock(ServerConfiguration.class);
       when(serverConfiguration.getUiSchemaFolderURI())
          .thenReturn(URI.createFileURI(getCWD().getAbsolutePath() + "/ui-schemas/"));
-      schemaRepository = new SchemaRepository(serverConfiguration);
+      schemaRepository = new DefaultSchemaRepository(serverConfiguration);
    }
 
    @Test

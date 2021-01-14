@@ -8,12 +8,30 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-package org.eclipse.emfcloud.modelserver.jsonschema;
+package org.eclipse.emfcloud.modelserver.emf.common;
 
-import org.eclipse.emf.ecore.EObject;
+import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import org.eclipse.emf.common.util.URI;
 
-public interface JsonSchemaConverter {
-   JsonNode from(EObject eObject);
+public interface UriHelper {
+   URI toEmfUri(String stringUri);
+
+   URI toEmfUri(java.net.URI uri);
+
+   String toUriString(java.net.URI uri);
+
+   String toUriString(URI uri);
+
+   java.net.URI toJavaUri(URI uri);
+
+   java.net.URI toJavaUri(String uri);
+
+   URI withTrailingSeparator(URI uri);
+
+   Optional<URI> toFileUri(String uri);
+
+   Optional<URI> toDirectoryUri(String uri);
+
+   boolean exists(String uri);
 }

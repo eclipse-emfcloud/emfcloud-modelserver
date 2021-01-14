@@ -28,7 +28,7 @@ import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CommandKind;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -53,7 +53,7 @@ import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SessionControllerTest {
+public class DefaultSessionControllerTest {
 
    @Mock
    private ServerConfiguration serverConfig;
@@ -76,7 +76,7 @@ public class SessionControllerTest {
    @Mock
    private ModelValidator modelValidator;
 
-   private SessionController sessionController;
+   private DefaultSessionController sessionController;
 
    @Test
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
@@ -87,7 +87,7 @@ public class SessionControllerTest {
       initializeValidClientContext(sessionId);
 
       assertTrue(
-         sessionController.subscribe(validClientCtx, validClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)));
+         sessionController.subscribe(validClientCtx, validClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI)));
       assertTrue(sessionController.isClientSubscribed(validClientCtx));
 
       verify(validClientCtx).send(argThat(jsonNodeThat(
@@ -104,7 +104,7 @@ public class SessionControllerTest {
       initializeInvalidClientContext();
 
       assertFalse(sessionController.subscribe(invalidClientCtx,
-         invalidClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)));
+         invalidClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI)));
       assertFalse(sessionController.isClientSubscribed(invalidClientCtx));
    }
 
@@ -116,7 +116,7 @@ public class SessionControllerTest {
       String sessionId = UUID.randomUUID().toString();
       initializeValidClientContext(sessionId);
       assertTrue(
-         sessionController.subscribe(validClientCtx, validClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)));
+         sessionController.subscribe(validClientCtx, validClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI)));
       assertTrue(sessionController.isClientSubscribed(validClientCtx));
 
       verify(validClientCtx).send(argThat(jsonNodeThat(
@@ -149,7 +149,7 @@ public class SessionControllerTest {
       when(validClientCtx.session.isOpen()).thenReturn(true);
       when(repository.getModel(modelUri)).thenReturn(Optional.of(EcoreFactory.eINSTANCE.createEClass()));
 
-      sessionController.subscribe(validClientCtx, validClientCtx.pathParam(ModelServerPathParameters.MODEL_URI));
+      sessionController.subscribe(validClientCtx, validClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI));
       verify(validClientCtx).send(argThat(jsonNodeThat(
          containsRegex(".\"type\":\"success\",\"data\":\"" + sessionId + "\"."))));
       verify(validClientCtx).send(argThat(jsonNodeThat(
@@ -167,11 +167,11 @@ public class SessionControllerTest {
             prop("$ref", Json.text("")))),
          prop("feature", Json.text("")),
          prop("dataValues", Json.array(Json.text(""))));
-      encodings.put(ModelServerPathParameters.FORMAT_JSON, expectedCommand);
+      encodings.put(ModelServerPathParametersV1.FORMAT_JSON, expectedCommand);
 
       when(repository.getDirtyState(modelUri)).thenReturn(true);
 
-      sessionController.modelChanged(modelUri, encodings);
+      sessionController.commandExecuted(modelUri, encodings);
 
       verify(validClientCtx).send(argThat(jsonNodeThat(
          containsRegex(".\"type\":\"incrementalUpdate\",\"data\":.*\"type\":\"set\".*"))));
@@ -188,7 +188,7 @@ public class SessionControllerTest {
       String sessionId = UUID.randomUUID().toString();
       initializeWsMessageContext(sessionId);
       assertTrue(sessionController.subscribe(messageClientCtx,
-         messageClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)));
+         messageClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI)));
 
       verify(messageClientCtx)
          .send(argThat(jsonNodeThat(containsRegex(
@@ -214,11 +214,11 @@ public class SessionControllerTest {
 
       when(repository.getDirtyState(modelUri)).thenReturn(false);
       when(validClientCtx.getSessionId()).thenReturn(sessionId);
-      when(validClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)).thenReturn(modelUri);
+      when(validClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI)).thenReturn(modelUri);
       Field sessionField = WsContext.class.getDeclaredField("session");
       FieldSetter.setField(validClientCtx, sessionField, session);
 
-      when(codecs.findFormat(validClientCtx)).thenReturn(ModelServerPathParameters.FORMAT_JSON);
+      when(codecs.findFormat(validClientCtx)).thenReturn(ModelServerPathParametersV1.FORMAT_JSON);
 
       when(repository.hasModel(modelUri)).thenReturn(true);
    }
@@ -228,7 +228,7 @@ public class SessionControllerTest {
       String modelUri = "fancytesturi";
 
       when(messageClientCtx.getSessionId()).thenReturn(sessionId);
-      when(messageClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)).thenReturn(modelUri);
+      when(messageClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI)).thenReturn(modelUri);
       when(repository.hasModel(modelUri)).thenReturn(true);
 
       Field sessionField = WsContext.class.getDeclaredField("session");
@@ -239,7 +239,7 @@ public class SessionControllerTest {
    private void initializeInvalidClientContext() throws NoSuchFieldException, SecurityException {
       String modelUri = "tedioustesturi";
 
-      when(invalidClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)).thenReturn(modelUri);
+      when(invalidClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI)).thenReturn(modelUri);
       FieldSetter.setField(invalidClientCtx, WsContext.class.getDeclaredField("session"), session);
    }
 
@@ -255,7 +255,7 @@ public class SessionControllerTest {
             bind(CodecsManager.class).toInstance(codecs);
             bind(ModelValidator.class).toInstance(modelValidator);
          }
-      }).getInstance(SessionController.class);
+      }).getInstance(DefaultSessionController.class);
    }
 
    Matcher<Object> jsonNodeThat(final Matcher<String> data) {

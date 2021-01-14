@@ -10,10 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.di;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.notify.AdapterFactory;
@@ -21,31 +18,40 @@ import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
+import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
+import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelController;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelRepository;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultSchemaController;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultSchemaRepository;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultServerController;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultSessionController;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultUriHelper;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelValidator;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
+import org.eclipse.emfcloud.modelserver.emf.common.ServerController;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
-import org.eclipse.emfcloud.modelserver.emf.common.codecs.Codecs;
+import org.eclipse.emfcloud.modelserver.emf.common.UriHelper;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
-import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
+import org.eclipse.emfcloud.modelserver.emf.configuration.DefaultServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
-import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.FacetConfig;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
-import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerEntryPoint;
+import org.eclipse.emfcloud.modelserver.emf.launch.DefaultModelServerStartup;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerStartup;
+import org.eclipse.emfcloud.modelserver.jsonschema.DefaultJsonSchemaConverter;
 import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
+import org.emfjson.jackson.module.EMFModule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import com.google.inject.multibindings.MapBinder;
-import com.google.inject.multibindings.Multibinder;
 
 import io.javalin.Javalin;
 
@@ -53,51 +59,57 @@ public abstract class ModelServerModule extends AbstractModule {
 
    protected static final Logger LOG = Logger.getLogger(ModelServerModule.class.getSimpleName());
 
-   private Multibinder<EPackageConfiguration> ePackageConfigurationBinder;
-   private final ArrayList<Class<? extends EPackageConfiguration>> ePackageConfigurations;
-
-   protected ModelServerModule() {
-      ePackageConfigurations = Lists.newArrayList(
-         EcorePackageConfiguration.class,
-         CommandPackageConfiguration.class);
-   }
-
    @Override
    protected void configure() {
-      bind(ServerConfiguration.class).in(Singleton.class);
-      ePackageConfigurationBinder = Multibinder.newSetBinder(binder(), EPackageConfiguration.class);
-      ePackageConfigurations.forEach(c -> ePackageConfigurationBinder.addBinding().to(c));
+      // configure singletons
+      bind(ModelServerStartup.class).to(bindModelServerStartup()).in(Singleton.class);
+      bind(ModelRepository.class).to(bindModelRepository()).in(Singleton.class);
+      bind(JsonSchemaConverter.class).to(bindJsonSchemaConverter()).in(Singleton.class);
+      bind(SchemaController.class).to(bindSchemaController()).in(Singleton.class);
+      bind(SchemaRepository.class).to(bindSchemaRepository()).in(Singleton.class);
+      bind(SessionController.class).to(bindSessionController()).in(Singleton.class);
+      bind(ServerConfiguration.class).to(bindServerConfiguration()).in(Singleton.class);
+      bind(ModelController.class).to(bindModelController()).in(Singleton.class);
+      bind(ServerController.class).to(bindServerController()).in(Singleton.class);
 
-      bind(ModelServerStartup.class).in(Singleton.class);
-      bind(ModelController.class).in(Singleton.class);
-      bind(ModelRepository.class).in(Singleton.class);
-      bind(JsonSchemaConverter.class).in(Singleton.class);
-      bind(SchemaController.class).in(Singleton.class);
-      bind(SchemaRepository.class).in(Singleton.class);
-      bind(SessionController.class).in(Singleton.class);
-      MapBinder.newMapBinder(binder(), EntryPointType.class, AppEntryPoint.class).addBinding(EntryPointType.REST)
-         .to(ModelServerEntryPoint.class);
-
-      // Configure default bindings
-      bind(Javalin.class).toInstance(bindJavalin());
-      bind(AdapterFactory.class).toInstance(bindAdapterFactory());
       bind(CommandCodec.class).to(bindCommandCodec()).in(Singleton.class);
       bind(ModelResourceManager.class).to(bindModelResourceManager()).in(Singleton.class);
+      bind(CodecsManager.class).to(bindCodecsManager()).in(Singleton.class);
       bind(ModelValidator.class).to(bindModelValidator()).in(Singleton.class);
       bind(FacetConfig.class).to(bindFacetConfig()).in(Singleton.class);
-      bind(ObjectMapper.class).toInstance(bindObjectMapper());
-      bind(CodecsManager.class).to(bindCodecsManager()).in(Singleton.class);
-      MapBinder<String, Codec> codecsBinder = MapBinder.newMapBinder(binder(), String.class, Codec.class);
-      bindFormatCodecs().forEach((format, codec) -> codecsBinder.addBinding(format).to(codec));
-      Multibinder<Routing> routingBinder = Multibinder.newSetBinder(binder(), Routing.class);
-      bindModelServerRoutings().forEach(routing -> routingBinder.addBinding().to(routing).in(Singleton.class));
+      bind(UriHelper.class).to(bindUriHelper()).in(Singleton.class);
+
+      // Configure instance bindings
+      bind(ObjectMapper.class).toProvider(this::provideObjectMapper);
+      bind(Javalin.class).toProvider(this::provideJavalin).in(Singleton.class);
+      bind(AdapterFactory.class).toProvider(this::provideAdapterFactory).in(Singleton.class);
+
+      // configure multi-bindings
+      configureMultiBindings();
    }
 
-   public void addEPackageConfigurations(final Collection<Class<? extends EPackageConfiguration>> configs) {
-      ePackageConfigurations.addAll(configs);
+   protected void configureMultiBindings() {
+      configure(MultiBinding.create(EPackageConfiguration.class), this::configureEPackages);
+      configure(MultiBinding.create(Routing.class), this::configureRoutings);
+      configure(MapBinding.create(EntryPointType.class, AppEntryPoint.class), this::configureAppEntryPoints);
+      configure(MapBinding.create(String.class, Codec.class), this::configureCodecs);
    }
 
-   protected Javalin bindJavalin() {
+   protected <T> void configure(final MultiBinding<T> binding, final Consumer<MultiBinding<T>> configurator) {
+      configurator.accept(binding);
+      binding.applyBinding(binder());
+   }
+
+   protected <K, V> void configure(final MapBinding<K, V> binding, final Consumer<MapBinding<K, V>> configurator) {
+      configurator.accept(binding);
+      binding.applyBinding(binder());
+   }
+
+   protected ObjectMapper provideObjectMapper() {
+      return EMFModule.setupDefaultMapper();
+   }
+
+   protected Javalin provideJavalin() {
       return Javalin.create(config -> {
          config.enableCorsForAllOrigins();
          config.requestLogger((ctx, ms) -> {
@@ -114,25 +126,48 @@ public abstract class ModelServerModule extends AbstractModule {
       });
    }
 
-   protected abstract AdapterFactory bindAdapterFactory();
+   protected Class<? extends ServerConfiguration> bindServerConfiguration() {
+      return DefaultServerConfiguration.class;
+   }
 
-   protected abstract Class<? extends CommandCodec> bindCommandCodec();
+   protected Class<? extends ModelServerStartup> bindModelServerStartup() {
+      return DefaultModelServerStartup.class;
+   }
 
-   protected abstract Class<? extends ModelResourceManager> bindModelResourceManager();
+   protected Class<? extends ModelRepository> bindModelRepository() {
+      return DefaultModelRepository.class;
+   }
 
-   protected abstract Class<? extends ModelValidator> bindModelValidator();
+   protected Class<? extends JsonSchemaConverter> bindJsonSchemaConverter() {
+      return DefaultJsonSchemaConverter.class;
+   }
 
-   protected abstract Class<? extends FacetConfig> bindFacetConfig();
+   protected Class<? extends SchemaController> bindSchemaController() {
+      return DefaultSchemaController.class;
+   }
 
-   protected abstract ObjectMapper bindObjectMapper();
+   protected Class<? extends SchemaRepository> bindSchemaRepository() {
+      return DefaultSchemaRepository.class;
+   }
 
-   /**
-    * Bind the codecs manager implementating class.
-    *
-    * @return the condecs manager implementation class.
-    */
+   protected Class<? extends SessionController> bindSessionController() {
+      return DefaultSessionController.class;
+   }
+
+   protected Class<? extends ServerController> bindServerController() {
+      return DefaultServerController.class;
+   }
+
+   protected Class<? extends ModelController> bindModelController() {
+      return DefaultModelController.class;
+   }
+
    protected Class<? extends CodecsManager> bindCodecsManager() {
-      return Codecs.class;
+      return DICodecsManager.class;
+   }
+
+   protected Class<? extends UriHelper> bindUriHelper() {
+      return DefaultUriHelper.class;
    }
 
    /**
@@ -145,10 +180,23 @@ public abstract class ModelServerModule extends AbstractModule {
     * Note this binding may also no longer be relevant in case you override the {@link #bindCodecsManager()} method.
     * </>
     *
-    * @return map with formats as key and codec classes to instantiate as values.
+    * @param binding map binding from format to codec
     */
-   protected abstract Map<String, Class<? extends Codec>> bindFormatCodecs();
+   protected abstract void configureCodecs(MapBinding<String, Codec> binding);
 
-   protected abstract Set<Class<? extends Routing>> bindModelServerRoutings();
+   protected abstract void configureEPackages(MultiBinding<EPackageConfiguration> binding);
 
+   protected abstract void configureRoutings(MultiBinding<Routing> binding);
+
+   protected abstract void configureAppEntryPoints(MapBinding<EntryPointType, AppEntryPoint> binding);
+
+   protected abstract AdapterFactory provideAdapterFactory();
+
+   protected abstract Class<? extends CommandCodec> bindCommandCodec();
+
+   protected abstract Class<? extends ModelResourceManager> bindModelResourceManager();
+
+   protected abstract Class<? extends ModelValidator> bindModelValidator();
+
+   protected abstract Class<? extends FacetConfig> bindFacetConfig();
 }

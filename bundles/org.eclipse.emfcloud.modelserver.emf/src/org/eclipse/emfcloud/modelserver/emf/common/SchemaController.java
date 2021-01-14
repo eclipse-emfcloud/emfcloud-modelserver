@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2021 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -10,45 +10,10 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
-import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
-
-import com.google.inject.Inject;
-
 import io.javalin.http.Context;
 
-public class SchemaController {
+public interface SchemaController {
+   void getTypeSchema(Context ctx, String modeluri);
 
-   private final ModelRepository modelRepository;
-   private final SchemaRepository schemaRepository;
-   private final JsonSchemaConverter jsonSchemaconverter;
-
-   @Inject
-   public SchemaController(final ModelRepository modelRepository, final SchemaRepository schemaRepository,
-      final JsonSchemaConverter jsonSchemaCreator) {
-      this.modelRepository = modelRepository;
-      this.schemaRepository = schemaRepository;
-      this.jsonSchemaconverter = jsonSchemaCreator;
-   }
-
-   public void getTypeSchema(final Context ctx, final String modeluri) {
-      this.modelRepository.getModel(modeluri).ifPresentOrElse(
-         instance -> ctx.json(JsonResponse.success(this.jsonSchemaconverter.from(instance))),
-         () -> {
-            ctx.status(404);
-            ctx.json(JsonResponse.error(
-               String.format("Type schema for '%s' not found!", ctx.queryParam(ModelServerPathParameters.MODEL_URI))));
-         });
-   }
-
-   public void getUiSchema(final Context ctx, final String schemaname) {
-      this.schemaRepository.loadUiSchema(schemaname).ifPresentOrElse(
-         jsonNode -> ctx.json(JsonResponse.success(jsonNode)),
-         () -> {
-            ctx.status(404);
-            ctx.json(JsonResponse.error(
-               String.format("UI schema '%s' not found!", ctx.queryParam(ModelServerPathParameters.SCHEMA_NAME))));
-         });
-   }
-
+   void getUiSchema(Context ctx, String schemaname);
 }

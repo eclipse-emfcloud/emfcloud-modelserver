@@ -20,11 +20,13 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultUriHelper;
 import org.junit.Test;
 
-public class ServerConfigurationTest {
+public class DefaultServerConfigurationTest {
 
-   private final ServerConfiguration serverConfiguration = new ServerConfiguration();
+   private static final DefaultUriHelper URI_HELPER = new DefaultUriHelper();
+   private final ServerConfiguration serverConfiguration = new DefaultServerConfiguration(URI_HELPER);
 
    @Test
    public void normalizeWorkspaceRoot() {
@@ -91,20 +93,20 @@ public class ServerConfigurationTest {
 
    @Test
    public void isValidFileURI() {
-      assertThat(ServerConfiguration.isValidFileURI(getCWD().getAbsolutePath()), is(true));
+      assertThat(URI_HELPER.exists(getCWD().getAbsolutePath()), is(true));
       assertThat("file URI deemed invalid",
-         ServerConfiguration.isValidFileURI(URI.createFileURI(getCWD().getAbsolutePath()).toString()),
+         URI_HELPER.exists(URI.createFileURI(getCWD().getAbsolutePath()).toString()),
          is(true));
-      assertThat("relative path deemed invalid", ServerConfiguration.isValidFileURI("."), is(true));
+      assertThat("relative path deemed invalid", URI_HELPER.exists("."), is(true));
       String bogusPath = new File(getCWD(), "$this$/cannot/likely/exist").getAbsolutePath();
-      assertThat("non-existent path deemed valid", ServerConfiguration.isValidFileURI(bogusPath), is(false));
+      assertThat("non-existent path deemed valid", URI_HELPER.exists(bogusPath), is(false));
    }
 
    @Test
    public void getWorkspaceEntries() {
       assumeThat(getCWD().getName(), is("org.eclipse.emfcloud.modelserver.emf.tests"));
       serverConfiguration.setWorkspaceRoot(".");
-      assertThat(serverConfiguration.getWorkspaceEntries(), hasItem(endsWith("/ServerConfigurationTest.class")));
+      assertThat(serverConfiguration.getWorkspaceEntries(), hasItem(endsWith("/DefaultServerConfigurationTest.class")));
    }
 
    //

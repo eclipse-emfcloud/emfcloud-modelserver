@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
 
-public abstract class JsonSchemaTestHelper {
+public abstract class DefaultJsonSchemaConverterTestHelper {
 
    protected void prettyPrintResultsHelper(final JsonNode expected, final JsonNode actual)
       throws JsonProcessingException {
