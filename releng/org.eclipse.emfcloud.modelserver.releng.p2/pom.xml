@@ -1,135 +1,134 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.eclipse.emfcloud.modelserver</groupId>
-		<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
-		<version>0.7.0-SNAPSHOT</version>
-		<relativePath>../..</relativePath>
-	</parent>
-	<artifactId>org.eclipse.emfcloud.modelserver.releng.p2</artifactId>
-	<packaging>eclipse-repository</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <groupId>org.eclipse.emfcloud.modelserver</groupId>
+      <artifactId>org.eclipse.emfcloud.modelserver.releng.parent</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <relativePath>..</relativePath>
+   </parent>
+   <artifactId>org.eclipse.emfcloud.modelserver.releng.p2</artifactId>
+   <packaging>eclipse-repository</packaging>
 
-	<profiles>
-		<profile>
-			<id>p2-release</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
+   <profiles>
+      <profile>
+         <id>p2-release</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+         </activation>
 
-			<properties>
-				<p2.repository.dest>${project.basedir}/../target/repository</p2.repository.dest>
-				<local.p2.root>${user.home}</local.p2.root>
-				<remote.p2.root>genie.emfcloud@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/emfcloud</remote.p2.root>
-				<repository.path>modelserver/p2/</repository.path>
-				<!-- local source directory for rsync (read from this directory) -->
-				<rsync.local.dir>${local.p2.root}/${repository.path}</rsync.local.dir>
-				<!-- remote rsync host -->
-				<rsync.remote.dir>${remote.p2.root}/${repository.path}</rsync.remote.dir>
-				<!-- pass "-n" to perform a trial run with no changes made -->
-				<dryrun></dryrun>
-			</properties>
+         <properties>
+            <p2.repository.dest>${project.basedir}/../target/repository</p2.repository.dest>
+            <local.p2.root>${user.home}</local.p2.root>
+            <remote.p2.root>genie.emfcloud@projects-storage.eclipse.org:/home/data/httpd/download.eclipse.org/emfcloud</remote.p2.root>
+            <repository.path>modelserver/p2/</repository.path>
+            <!-- local source directory for rsync (read from this directory) -->
+            <rsync.local.dir>${local.p2.root}/${repository.path}</rsync.local.dir>
+            <!-- remote rsync host -->
+            <rsync.remote.dir>${remote.p2.root}/${repository.path}</rsync.remote.dir>
+            <!-- pass "-n" to perform a trial run with no changes made -->
+            <dryrun></dryrun>
+         </properties>
 
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<version>${maven-antrun-plugin.version}</version>
-						<executions>
-							<execution>
-								<id>update-local-repository</id>
-								<phase>prepare-package</phase>
-								<configuration>
-									<target>
-										<ant antfile="${basedir}/rsync.ant" target="rsync-update">
-										</ant>
-									</target>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
+         <build>
+            <plugins>
+               <plugin>
+                  <artifactId>maven-antrun-plugin</artifactId>
+                  <version>${maven.antrun.version}</version>
+                  <executions>
+                     <execution>
+                        <id>update-local-repository</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                           <target>
+                              <ant antfile="${basedir}/rsync.ant" target="rsync-update">
+                              </ant>
+                           </target>
+                        </configuration>
+                        <goals>
+                           <goal>run</goal>
+                        </goals>
+                     </execution>
 
-							<execution>
-								<id>deploy-repository</id>
-								<phase>verify</phase>
-								<configuration>
-									<target>
-										<ant antfile="${basedir}/rsync.ant" target="rsync-commit">
-										</ant>
-									</target>
-								</configuration>
-								<goals>
-									<goal>run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
+                     <execution>
+                        <id>deploy-repository</id>
+                        <phase>verify</phase>
+                        <configuration>
+                           <target>
+                              <ant antfile="${basedir}/rsync.ant" target="rsync-commit">
+                              </ant>
+                           </target>
+                        </configuration>
+                        <goals>
+                           <goal>run</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
 
-					<plugin>
-						<groupId>org.eclipse.tycho.extras</groupId>
-						<artifactId>tycho-eclipserun-plugin</artifactId>
-						<version>${tycho-version}</version>
-						<configuration>
-							<executionEnvironment>JavaSE-11</executionEnvironment>
-							<!-- IMPORTANT: DO NOT split the arg line -->
-							<appArgLine>-application org.eclipse.ant.core.antRunner -buildfile packaging-p2composite.ant p2.composite.add -Dsite.label="Eclipse EMF.Cloud Model Server Nightly Updatesite" -Dproject.build.directory=${project.build.directory} -DunqualifiedVersion=${unqualifiedVersion} -DbuildQualifier=${buildQualifier} -Dsoftware.download.area=${rsync.local.dir}</appArgLine>
-							<repositories>
-								<repository>
-									<id>2019-09</id>
-									<layout>p2</layout>
-									<url>http://download.eclipse.org/releases/2019-09</url>
-								</repository>
-							</repositories>
-							<dependencies>
-								<dependency>
-									<artifactId>org.eclipse.ant.core</artifactId>
-									<type>eclipse-plugin</type>
-								</dependency>
-								<dependency>
-									<artifactId>org.apache.ant</artifactId>
-									<type>eclipse-plugin</type>
-								</dependency>
-								<dependency>
-									<artifactId>org.eclipse.equinox.p2.repository.tools</artifactId>
-									<type>eclipse-plugin</type>
-								</dependency>
-								<dependency>
-									<artifactId>org.eclipse.equinox.p2.core.feature</artifactId>
-									<type>eclipse-feature</type>
-								</dependency>
-								<dependency>
-									<artifactId>org.eclipse.equinox.p2.extras.feature</artifactId>
-									<type>eclipse-feature</type>
-								</dependency>
-								<dependency>
-									<artifactId>org.eclipse.equinox.ds</artifactId>
-									<type>eclipse-plugin</type>
-								</dependency>
-							</dependencies>
-						</configuration>
-						<executions>
-							<execution>
-								<id>add-p2-composite-repository</id>
-								<phase>package</phase>
-								<goals>
-									<goal>eclipse-run</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<!-- Skip cleaning of this module otherwise the release build is not 
-						working on the jenkins instance -->
-					<plugin>
-						<artifactId>maven-clean-plugin</artifactId>
-						<version>3.1.0</version>
-						<configuration>
-							<skip>true</skip>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+               <plugin>
+                  <groupId>org.eclipse.tycho.extras</groupId>
+                  <artifactId>tycho-eclipserun-plugin</artifactId>
+                  <version>${tycho.version}</version>
+                  <configuration>
+                     <executionEnvironment>JavaSE-11</executionEnvironment>
+                     <!-- IMPORTANT: DO NOT split the arg line -->
+                     <appArgLine>-application org.eclipse.ant.core.antRunner -buildfile packaging-p2composite.ant p2.composite.add -Dsite.label="Eclipse EMF.Cloud Model Server Nightly Updatesite"
+                        -Dproject.build.directory=${project.build.directory} -DunqualifiedVersion=${unqualifiedVersion} -DbuildQualifier=${buildQualifier} -Dsoftware.download.area=${rsync.local.dir}</appArgLine>
+                     <repositories>
+                        <repository>
+                           <id>2019-09</id>
+                           <layout>p2</layout>
+                           <url>http://download.eclipse.org/releases/2019-09</url>
+                        </repository>
+                     </repositories>
+                     <dependencies>
+                        <dependency>
+                           <artifactId>org.eclipse.ant.core</artifactId>
+                           <type>eclipse-plugin</type>
+                        </dependency>
+                        <dependency>
+                           <artifactId>org.apache.ant</artifactId>
+                           <type>eclipse-plugin</type>
+                        </dependency>
+                        <dependency>
+                           <artifactId>org.eclipse.equinox.p2.repository.tools</artifactId>
+                           <type>eclipse-plugin</type>
+                        </dependency>
+                        <dependency>
+                           <artifactId>org.eclipse.equinox.p2.core.feature</artifactId>
+                           <type>eclipse-feature</type>
+                        </dependency>
+                        <dependency>
+                           <artifactId>org.eclipse.equinox.p2.extras.feature</artifactId>
+                           <type>eclipse-feature</type>
+                        </dependency>
+                        <dependency>
+                           <artifactId>org.eclipse.equinox.ds</artifactId>
+                           <type>eclipse-plugin</type>
+                        </dependency>
+                     </dependencies>
+                  </configuration>
+                  <executions>
+                     <execution>
+                        <id>add-p2-composite-repository</id>
+                        <phase>package</phase>
+                        <goals>
+                           <goal>eclipse-run</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+               <!-- Skip cleaning of this module otherwise the release build is not working on the jenkins instance -->
+               <plugin>
+                  <artifactId>maven-clean-plugin</artifactId>
+                  <version>${maven.clean.version}</version>
+                  <configuration>
+                     <skip>true</skip>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
 </project>

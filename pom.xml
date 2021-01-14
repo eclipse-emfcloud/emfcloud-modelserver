@@ -1,497 +1,565 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.eclipse.emfcloud.modelserver</groupId>
-	<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
-	<description>parent for all modelserver modules</description>
-	<version>0.7.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.eclipse.emfcloud.modelserver</groupId>
+   <artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
+   <description>parent for all modelserver modules</description>
+   <version>0.7.0-SNAPSHOT</version>
+   <packaging>pom</packaging>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>11</java.version>
-		<project.build.java.target>1.8</project.build.java.target>
-		<maven.deploy.skip>true</maven.deploy.skip>
-		<target.version>0.7.0-SNAPSHOT</target.version>
-	</properties>
+   <!-- Required metadata for deploying releases to mvn central -->
 
-	<modules>
-		<module>bundles/org.eclipse.emfcloud.modelserver.client</module>
-		<module>bundles/org.eclipse.emfcloud.modelserver.common</module>
-		<module>bundles/org.eclipse.emfcloud.modelserver.edit</module>
-		<module>bundles/org.eclipse.emfcloud.modelserver.emf</module>
-		<module>bundles/org.eclipse.emfcloud.modelserver.lib</module>
-		<module>examples/org.eclipse.emfcloud.modelserver.example</module>
-		<module>examples/org.eclipse.emfcloud.modelserver.coffee.model</module>
-		<module>releng/org.eclipse.emfcloud.modelserver.codecoverage</module>
-		<module>releng/org.eclipse.emfcloud.modelserver.codestyle</module>
-	</modules>
+   <url>https://github.com/eclipse/emfcloud-modelserver</url>
 
-	<build>
-		<sourceDirectory>src</sourceDirectory>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.4</version>
-				<executions>
-					<execution>
-						<id>prepare-agent</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- to disable use -Dcheckstyle.skip -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.1.0</version>
-				<configuration>
-					<configLocation>releng/org.eclipse.emfcloud.modelserver.codestyle/checkstyle/modelserver-checkstyle.xml</configLocation>
-					<consoleOutput>true</consoleOutput>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
-						<phase>verify</phase>
-					</execution>
-				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>com.puppycrawl.tools</groupId>
-						<artifactId>checkstyle</artifactId>
-						<version>8.29</version>
-					</dependency>
-				</dependencies>
-			</plugin>
-		</plugins>
-	</build>
+   <licenses>
+      <license>
+         <name>Eclipse Public License - v2.0</name>
+         <url>http://www.eclipse.org/legal/epl-v20.html</url>
+         <distribution>repo</distribution>
+      </license>
+      <license>
+         <name>MIT License</name>
+         <url>https://opensource.org/licenses/MIT</url>
+         <distribution>repo</distribution>
+      </license>
+   </licenses>
 
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>2.23.0</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+   <developers>
+      <developer>
+         <name>Nina Doschek</name>
+         <email>ndoschek@eclipsesource.com</email>
+         <organization>EclipseSource</organization>
+         <organizationUrl>http://www.eclipsesource.com</organizationUrl>
+      </developer>
+      <developer>
+         <name>Martin Fleck</name>
+         <email>mfleck@eclipsesource.com</email>
+         <organization>EclipseSource</organization>
+         <organizationUrl>http://www.eclipsesource.com</organizationUrl>
+      </developer>
+      <developer>
+         <name>Eugen Neufeld</name>
+         <email>eneufeld@eclipsesource.com</email>
+         <organization>EclipseSource</organization>
+         <organizationUrl>http://www.eclipsesource.com</organizationUrl>
+      </developer>
+      <developer>
+         <name>Tobias Ortmayr</name>
+         <email>tortmayr@eclipsesource.com</email>
+         <organization>EclipseSource</organization>
+         <organizationUrl>http://www.eclipsesource.com</organizationUrl>
+      </developer>
+   </developers>
 
-	<profiles>
-		<profile>
-			<id>p2</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
+   <scm>
+      <url>https://github.com/eclipse/emfcloud-modelserver</url>
+      <connection>scm:git@github.com:eclipse/emfcloud-modelserver.git</connection>
+      <developerConnection>scm:git@github.com:eclipse/emfcloud-modelserver.git</developerConnection>
+      <tag>HEAD</tag>
+   </scm>
 
-			<properties>
-				<package-type>eclipse-plugin</package-type>
-				<tycho-version>1.6.0</tycho-version>
-				<tychoExtrasVersion>1.6.0</tychoExtrasVersion>
-				<maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
-			</properties>
+   <!-- Module Configuration -->
 
-			<modules>
-				<module>features/org.eclipse.emfcloud.modelserver.feature</module>
-			</modules>
+   <modules>
+      <module>bundles</module>
+      <module>examples</module>
+      <module>releng</module>
+      <module>tests</module>
+   </modules>
 
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.eclipse.tycho</groupId>
-							<artifactId>tycho-compiler-plugin</artifactId>
-							<version>${tycho-version}</version>
-						</plugin>
-						<!-- enable tycho build extension -->
-						<plugin>
-							<groupId>org.eclipse.tycho</groupId>
-							<artifactId>tycho-maven-plugin</artifactId>
-							<version>${tycho-version}</version>
-							<extensions>true</extensions>
-						</plugin>
-						<plugin>
-							<!-- enable source bundle generation -->
-							<groupId>org.eclipse.tycho</groupId>
-							<artifactId>tycho-source-plugin</artifactId>
-							<version>${tycho-version}</version>
-						</plugin>
-						<plugin>
-							<groupId>org.eclipse.tycho</groupId>
-							<artifactId>target-platform-configuration</artifactId>
-							<version>${tycho-version}</version>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-resources-plugin</artifactId>
-						<version>2.7</version>
-						<configuration>
-							<encoding>UTF-8</encoding>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>tycho-maven-plugin</artifactId>
-						<extensions>true</extensions>
-					</plugin>
-					<plugin>
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>tycho-compiler-plugin</artifactId>
-						<configuration>
-							<source>${java.version}</source>
-							<target>${java.version}</target>
-							<optimize>true</optimize>
-							<showWarnings>true</showWarnings>
-						</configuration>
-					</plugin>
-					<plugin>
-						<!-- enable source bundle generation -->
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>tycho-source-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>plugin-source</id>
-								<goals>
-									<goal>plugin-source</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>target-platform-configuration</artifactId>
-						<configuration>
-							<includePackedArtifacts>true</includePackedArtifacts>
-							<targetDefinitionIncludeSource>honor</targetDefinitionIncludeSource>
-							<environments>
-								<environment>
-									<os>win32</os>
-									<ws>win32</ws>
-									<arch>x86_64</arch>
-								</environment>
-								<environment>
-									<os>linux</os>
-									<ws>gtk</ws>
-									<arch>x86_64</arch>
-								</environment>
-								<environment>
-									<os>macosx</os>
-									<ws>cocoa</ws>
-									<arch>x86_64</arch>
-								</environment>
-							</environments>
-							<target>
-								<artifact>
-									<groupId>org.eclipse.emfcloud.modelserver</groupId>
-									<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
-									<classifier>releng/org.eclipse.emfcloud.modelserver.releng.target/r2020-09</classifier>
-									<version>${target.version}</version>
-								</artifact>
-							</target>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+   <!-- Properties -->
 
-		<profile>
-			<id>p2-release</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
+   <properties>
+      <!-- Encoding: used by the maven-resource-plugin -->
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-			<properties>
-				<package-type>eclipse-plugin</package-type>
-			</properties>
+      <!-- Compiler: used by the maven-compiler-plugin for Java source and target -->
+      <maven.compiler.source>11</maven.compiler.source>
+      <maven.compiler.target>11</maven.compiler.target>
 
-			<modules>
-				<module>features/org.eclipse.emfcloud.modelserver.feature</module>
-				<module>releng/org.eclipse.emfcloud.modelserver.releng.p2</module>
-			</modules>
+      <!-- Deployment: used by the maven-deploy-plugin -->
+      <maven.deploy.skip>true</maven.deploy.skip>
 
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.eclipse.tycho</groupId>
-							<artifactId>tycho-p2-repository-plugin</artifactId>
-							<version>${tycho-version}</version>
-						</plugin>
-						<plugin>
-							<groupId>org.eclipse.tycho</groupId>
-							<artifactId>tycho-p2-plugin</artifactId>
-							<version>${tycho-version}</version>
-						</plugin>
-						<plugin>
-							<groupId>org.eclipse.tycho.extras</groupId>
-							<artifactId>tycho-source-feature-plugin</artifactId>
-							<version>${tychoExtrasVersion}</version>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-				<plugins>
-					<plugin>
-						<groupId>org.eclipse.tycho.extras</groupId>
-						<artifactId>tycho-source-feature-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>source-feature</id>
-								<phase>package</phase>
-								<goals>
-									<goal>source-feature</goal>
-								</goals>
-								<configuration>
-									<excludes>
-										<plugin id="org.apache.batik.pdf" />
-										<plugin id="org.eclipse.wst.common.project.facet.core" />
-										<plugin id="org.eclipse.emfcloud.modelserver.lib" />
-									</excludes>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>tycho-p2-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>attach-p2-metadata</id>
-								<phase>package</phase>
-								<goals>
-									<goal>p2-metadata</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<defaultP2Metadata>false</defaultP2Metadata>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>tycho-p2-repository-plugin</artifactId>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+      <!-- Target: version used to reference target platform from our releng bundle -->
+      <target.version>0.7.0-SNAPSHOT</target.version>
 
-		<profile>
-			<id>m2</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
+      <!-- Package Type: type of bundles to create (can be re-defined by profiles) -->
+      <package.type>eclipse-plugin</package.type>
+      <package.type.test>eclipse-test-plugin</package.type.test>
 
-			<properties>
-				<package-type>jar</package-type>
-			</properties>
+      <!-- Maven Plugin Versions: General maven plugin versions -->
+      <tycho.version>2.2.0</tycho.version>
+      <jacoco.version>0.8.6</jacoco.version>
+      <maven.compiler.version>3.8.1</maven.compiler.version>
+      <maven.clean.version>3.1.0</maven.clean.version>
+      <maven.checkstyle.version>3.1.1</maven.checkstyle.version>
+      <puppycrawl.checkstyle.version>8.39</puppycrawl.checkstyle.version>
+      <maven.resources.version>3.2.0</maven.resources.version>
+      <maven.surefire.version>3.0.0-M5</maven.surefire.version>
+      <maven.failsafe.version>3.0.0-M5</maven.failsafe.version>
+      <maven.source.plugin>3.2.0</maven.source.plugin>
+      <maven.dependency.version>3.1.2</maven.dependency.version>
+      <maven.shade.version>3.2.4</maven.shade.version>
+      <maven.antrun.version>3.0.0</maven.antrun.version>
+      <maven.deploy.version>3.0.0-M1</maven.deploy.version>
+      <codehaus.mojo.maven.version>3.2.0</codehaus.mojo.maven.version>
 
-			<repositories>
-				<repository>
-					<id>sonatype</id>
-					<name>Sonatype</name>
-					<url>https://oss.sonatype.org/content/groups/public</url>
-				</repository>
-			</repositories>
+      <!-- Dependency Versions: Version of dependencies provided by the target platform in p2. We try to match the p2-version if possible. -->
+      <slf4j.log4j12.version>1.7.30</slf4j.log4j12.version>
+      <google.guice.version>3.0</google.guice.version>
+      <google.guava.version>27.1-jre</google.guava.version>
+      <jackson.databind.version>2.10.3</jackson.databind.version>
+      <emf.ecore.version>2.23.0</emf.ecore.version>
+      <emf.ecore.xmi.version>2.16.0</emf.ecore.xmi.version>
+      <emf.edit.version>2.16.0</emf.edit.version>
+      <emfjson.jackson.version>1.2.0</emfjson.jackson.version>
+      <commons.io.version>2.6</commons.io.version>
+      <junit.version>4.13.1</junit.version>
+      <mockito.core.version>2.23.0</mockito.core.version>
+      <hamcrest.core.version>1.3</hamcrest.core.version>
+      <maven.jar.version>3.2.0</maven.jar.version>
+      <maven.dependency.version>3.1.2</maven.dependency.version>
 
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<version>2.22.1</version>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<version>3.0.1</version>
-						<executions>
-							<execution>
-								<id>attach-sources</id>
-								<goals>
-									<goal>jar-no-fork</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<!-- to disable use -Dcheckstyle.skip -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-checkstyle-plugin</artifactId>
-						<version>3.1.0</version>
-						<configuration>
-							<configLocation>releng/org.eclipse.emfcloud.modelserver.codestyle/checkstyle/modelserver-checkstyle.xml</configLocation>
-							<consoleOutput>true</consoleOutput>
-						</configuration>
-						<executions>
-							<execution>
-								<goals>
-									<goal>check</goal>
-								</goals>
-								<phase>verify</phase>
-							</execution>
-						</executions>
-						<dependencies>
-							<dependency>
-								<groupId>com.puppycrawl.tools</groupId>
-								<artifactId>checkstyle</artifactId>
-								<version>8.29</version>
-							</dependency>
-						</dependencies>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+      <!-- External Dependency Versions: Versions of dependencies that are not available via target platform. -->
+      <jetbrains.annotations.version>20.1.0</jetbrains.annotations.version>
+      <commons.cli.version>1.4</commons.cli.version>
+      <kotlin.stdlib.version>1.4.10</kotlin.stdlib.version>
+      <kotlin.stdlib.common.version>1.4.10</kotlin.stdlib.common.version>
+      <squareup.okhttp.version>4.9.0</squareup.okhttp.version>
+      <squareup.okio.version>2.10.0</squareup.okio.version>
+      <jetty.websocket.api.version>9.4.36.v20210114</jetty.websocket.api.version>
+      <jetty.websocket.servlet.version>9.4.36.v20210114</jetty.websocket.servlet.version>
+      <javalin.version>3.1.0</javalin.version> <!-- we can only upgrade to the latest version after some mocking issue is fixed, see https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/63 -->
+      <mockito.inline.version>2.23.0</mockito.inline.version>
+      <gmazzo.okhttp.mock.version>1.3.2</gmazzo.okhttp.mock.version>
+   </properties>
 
-		<profile>
-			<id>m2-release</id>
+   <build>
+      <sourceDirectory>src</sourceDirectory>
+      <plugins>
+         <!-- Compilation -->
+         <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>${maven.compiler.version}</version>
+         </plugin>
+         <!-- Code Coverage -->
+         <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <executions>
+               <execution>
+                  <id>prepare-agent</id>
+                  <goals>
+                     <goal>prepare-agent</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <!-- Check Style: to disable use -Dcheckstyle.skip -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <version>${maven.checkstyle.version}</version>
+            <configuration>
+               <configLocation>releng/org.eclipse.emfcloud.modelserver.codestyle/checkstyle/modelserver-checkstyle.xml</configLocation>
+               <consoleOutput>true</consoleOutput>
+            </configuration>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>check</goal>
+                  </goals>
+                  <phase>verify</phase>
+               </execution>
+            </executions>
+            <dependencies>
+               <dependency>
+                  <groupId>com.puppycrawl.tools</groupId>
+                  <artifactId>checkstyle</artifactId>
+                  <version>${puppycrawl.checkstyle.version}</version>
+               </dependency>
+            </dependencies>
+         </plugin>
+      </plugins>
+   </build>
 
-			<properties>
-				<package-type>jar</package-type>
-			</properties>
+   <profiles>
+      <!-- P2 Profile: Runs a Tycho-based build that generates Eclipse artifacts -->
+      <profile>
+         <id>p2</id>
+         <activation>
+            <activeByDefault>true</activeByDefault>
+         </activation>
 
-			<distributionManagement>
-				<snapshotRepository>
-					<id>ossrh</id>
-					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-				</snapshotRepository>
-			</distributionManagement>
+         <modules>
+            <module>features</module>
+         </modules>
 
-			<build>
-				<plugins>
-					<!-- To release to Sonatype/Maven central -->
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.8</version>
-						<extensions>true</extensions>
-						<configuration>
-							<serverId>ossrh</serverId>
-							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-							<autoreleaseafterclose>false</autoreleaseafterclose>
-						</configuration>
-					</plugin>
-					<!-- To generate javadoc -->
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>org.eclipse.tycho</groupId>
+                     <artifactId>tycho-compiler-plugin</artifactId>
+                     <version>${tycho.version}</version>
+                  </plugin>
+                  <!-- enable tycho build extension -->
+                  <plugin>
+                     <groupId>org.eclipse.tycho</groupId>
+                     <artifactId>tycho-maven-plugin</artifactId>
+                     <version>${tycho.version}</version>
+                     <extensions>true</extensions>
+                  </plugin>
+                  <plugin>
+                     <!-- enable source bundle generation -->
+                     <groupId>org.eclipse.tycho</groupId>
+                     <artifactId>tycho-source-plugin</artifactId>
+                     <version>${tycho.version}</version>
+                  </plugin>
+                  <plugin>
+                     <groupId>org.eclipse.tycho</groupId>
+                     <artifactId>target-platform-configuration</artifactId>
+                     <version>${tycho.version}</version>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-resources-plugin</artifactId>
+                  <version>${maven.resources.version}</version>
+               </plugin>
+               <plugin>
+                  <groupId>org.eclipse.tycho</groupId>
+                  <artifactId>tycho-maven-plugin</artifactId>
+                  <extensions>true</extensions>
+               </plugin>
+               <plugin>
+                  <groupId>org.eclipse.tycho</groupId>
+                  <artifactId>tycho-compiler-plugin</artifactId>
+                  <configuration>
+                     <optimize>true</optimize>
+                     <showDeprecation>true</showDeprecation>
+                     <showWarnings>true</showWarnings>
+                  </configuration>
+               </plugin>
+               <plugin>
+                  <!-- enable source bundle generation -->
+                  <groupId>org.eclipse.tycho</groupId>
+                  <artifactId>tycho-source-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>plugin-source</id>
+                        <goals>
+                           <goal>plugin-source</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.eclipse.tycho</groupId>
+                  <artifactId>target-platform-configuration</artifactId>
+                  <configuration>
+                     <includePackedArtifacts>true</includePackedArtifacts>
+                     <targetDefinitionIncludeSource>honor</targetDefinitionIncludeSource>
+                     <environments>
+                        <environment>
+                           <os>win32</os>
+                           <ws>win32</ws>
+                           <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                           <os>linux</os>
+                           <ws>gtk</ws>
+                           <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                           <os>macosx</os>
+                           <ws>cocoa</ws>
+                           <arch>x86_64</arch>
+                        </environment>
+                     </environments>
+                     <target>
+                        <artifact>
+                           <groupId>org.eclipse.emfcloud.modelserver</groupId>
+                           <artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
+                           <classifier>releng/org.eclipse.emfcloud.modelserver.releng.target/r2020-09</classifier>
+                           <version>${target.version}</version>
+                        </artifact>
+                     </target>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
 
-					<!-- Deactivate for now. Not needed for snapshot deployments -->
-					<!-- <plugin> -->
-					<!-- <groupId>org.apache.maven.plugins</groupId> -->
-					<!-- <artifactId>maven-javadoc-plugin</artifactId> -->
-					<!-- <version>3.1.0</version> -->
-					<!-- <executions> -->
-					<!-- <execution> -->
-					<!-- <id>attach-javadocs</id> -->
-					<!-- <goals> -->
-					<!-- <goal>jar</goal> -->
-					<!-- </goals> -->
-					<!-- <configuration> -->
-					<!-- <additionalJOption>-Xdoclint:none</additionalJOption> -->
-					<!-- <tags> -->
-					<!-- <tag> -->
-					<!-- <name>generated</name> -->
-					<!-- <placement>a</placement> -->
-					<!-- <head></head> -->
-					<!-- </tag> -->
-					<!-- <tag> -->
-					<!-- <name>ordered</name> -->
-					<!-- <placement>a</placement> -->
-					<!-- <head></head> -->
-					<!-- </tag> -->
-					<!-- <tag> -->
-					<!-- <name>model</name> -->
-					<!-- <placement>a</placement> -->
-					<!-- <head>Model:</head> -->
-					<!-- </tag> -->
-					<!-- </tags> -->
-					<!-- </configuration> -->
-					<!-- </execution> -->
-					<!-- </executions> -->
-					<!-- </plugin> -->
+      <!-- P2-Release Profile: Used to build and Eclipse update site. Should only be used in conjunction with the P2 Profile -->
+      <profile>
+         <id>p2-release</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+         </activation>
 
-					<!-- To sign the artifacts -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.6</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-								<configuration>
-									<gpgArguments>
-										<arg>--pinentry-mode</arg>
-										<arg>loopback</arg>
-									</gpgArguments>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
+         <build>
+            <pluginManagement>
+               <plugins>
+                  <plugin>
+                     <groupId>org.eclipse.tycho</groupId>
+                     <artifactId>tycho-p2-repository-plugin</artifactId>
+                     <version>${tycho.version}</version>
+                  </plugin>
+                  <plugin>
+                     <groupId>org.eclipse.tycho</groupId>
+                     <artifactId>tycho-p2-plugin</artifactId>
+                     <version>${tycho.version}</version>
+                  </plugin>
+               </plugins>
+            </pluginManagement>
+            <plugins>
+               <plugin>
+                  <groupId>org.eclipse.tycho</groupId>
+                  <artifactId>tycho-source-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>feature-source</id>
+                        <phase>package</phase>
+                        <goals>
+                           <goal>feature-source</goal>
+                        </goals>
+                        <configuration>
+                           <excludes>
+                              <plugin id="org.apache.batik.pdf" />
+                              <plugin id="org.eclipse.wst.common.project.facet.core" />
+                              <plugin id="org.eclipse.emfcloud.modelserver.lib" />
+                           </excludes>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.eclipse.tycho</groupId>
+                  <artifactId>tycho-p2-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>attach-p2-metadata</id>
+                        <phase>package</phase>
+                        <goals>
+                           <goal>p2-metadata</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+                  <configuration>
+                     <defaultP2Metadata>false</defaultP2Metadata>
+                  </configuration>
+               </plugin>
+               <plugin>
+                  <groupId>org.eclipse.tycho</groupId>
+                  <artifactId>tycho-p2-repository-plugin</artifactId>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
 
-			</build>
-		</profile>
-	</profiles>
+      <!-- M2 Profile: Runs a standard maven build that produces jar artifacts -->
+      <profile>
+         <id>m2</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+         </activation>
 
-	<!-- Additional required metadata for deploying releases to mvn central -->
+         <properties>
+            <package.type>jar</package.type>
+            <package.type.test>jar</package.type.test>
+         </properties>
 
-	<url>https://github.com/eclipse/emfcloud-modelserver</url>
+         <repositories>
+            <repository>
+               <id>sonatype</id>
+               <name>Sonatype</name>
+               <url>https://oss.sonatype.org/content/groups/public</url>
+            </repository>
+         </repositories>
 
-	<licenses>
-		<license>
-			<name>Eclipse Public License - v 2.0</name>
-			<url>http://www.eclipse.org/legal/epl-v20.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
+         <!-- Provide a list of dependencies that are provided by the target platform in p2 -->
+         <dependencies>
+            <dependency>
+               <groupId>org.slf4j</groupId>
+               <artifactId>slf4j-log4j12</artifactId>
+               <version>${slf4j.log4j12.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>com.google.inject</groupId>
+               <artifactId>guice</artifactId>
+               <version>${google.guice.version}</version>
+               <classifier>no_aop</classifier>
+            </dependency>
+            <dependency>
+               <groupId>com.google.inject.extensions</groupId>
+               <artifactId>guice-multibindings</artifactId>
+               <version>${google.guice.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>com.google.guava</groupId>
+               <artifactId>guava</artifactId>
+               <version>${google.guava.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>com.fasterxml.jackson.core</groupId>
+               <artifactId>jackson-databind</artifactId>
+               <version>${jackson.databind.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>org.eclipse.emf</groupId>
+               <artifactId>org.eclipse.emf.ecore</artifactId>
+               <version>${emf.ecore.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>org.eclipse.emf</groupId>
+               <artifactId>org.eclipse.emf.edit</artifactId>
+               <version>${emf.edit.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>org.eclipse.emf</groupId>
+               <artifactId>org.eclipse.emf.ecore.xmi</artifactId>
+               <version>${emf.ecore.xmi.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>org.emfjson</groupId>
+               <artifactId>emfjson-jackson</artifactId>
+               <version>${emfjson.jackson.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>commons-io</groupId>
+               <artifactId>commons-io</artifactId>
+               <version>${commons.io.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>junit</groupId>
+               <artifactId>junit</artifactId>
+               <version>${junit.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>org.mockito</groupId>
+               <artifactId>mockito-core</artifactId>
+               <version>${mockito.core.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>org.hamcrest</groupId>
+               <artifactId>hamcrest-core</artifactId>
+               <version>${hamcrest.core.version}</version>
+            </dependency>
+         </dependencies>
 
-	<developers>
-		<developer>
-			<name>Edgar Mueller</name>
-			<email>emueller@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
-		</developer>
-		<developer>
-			<name>Nina Doschek</name>
-			<email>ndoschek@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
-		</developer>
-		<developer>
-			<name>Tobias Ortmayr</name>
-			<email>tortmayr@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
-		</developer>
-	</developers>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-surefire-plugin</artifactId>
+                  <version>${maven.surefire.version}</version>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-source-plugin</artifactId>
+                  <version>${maven.source.plugin}</version>
+                  <executions>
+                     <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                           <goal>jar-no-fork</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
 
-	<scm>
-		<url>https://github.com/eclipse/emfcloud-modelserver</url>
-		<connection>scm:git@github.com:eclipse/emfcloud-modelserver.git</connection>
-		<developerConnection>scm:git@github.com:eclipse/emfcloud-modelserver.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
+      <!-- M2-Release Profile: Used to deploy maven artifacts to Sonatype/Maven central. Should only be used in conjunction with the M2 Profile -->
+      <profile>
+         <id>m2-release</id>
 
+         <distributionManagement>
+            <snapshotRepository>
+               <id>ossrh</id>
+               <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            </snapshotRepository>
+         </distributionManagement>
+
+         <build>
+            <plugins>
+               <!-- To release to Sonatype/Maven central -->
+               <plugin>
+                  <groupId>org.sonatype.plugins</groupId>
+                  <artifactId>nexus-staging-maven-plugin</artifactId>
+                  <version>1.6.8</version>
+                  <extensions>true</extensions>
+                  <configuration>
+                     <serverId>ossrh</serverId>
+                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                     <autoreleaseafterclose>false</autoreleaseafterclose>
+                  </configuration>
+               </plugin>
+               <!-- To generate javadoc -->
+
+               <!-- Deactivate for now. Not needed for snapshot deployments -->
+               <!-- <plugin> -->
+               <!-- <groupId>org.apache.maven.plugins</groupId> -->
+               <!-- <artifactId>maven-javadoc-plugin</artifactId> -->
+               <!-- <version>3.1.0</version> -->
+               <!-- <executions> -->
+               <!-- <execution> -->
+               <!-- <id>attach-javadocs</id> -->
+               <!-- <goals> -->
+               <!-- <goal>jar</goal> -->
+               <!-- </goals> -->
+               <!-- <configuration> -->
+               <!-- <additionalJOption>-Xdoclint:none</additionalJOption> -->
+               <!-- <tags> -->
+               <!-- <tag> -->
+               <!-- <name>generated</name> -->
+               <!-- <placement>a</placement> -->
+               <!-- <head></head> -->
+               <!-- </tag> -->
+               <!-- <tag> -->
+               <!-- <name>ordered</name> -->
+               <!-- <placement>a</placement> -->
+               <!-- <head></head> -->
+               <!-- </tag> -->
+               <!-- <tag> -->
+               <!-- <name>model</name> -->
+               <!-- <placement>a</placement> -->
+               <!-- <head>Model:</head> -->
+               <!-- </tag> -->
+               <!-- </tags> -->
+               <!-- </configuration> -->
+               <!-- </execution> -->
+               <!-- </executions> -->
+               <!-- </plugin> -->
+
+               <!-- To sign the artifacts -->
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-gpg-plugin</artifactId>
+                  <version>1.6</version>
+                  <executions>
+                     <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                           <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                           <gpgArguments>
+                              <arg>--pinentry-mode</arg>
+                              <arg>loopback</arg>
+                           </gpgArguments>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
 </project>

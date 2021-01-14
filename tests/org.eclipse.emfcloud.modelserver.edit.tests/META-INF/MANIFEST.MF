@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: ModelServer Edit Tests
 Bundle-SymbolicName: org.eclipse.emfcloud.modelserver.edit.tests
 Bundle-Version: 0.7.0.qualifier
-Fragment-Host: org.eclipse.emfcloud.modelserver.edit;bundle-version="0.7.0.qualifier"
+Fragment-Host: org.eclipse.emfcloud.modelserver.edit;bundle-version="0.7.0"
 Automatic-Module-Name: org.eclipse.emfcloud.modelserver.edit.tests
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.9.0,3.0.0)",

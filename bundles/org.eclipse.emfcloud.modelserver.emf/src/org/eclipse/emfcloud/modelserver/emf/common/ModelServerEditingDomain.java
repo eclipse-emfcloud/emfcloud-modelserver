@@ -120,14 +120,14 @@ public class ModelServerEditingDomain extends AdapterFactoryEditingDomain {
          return AddCommand.create(undoRemoveCommand.getDomain(), undoRemoveCommand.getOwner(),
             undoRemoveCommand.getFeature(), undoRemoveCommand.getResult(), undoRemoveCommand.getIndices()[0]);
       } else if (undoCommand instanceof SetCommand) {
-         // FIXME: Handle the UNSET value, see also DefaultCommandCodec where it is also not yet implemented
+         // Handle the UNSET value, see also DefaultCommandCodec where it is also not yet implemented
          SetCommand undoSetCommand = (SetCommand) undoCommand;
          return SetCommand.create(undoSetCommand.getDomain(), undoSetCommand.getOwner(),
             undoSetCommand.getFeature(), undoSetCommand.getOldValue(), undoSetCommand.getIndex());
       } else if (undoCommand instanceof ReplaceCommand) {
-         // TODO see also DefaultCommandCodec
+         // See also DefaultCommandCodec
       } else if (undoCommand instanceof MoveCommand) {
-         // TODO see also DefaultCommandCodec
+         // See also DefaultCommandCodec
       }
       return undoCommand;
    }

@@ -1,31 +1,32 @@
-/**
+/********************************************************************************
  * Copyright (c) 2019 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- */
+ ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.command.impl;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-
 import org.eclipse.emf.ecore.impl.EFactoryImpl;
-
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
-
-import org.eclipse.emfcloud.modelserver.command.*;
+import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
+import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
+import org.eclipse.emfcloud.modelserver.command.CCompoundCommand;
+import org.eclipse.emfcloud.modelserver.command.CommandKind;
 
 /**
  * <!-- begin-user-doc -->
  * An implementation of the model <b>Factory</b>.
  * <!-- end-user-doc -->
- * 
+ *
  * @generated
  */
 public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory {
@@ -33,7 +34,7 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
     * Creates the default factory implementation.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    public static CCommandFactory init() {
@@ -53,7 +54,7 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
     * Creates an instance of the factory.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    public CCommandFactoryImpl() {
@@ -63,11 +64,11 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public EObject create(EClass eClass) {
+   public EObject create(final EClass eClass) {
       switch (eClass.getClassifierID()) {
          case CCommandPackage.COMMAND:
             return createCommand();
@@ -81,11 +82,11 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public Object createFromString(EDataType eDataType, String initialValue) {
+   public Object createFromString(final EDataType eDataType, final String initialValue) {
       switch (eDataType.getClassifierID()) {
          case CCommandPackage.COMMAND_KIND:
             return createCommandKindFromString(eDataType, initialValue);
@@ -97,11 +98,11 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public String convertToString(EDataType eDataType, Object instanceValue) {
+   public String convertToString(final EDataType eDataType, final Object instanceValue) {
       switch (eDataType.getClassifierID()) {
          case CCommandPackage.COMMAND_KIND:
             return convertCommandKindToString(eDataType, instanceValue);
@@ -113,7 +114,7 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -125,7 +126,7 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -137,31 +138,32 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
-   public CommandKind createCommandKindFromString(EDataType eDataType, String initialValue) {
+   public CommandKind createCommandKindFromString(final EDataType eDataType, final String initialValue) {
       CommandKind result = CommandKind.get(initialValue);
-      if (result == null)
+      if (result == null) {
          throw new IllegalArgumentException(
             "The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
+      }
       return result;
    }
 
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
-   public String convertCommandKindToString(EDataType eDataType, Object instanceValue) {
+   public String convertCommandKindToString(final EDataType eDataType, final Object instanceValue) {
       return instanceValue == null ? null : instanceValue.toString();
    }
 
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -170,7 +172,7 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @deprecated
     * @generated
     */

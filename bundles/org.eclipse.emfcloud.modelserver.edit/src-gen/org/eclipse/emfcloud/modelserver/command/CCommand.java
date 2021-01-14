@@ -1,17 +1,16 @@
-/**
+/********************************************************************************
  * Copyright (c) 2019 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- */
+ ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.command;
 
 import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.emf.ecore.EObject;
 
 /**
@@ -42,7 +41,7 @@ public interface CCommand extends EObject {
     * The literals are from the enumeration {@link org.eclipse.emfcloud.modelserver.command.CommandKind}.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the value of the '<em>Type</em>' attribute.
     * @see org.eclipse.emfcloud.modelserver.command.CommandKind
     * @see #setType(CommandKind)
@@ -56,7 +55,7 @@ public interface CCommand extends EObject {
     * Sets the value of the '{@link org.eclipse.emfcloud.modelserver.command.CCommand#getType <em>Type</em>}' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @param value the new value of the '<em>Type</em>' attribute.
     * @see org.eclipse.emfcloud.modelserver.command.CommandKind
     * @see #getType()
@@ -68,7 +67,7 @@ public interface CCommand extends EObject {
     * Returns the value of the '<em><b>Owner</b></em>' reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the value of the '<em>Owner</em>' reference.
     * @see #setOwner(EObject)
     * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommand_Owner()
@@ -82,7 +81,7 @@ public interface CCommand extends EObject {
     * reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @param value the new value of the '<em>Owner</em>' reference.
     * @see #getOwner()
     * @generated
@@ -93,7 +92,7 @@ public interface CCommand extends EObject {
     * Returns the value of the '<em><b>Feature</b></em>' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the value of the '<em>Feature</em>' attribute.
     * @see #setFeature(String)
     * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommand_Feature()
@@ -107,7 +106,7 @@ public interface CCommand extends EObject {
     * attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @param value the new value of the '<em>Feature</em>' attribute.
     * @see #getFeature()
     * @generated
@@ -119,7 +118,7 @@ public interface CCommand extends EObject {
     * The list contents are of type {@link java.lang.Integer}.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the value of the '<em>Indices</em>' attribute list.
     * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommand_Indices()
     * @model
@@ -132,7 +131,7 @@ public interface CCommand extends EObject {
     * The list contents are of type {@link java.lang.String}.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the value of the '<em>Data Values</em>' attribute list.
     * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommand_DataValues()
     * @model
@@ -145,7 +144,7 @@ public interface CCommand extends EObject {
     * The list contents are of type {@link org.eclipse.emf.ecore.EObject}.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the value of the '<em>Object Values</em>' reference list.
     * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommand_ObjectValues()
     * @model
@@ -158,7 +157,7 @@ public interface CCommand extends EObject {
     * The list contents are of type {@link org.eclipse.emf.ecore.EObject}.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the value of the '<em>Objects To Add</em>' containment reference list.
     * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommand_ObjectsToAdd()
     * @model containment="true"

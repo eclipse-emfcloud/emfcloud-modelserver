@@ -48,6 +48,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Inject
    protected CommandCodec commandCodec;
+
    @Inject
    protected final ServerConfiguration serverConfiguration;
 

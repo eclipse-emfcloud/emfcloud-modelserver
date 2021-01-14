@@ -1,13 +1,13 @@
-/**
+/********************************************************************************
  * Copyright (c) 2019 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- */
+ ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.command;
 
 import org.eclipse.emf.ecore.EAttribute;
@@ -28,7 +28,7 @@ import org.eclipse.emf.ecore.EReference;
  * <li>and each data type</li>
  * </ul>
  * <!-- end-user-doc -->
- * 
+ *
  * @see org.eclipse.emfcloud.modelserver.command.CCommandFactory
  * @model kind="package"
  * @generated
@@ -38,7 +38,7 @@ public interface CCommandPackage extends EPackage {
     * The package name.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    String eNAME = "command";
@@ -47,7 +47,7 @@ public interface CCommandPackage extends EPackage {
     * The package namespace URI.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    String eNS_URI = "http://www.eclipsesource.com/schema/2019/modelserver/command";
@@ -56,7 +56,7 @@ public interface CCommandPackage extends EPackage {
     * The package namespace name.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    String eNS_PREFIX = "cmd";
@@ -65,7 +65,7 @@ public interface CCommandPackage extends EPackage {
     * The singleton instance of the package.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    CCommandPackage eINSTANCE = org.eclipse.emfcloud.modelserver.command.impl.CCommandPackageImpl.init();
@@ -75,7 +75,7 @@ public interface CCommandPackage extends EPackage {
     * class.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandImpl
     * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandPackageImpl#getCommand()
     * @generated
@@ -86,7 +86,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Type</b></em>' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -96,7 +96,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Owner</b></em>' reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -106,7 +106,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Feature</b></em>' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -116,7 +116,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Indices</b></em>' attribute list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -126,7 +126,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Data Values</b></em>' attribute list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -136,7 +136,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Object Values</b></em>' reference list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -146,7 +146,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Objects To Add</b></em>' containment reference list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -156,7 +156,7 @@ public interface CCommandPackage extends EPackage {
     * The number of structural features of the '<em>Command</em>' class.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -166,7 +166,7 @@ public interface CCommandPackage extends EPackage {
     * The number of operations of the '<em>Command</em>' class.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -177,7 +177,7 @@ public interface CCommandPackage extends EPackage {
     * Command</em>}' class.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see org.eclipse.emfcloud.modelserver.command.impl.CCompoundCommandImpl
     * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandPackageImpl#getCompoundCommand()
     * @generated
@@ -188,7 +188,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Type</b></em>' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -198,7 +198,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Owner</b></em>' reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -208,7 +208,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Feature</b></em>' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -218,7 +218,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Indices</b></em>' attribute list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -228,7 +228,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Data Values</b></em>' attribute list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -238,7 +238,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Object Values</b></em>' reference list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -248,7 +248,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Objects To Add</b></em>' containment reference list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -258,7 +258,7 @@ public interface CCommandPackage extends EPackage {
     * The feature id for the '<em><b>Commands</b></em>' containment reference list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -268,7 +268,7 @@ public interface CCommandPackage extends EPackage {
     * The number of structural features of the '<em>Compound Command</em>' class.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -278,7 +278,7 @@ public interface CCommandPackage extends EPackage {
     * The number of operations of the '<em>Compound Command</em>' class.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     * @ordered
     */
@@ -288,7 +288,7 @@ public interface CCommandPackage extends EPackage {
     * The meta object id for the '{@link org.eclipse.emfcloud.modelserver.command.CommandKind <em>Kind</em>}' enum.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see org.eclipse.emfcloud.modelserver.command.CommandKind
     * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandPackageImpl#getCommandKind()
     * @generated
@@ -299,7 +299,7 @@ public interface CCommandPackage extends EPackage {
     * Returns the meta object for class '{@link org.eclipse.emfcloud.modelserver.command.CCommand <em>Command</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for class '<em>Command</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCommand
     * @generated
@@ -311,7 +311,7 @@ public interface CCommandPackage extends EPackage {
     * <em>Type</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for the attribute '<em>Type</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCommand#getType()
     * @see #getCommand()
@@ -324,7 +324,7 @@ public interface CCommandPackage extends EPackage {
     * <em>Owner</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for the reference '<em>Owner</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCommand#getOwner()
     * @see #getCommand()
@@ -337,7 +337,7 @@ public interface CCommandPackage extends EPackage {
     * <em>Feature</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for the attribute '<em>Feature</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCommand#getFeature()
     * @see #getCommand()
@@ -350,7 +350,7 @@ public interface CCommandPackage extends EPackage {
     * '{@link org.eclipse.emfcloud.modelserver.command.CCommand#getIndices <em>Indices</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for the attribute list '<em>Indices</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCommand#getIndices()
     * @see #getCommand()
@@ -363,7 +363,7 @@ public interface CCommandPackage extends EPackage {
     * '{@link org.eclipse.emfcloud.modelserver.command.CCommand#getDataValues <em>Data Values</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for the attribute list '<em>Data Values</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCommand#getDataValues()
     * @see #getCommand()
@@ -376,7 +376,7 @@ public interface CCommandPackage extends EPackage {
     * '{@link org.eclipse.emfcloud.modelserver.command.CCommand#getObjectValues <em>Object Values</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for the reference list '<em>Object Values</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCommand#getObjectValues()
     * @see #getCommand()
@@ -389,7 +389,7 @@ public interface CCommandPackage extends EPackage {
     * '{@link org.eclipse.emfcloud.modelserver.command.CCommand#getObjectsToAdd <em>Objects To Add</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for the containment reference list '<em>Objects To Add</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCommand#getObjectsToAdd()
     * @see #getCommand()
@@ -402,7 +402,7 @@ public interface CCommandPackage extends EPackage {
     * Command</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for class '<em>Compound Command</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCompoundCommand
     * @generated
@@ -414,7 +414,7 @@ public interface CCommandPackage extends EPackage {
     * '{@link org.eclipse.emfcloud.modelserver.command.CCompoundCommand#getCommands <em>Commands</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for the containment reference list '<em>Commands</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CCompoundCommand#getCommands()
     * @see #getCompoundCommand()
@@ -426,7 +426,7 @@ public interface CCommandPackage extends EPackage {
     * Returns the meta object for enum '{@link org.eclipse.emfcloud.modelserver.command.CommandKind <em>Kind</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the meta object for enum '<em>Kind</em>'.
     * @see org.eclipse.emfcloud.modelserver.command.CommandKind
     * @generated
@@ -437,7 +437,7 @@ public interface CCommandPackage extends EPackage {
     * Returns the factory that creates the instances of the model.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @return the factory that creates the instances of the model.
     * @generated
     */
@@ -454,7 +454,7 @@ public interface CCommandPackage extends EPackage {
     * <li>and each data type</li>
     * </ul>
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    interface Literals {
@@ -463,7 +463,7 @@ public interface CCommandPackage extends EPackage {
        * <em>Command</em>}' class.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandImpl
        * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandPackageImpl#getCommand()
        * @generated
@@ -474,7 +474,7 @@ public interface CCommandPackage extends EPackage {
        * The meta object literal for the '<em><b>Type</b></em>' attribute feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @generated
        */
       EAttribute COMMAND__TYPE = eINSTANCE.getCommand_Type();
@@ -483,7 +483,7 @@ public interface CCommandPackage extends EPackage {
        * The meta object literal for the '<em><b>Owner</b></em>' reference feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @generated
        */
       EReference COMMAND__OWNER = eINSTANCE.getCommand_Owner();
@@ -492,7 +492,7 @@ public interface CCommandPackage extends EPackage {
        * The meta object literal for the '<em><b>Feature</b></em>' attribute feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @generated
        */
       EAttribute COMMAND__FEATURE = eINSTANCE.getCommand_Feature();
@@ -501,7 +501,7 @@ public interface CCommandPackage extends EPackage {
        * The meta object literal for the '<em><b>Indices</b></em>' attribute list feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @generated
        */
       EAttribute COMMAND__INDICES = eINSTANCE.getCommand_Indices();
@@ -510,7 +510,7 @@ public interface CCommandPackage extends EPackage {
        * The meta object literal for the '<em><b>Data Values</b></em>' attribute list feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @generated
        */
       EAttribute COMMAND__DATA_VALUES = eINSTANCE.getCommand_DataValues();
@@ -519,7 +519,7 @@ public interface CCommandPackage extends EPackage {
        * The meta object literal for the '<em><b>Object Values</b></em>' reference list feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @generated
        */
       EReference COMMAND__OBJECT_VALUES = eINSTANCE.getCommand_ObjectValues();
@@ -528,7 +528,7 @@ public interface CCommandPackage extends EPackage {
        * The meta object literal for the '<em><b>Objects To Add</b></em>' containment reference list feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @generated
        */
       EReference COMMAND__OBJECTS_TO_ADD = eINSTANCE.getCommand_ObjectsToAdd();
@@ -538,7 +538,7 @@ public interface CCommandPackage extends EPackage {
        * <em>Compound Command</em>}' class.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @see org.eclipse.emfcloud.modelserver.command.impl.CCompoundCommandImpl
        * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandPackageImpl#getCompoundCommand()
        * @generated
@@ -549,7 +549,7 @@ public interface CCommandPackage extends EPackage {
        * The meta object literal for the '<em><b>Commands</b></em>' containment reference list feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @generated
        */
       EReference COMPOUND_COMMAND__COMMANDS = eINSTANCE.getCompoundCommand_Commands();
@@ -559,7 +559,7 @@ public interface CCommandPackage extends EPackage {
        * enum.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
-       * 
+       *
        * @see org.eclipse.emfcloud.modelserver.command.CommandKind
        * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandPackageImpl#getCommandKind()
        * @generated
