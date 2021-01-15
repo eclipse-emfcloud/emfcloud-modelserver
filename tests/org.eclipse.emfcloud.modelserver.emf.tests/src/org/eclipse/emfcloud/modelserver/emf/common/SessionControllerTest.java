@@ -27,6 +27,7 @@ import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CommandKind;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.jetty.websocket.api.Session;
 import org.hamcrest.CustomTypeSafeMatcher;
@@ -67,6 +68,8 @@ public class SessionControllerTest {
    private ModelRepository repository;
    @Mock
    private ModelResourceManager modelResourceManager;
+   @Mock
+   private CodecsManager codecs;
 
    private SessionController sessionController;
 
@@ -210,6 +213,7 @@ public class SessionControllerTest {
             bind(CommandCodec.class).toInstance(commandCodec);
             bind(ModelRepository.class).toInstance(repository);
             bind(ModelResourceManager.class).toInstance(modelResourceManager);
+            bind(CodecsManager.class).toInstance(codecs);
          }
       }).getInstance(SessionController.class);
 

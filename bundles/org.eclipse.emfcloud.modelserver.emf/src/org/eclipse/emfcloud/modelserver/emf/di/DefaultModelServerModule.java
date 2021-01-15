@@ -10,12 +10,20 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.di;
 
+import java.util.Map;
+
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
+import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
+import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
+
+import com.google.common.collect.Maps;
 
 public class DefaultModelServerModule extends ModelServerModule {
 
@@ -32,6 +40,14 @@ public class DefaultModelServerModule extends ModelServerModule {
    @Override
    protected Class<? extends ModelResourceManager> bindModelResourceManager() {
       return DefaultModelResourceManager.class;
+   }
+
+   @Override
+   protected Map<String, Class<? extends Codec>> bindFormatCodecs() {
+      Map<String, Class<? extends Codec>> codecs = Maps.newHashMapWithExpectedSize(2);
+      codecs.put(ModelServerPathParameters.FORMAT_XMI, XmiCodec.class);
+      codecs.put(ModelServerPathParameters.FORMAT_JSON, JsonCodec.class);
+      return codecs;
    }
 
 }

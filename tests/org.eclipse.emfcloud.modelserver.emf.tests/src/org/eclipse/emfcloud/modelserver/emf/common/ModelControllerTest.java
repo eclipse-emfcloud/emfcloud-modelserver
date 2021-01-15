@@ -45,6 +45,8 @@ import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.Codecs;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
@@ -78,12 +80,15 @@ public class ModelControllerTest {
    @Mock
    private ServerConfiguration serverConfiguration;
 
+   private CodecsManager codecs;
+
    private ModelController modelController;
 
    @Before
    public void before() {
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI("/home/modelserver/workspace/"));
-      modelController = new ModelController(modelRepository, sessionController, serverConfiguration);
+      codecs = new Codecs(Map.of(ModelServerPathParameters.FORMAT_XMI, new XmiCodec()));
+      modelController = new ModelController(modelRepository, sessionController, serverConfiguration, codecs);
    }
 
    @Test
