@@ -26,7 +26,7 @@ import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
-import org.eclipse.emfcloud.modelserver.emf.common.codecs.Codecs;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
@@ -44,11 +44,11 @@ public class ModelController {
    private final ModelRepository modelRepository;
    private final SessionController sessionController;
    private final ServerConfiguration serverConfiguration;
-   private final Codecs codecs;
+   private final CodecsManager codecs;
 
    @Inject
    public ModelController(final ModelRepository modelRepository, final SessionController sessionController,
-      final ServerConfiguration serverConfiguration, final Codecs codecs) {
+      final ServerConfiguration serverConfiguration, final CodecsManager codecs) {
 
       JavalinJackson.configure(EMFJsonConverter.setupDefaultMapper());
       this.modelRepository = modelRepository;

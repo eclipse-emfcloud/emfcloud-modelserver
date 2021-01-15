@@ -25,7 +25,6 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,11 +42,11 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CommandKind;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
-import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.Codecs;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
@@ -81,16 +80,14 @@ public class ModelControllerTest {
    @Mock
    private ServerConfiguration serverConfiguration;
 
-   private Codecs codecs;
+   private CodecsManager codecs;
 
    private ModelController modelController;
 
    @Before
    public void before() {
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI("/home/modelserver/workspace/"));
-      Map<String, Codec> formatsToCodecsMap = new HashMap<>(1);
-      formatsToCodecsMap.put(ModelServerPathParameters.FORMAT_XMI, new XmiCodec());
-      codecs = new Codecs(formatsToCodecsMap);
+      codecs = new Codecs(Map.of(ModelServerPathParameters.FORMAT_XMI, new XmiCodec()));
       modelController = new ModelController(modelRepository, sessionController, serverConfiguration, codecs);
    }
 

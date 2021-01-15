@@ -29,6 +29,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.Codecs;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
@@ -80,6 +81,7 @@ public abstract class ModelServerModule extends AbstractModule {
       bind(AdapterFactory.class).toInstance(bindAdapterFactory());
       bind(CommandCodec.class).to(bindCommandCodec()).in(Singleton.class);
       bind(ModelResourceManager.class).to(bindModelResourceManager()).in(Singleton.class);
+      bind(CodecsManager.class).to(bindCodecsManager()).in(Singleton.class);
       MapBinder<String, Codec> codecsBinder = MapBinder.newMapBinder(binder(), String.class, Codec.class);
       bindFormatCodecs().forEach((format, codec) -> codecsBinder.addBinding(format).to(codec));
 
@@ -111,11 +113,23 @@ public abstract class ModelServerModule extends AbstractModule {
    protected abstract Class<? extends ModelResourceManager> bindModelResourceManager();
 
    /**
+    * Bind the codecs manager implementating class.
+    *
+    * @return the condecs manager implementation class.
+    */
+   protected Class<? extends CodecsManager> bindCodecsManager() {
+      return Codecs.class;
+   }
+
+   /**
     * Bind the EObject codecs to support various formats encoding and decoding.
     * <p>
     * Note that in case you don't support Json or don't want it as the default format, you may bind an alternative one
-    * to the key {@link Codecs#PREFERRED_FORMAT}.
+    * to the key {@link CodecsManager#PREFERRED_FORMAT}.
     * </p>
+    * <p>
+    * Note this binding may also no longer be relevant in case you override the {@link #bindCodecsManager()} method.
+    * </>
     *
     * @return map with formats as key and codec classes to instantiate as values.
     */
