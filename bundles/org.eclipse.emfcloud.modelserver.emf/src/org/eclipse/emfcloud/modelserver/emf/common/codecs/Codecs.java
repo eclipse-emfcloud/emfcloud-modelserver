@@ -75,9 +75,10 @@ public class Codecs implements CodecsManager {
     */
    @Inject
    public Codecs(final Map<String, Codec> emfCodecs) {
-   }
       formatToCodec.putAll(emfCodecs);
+   }
 
+   @Override
    public Map<String, JsonNode> encode(final EObject eObject) throws EncodingException {
       Map<String, JsonNode> encodings = new LinkedHashMap<>();
       formatToCodec.forEach((key, codec) -> {
@@ -111,11 +112,9 @@ public class Codecs implements CodecsManager {
       return findFormat(context.queryParamMap()).decode(payload, workspaceURI);
    }
 
+   @Override
    public String findFormat(final WsContext context) {
-      if (context.queryParamMap().containsKey(ModelServerPathParameters.FORMAT)) {
-         return context.queryParamMap().get(ModelServerPathParameters.FORMAT).get(0);
-      }
-      return ModelServerPathParameters.FORMAT_JSON;
+      return context.queryParam(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_JSON);
    }
 
    private Codec findFormat(final Map<String, List<String>> queryParams) {

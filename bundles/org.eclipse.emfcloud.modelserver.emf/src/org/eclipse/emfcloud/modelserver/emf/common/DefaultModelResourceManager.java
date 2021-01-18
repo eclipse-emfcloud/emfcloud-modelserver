@@ -29,7 +29,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
@@ -259,12 +258,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    public CCommand getUndoCommand(final String modeluri) {
       Command undoCommand = getEditingDomain(getResourceSet(modeluri)).getUndoCommand();
       if (undoCommand != null) {
-         try {
-            return EcoreUtil.copy(commandCodec.encode(undoCommand));
-         } catch (EncodingException e) {
-            LOG.error("Encoding of " + undoCommand + " failed: " + e.getMessage());
-            throw new IllegalArgumentException(e);
-         }
+         return encodeCommand(undoCommand);
       }
       return null;
    }
@@ -278,14 +272,18 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    public CCommand getRedoCommand(final String modeluri) {
       Command redoCommand = getEditingDomain(getResourceSet(modeluri)).getRedoCommand();
       if (redoCommand != null) {
-         try {
-            return EcoreUtil.copy(commandCodec.encode(redoCommand));
-         } catch (EncodingException e) {
-            LOG.error("Encoding of " + redoCommand + " failed: " + e.getMessage());
-            throw new IllegalArgumentException(e);
-         }
+         return encodeCommand(redoCommand);
       }
       return null;
+   }
+
+   protected CCommand encodeCommand(final Command command) {
+      try {
+         return commandCodec.encode(command);
+      } catch (EncodingException e) {
+         LOG.error("Encoding of " + command + " failed: " + e.getMessage());
+         throw new IllegalArgumentException(e);
+      }
    }
 
    @Override

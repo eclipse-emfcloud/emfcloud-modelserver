@@ -10,6 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common.codecs;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.emf.common.util.URI;
@@ -38,6 +39,15 @@ public interface CodecsManager {
     * @return preferred format value
     */
    String getPreferredFormat();
+
+   /**
+    * Encode an EObject to JsonNodes in all available formats.
+    *
+    * @param eObject
+    * @return a map containing all format strings and their encoded JsonNodes
+    * @throws EncodingException
+    */
+   Map<String, JsonNode> encode(EObject eObject) throws EncodingException;
 
    /**
     * Encode an EObject to a JsonNode.
@@ -80,5 +90,13 @@ public interface CodecsManager {
     */
    Optional<EObject> decode(Context context, String payload, URI workspaceURI)
       throws DecodingException;
+
+   /**
+    * Returns the format, for which the websocket subscribed for.
+    *
+    * @param context the javalin websocket context
+    * @return format string
+    */
+   String findFormat(WsContext context);
 
 }

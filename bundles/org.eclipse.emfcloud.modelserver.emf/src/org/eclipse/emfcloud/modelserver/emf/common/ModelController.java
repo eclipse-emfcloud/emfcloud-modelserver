@@ -24,7 +24,6 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
-import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -185,6 +184,15 @@ public class ModelController {
    public void undo(final Context ctx, final String modeluri) {
       CCommand undoCommand = modelRepository.getUndoCommand(modeluri);
       if (undoCommand != null) {
+         /*
+          * In order to encode certain commands (e.g., commands that remove model elements) we need all element
+          * information,
+          * e.g., the info which element was removed before it is gone. Therefore we encode the command in all formats
+          * and provide them to the model repository which will select the correct format for each subscribed client.
+          * This means that we encode the command once for all formats beforehand. The alternative would be to encode it
+          * once per subscribed client.
+          * The same applies to the redo method below.
+          */
          Map<String, JsonNode> encodings = sessionController.getCommandEncodings(modeluri, undoCommand);
          boolean undoSuccess = modelRepository.undo(modeluri);
          if (undoSuccess) {
@@ -199,6 +207,7 @@ public class ModelController {
    public void redo(final Context ctx, final String modeluri) {
       CCommand redoCommand = modelRepository.getRedoCommand(modeluri);
       if (redoCommand != null) {
+         /* Please see comment in undo method */
          Map<String, JsonNode> encodings = sessionController.getCommandEncodings(modeluri, redoCommand);
          boolean redoSuccess = modelRepository.redo(modeluri);
          if (redoSuccess) {

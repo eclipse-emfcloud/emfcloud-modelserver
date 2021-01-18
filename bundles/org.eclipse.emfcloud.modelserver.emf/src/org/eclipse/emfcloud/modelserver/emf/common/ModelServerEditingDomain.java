@@ -53,12 +53,11 @@ public class ModelServerEditingDomain extends AdapterFactoryEditingDomain {
 
    public Command getUndoCommand() {
       /*
-       * The undoCommand represents the executed command on the command stack that will be undone.
-       * The BasicCommandStack has its own internal logic on how to undo a certain command.
-       * As our clients will most likely not make use of any concept similar to a command stack, it is necessary
-       * to provide an update which holds the command to undo the previous changes as incrementalUpdate.
-       * Therefore we need to invert the command, which is currently based on the already implemented commands
-       * in the DefaultCommandCodec.
+       * As we manage the command stack locally, and our clients will most likely not make use of any concept similar to
+       * a command stack, it is necessary to provide an update which holds the command to undo the previous changes as
+       * an incrementalUpdate.
+       * In the case of an Undo we need to invert this command, which is currently based on the already implemented
+       * commands in the DefaultCommandCodec.
        */
       if (canUndo()) {
          return createInverseCommand(commandStack.getUndoCommand());
@@ -75,6 +74,11 @@ public class ModelServerEditingDomain extends AdapterFactoryEditingDomain {
    }
 
    public Command getRedoCommand() {
+      /*
+       * As we manage the command stack locally, and our clients will most likely not make use of any concept similar to
+       * a command stack, it is necessary to provide an update which holds the command to redo the previous changes as
+       * an incrementalUpdate.
+       */
       if (canRedo()) {
          return commandStack.getRedoCommand();
       }
