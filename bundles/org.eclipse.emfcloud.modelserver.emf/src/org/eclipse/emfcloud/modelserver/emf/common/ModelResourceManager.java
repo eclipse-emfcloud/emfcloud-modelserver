@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -49,9 +48,13 @@ public interface ModelResourceManager {
 
    void removeResource(String modeluri) throws IOException;
 
-   Command undo(String modeluri);
+   CCommand getUndoCommand(String modeluri);
 
-   Command redo(String modeluri);
+   boolean undo(String modeluri);
+
+   CCommand getRedoCommand(String modeluri);
+
+   boolean redo(String modeluri);
 
    boolean save(String modeluri);
 

@@ -33,6 +33,7 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
+import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -254,12 +255,39 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    }
 
    @Override
-   public Command undo(final String modeluri) {
+   public CCommand getUndoCommand(final String modeluri) {
+      Command undoCommand = getEditingDomain(getResourceSet(modeluri)).getUndoCommand();
+      if (undoCommand != null) {
+         return encodeCommand(undoCommand);
+      }
+      return null;
+   }
+
+   @Override
+   public boolean undo(final String modeluri) {
       return getEditingDomain(getResourceSet(modeluri)).undo();
    }
 
    @Override
-   public Command redo(final String modeluri) {
+   public CCommand getRedoCommand(final String modeluri) {
+      Command redoCommand = getEditingDomain(getResourceSet(modeluri)).getRedoCommand();
+      if (redoCommand != null) {
+         return encodeCommand(redoCommand);
+      }
+      return null;
+   }
+
+   protected CCommand encodeCommand(final Command command) {
+      try {
+         return commandCodec.encode(command);
+      } catch (EncodingException e) {
+         LOG.error("Encoding of " + command + " failed: " + e.getMessage());
+         throw new IllegalArgumentException(e);
+      }
+   }
+
+   @Override
+   public boolean redo(final String modeluri) {
       return getEditingDomain(getResourceSet(modeluri)).redo();
    }
 

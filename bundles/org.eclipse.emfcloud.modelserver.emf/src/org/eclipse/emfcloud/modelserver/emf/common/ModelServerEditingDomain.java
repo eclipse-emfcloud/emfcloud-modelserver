@@ -51,30 +51,46 @@ public class ModelServerEditingDomain extends AdapterFactoryEditingDomain {
       return commandStack.canRedo();
    }
 
-   public Command undo() {
-      Command undoCommand = commandStack.getUndoCommand();
+   public Command getUndoCommand() {
+      /*
+       * As we manage the command stack locally, and our clients will most likely not make use of any concept similar to
+       * a command stack, it is necessary to provide an update which holds the command to undo the previous changes as
+       * an incrementalUpdate.
+       * In the case of an Undo we need to invert this command, which is currently based on the already implemented
+       * commands in the DefaultCommandCodec.
+       */
       if (canUndo()) {
-         commandStack.undo();
-         /*
-          * The undoCommand represents the executed command on the command stack that will be undone.
-          * The BasicCommandStack has its own internal logic on how to undo a certain command.
-          * As our clients will most likely not make use of any concept similar to a command stack, it is necessary
-          * to provide an update which holds the command to undo the previous changes as incrementalUpdate.
-          * Therefore we need to invert the command, which is currently based on the already implemented commands
-          * in the DefaultCommandCodec.
-          */
-         return createInverseCommand(undoCommand);
+         return createInverseCommand(commandStack.getUndoCommand());
       }
       return null;
    }
 
-   public Command redo() {
-      Command redoCommand = commandStack.getRedoCommand();
+   public boolean undo() {
+      if (canUndo()) {
+         commandStack.undo();
+         return true;
+      }
+      return false;
+   }
+
+   public Command getRedoCommand() {
+      /*
+       * As we manage the command stack locally, and our clients will most likely not make use of any concept similar to
+       * a command stack, it is necessary to provide an update which holds the command to redo the previous changes as
+       * an incrementalUpdate.
+       */
       if (canRedo()) {
-         commandStack.redo();
-         return redoCommand;
+         return commandStack.getRedoCommand();
       }
       return null;
+   }
+
+   public boolean redo() {
+      if (canRedo()) {
+         commandStack.redo();
+         return true;
+      }
+      return false;
    }
 
    public boolean isDirty() { return ((ModelServerCommandStack) commandStack).isSaveNeeded(); }
@@ -102,7 +118,7 @@ public class ModelServerEditingDomain extends AdapterFactoryEditingDomain {
       } else if (undoCommand instanceof RemoveCommand) {
          RemoveCommand undoRemoveCommand = (RemoveCommand) undoCommand;
          return AddCommand.create(undoRemoveCommand.getDomain(), undoRemoveCommand.getOwner(),
-            undoRemoveCommand.getFeature(), undoRemoveCommand.getResult());
+            undoRemoveCommand.getFeature(), undoRemoveCommand.getResult(), undoRemoveCommand.getIndices()[0]);
       } else if (undoCommand instanceof SetCommand) {
          // FIXME: Handle the UNSET value, see also DefaultCommandCodec where it is also not yet implemented
          SetCommand undoSetCommand = (SetCommand) undoCommand;
