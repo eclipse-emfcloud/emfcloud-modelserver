@@ -20,5 +20,6 @@ interface ModelServerPathParametersV1 {
    String ELEMENT_NAME = "elementname";
    String SCHEMA_NAME = "schemaname";
    String TIMEOUT = "timeout";
+   String LIVE_VALIDATION = "livevalidation";
 
 }

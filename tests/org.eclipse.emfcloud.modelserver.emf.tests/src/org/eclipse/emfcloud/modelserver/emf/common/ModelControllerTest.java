@@ -323,8 +323,8 @@ public class ModelControllerTest {
       modelController.validate(context, getModelUri("Test1.ecore").toString());
 
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("validationResult")),
-         prop("data", Json.parse("null")));
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.VALIDATIONRESULT)),
+         prop(JsonResponseMember.DATA, Json.parse("null")));
 
       verify(context).json(expectedResponse);
    }
@@ -334,8 +334,8 @@ public class ModelControllerTest {
       modelController.getValidationConstraints(context, getModelUri("Test1.ecore").toString());
 
       JsonNode expectedResponse = Json.object(
-         prop("type", Json.text("success")),
-         prop("data", Json.parse("null")));
+         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
+         prop(JsonResponseMember.DATA, Json.parse("null")));
 
       (context).json(expectedResponse);
    }

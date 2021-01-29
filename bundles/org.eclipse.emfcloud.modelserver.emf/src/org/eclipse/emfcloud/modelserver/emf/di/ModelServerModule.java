@@ -25,6 +25,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRouting;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelValidator;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
@@ -33,6 +34,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.configuration.FacetConfig;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerEntryPoint;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerStartup;
@@ -81,6 +83,8 @@ public abstract class ModelServerModule extends AbstractModule {
       bind(AdapterFactory.class).toInstance(bindAdapterFactory());
       bind(CommandCodec.class).to(bindCommandCodec()).in(Singleton.class);
       bind(ModelResourceManager.class).to(bindModelResourceManager()).in(Singleton.class);
+      bind(ModelValidator.class).to(bindModelValidator()).in(Singleton.class);
+      bind(FacetConfig.class).to(bindFacetConfig()).in(Singleton.class);
       bind(CodecsManager.class).to(bindCodecsManager()).in(Singleton.class);
       MapBinder<String, Codec> codecsBinder = MapBinder.newMapBinder(binder(), String.class, Codec.class);
       bindFormatCodecs().forEach((format, codec) -> codecsBinder.addBinding(format).to(codec));
@@ -111,6 +115,10 @@ public abstract class ModelServerModule extends AbstractModule {
    protected abstract Class<? extends CommandCodec> bindCommandCodec();
 
    protected abstract Class<? extends ModelResourceManager> bindModelResourceManager();
+
+   protected abstract Class<? extends ModelValidator> bindModelValidator();
+
+   protected abstract Class<? extends FacetConfig> bindFacetConfig();
 
    /**
     * Bind the codecs manager implementating class.

@@ -29,8 +29,6 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.jetbrains.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.jetbrains.annotations.TestOnly;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.google.common.collect.Maps;

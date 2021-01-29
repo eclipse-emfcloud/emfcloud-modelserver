@@ -16,25 +16,51 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import java.util.List;
+import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(Include.NON_NULL)
 public class EMFFacetConstraints {
 
-   private int whiteSpace;
+   public static final String WHITESPACE = "whiteSpace";
+   public static final String ENUMERATION = "enumeration";
+   public static final String PATTERN = "pattern";
+   public static final String TOTALDIGITS = "totalDigits";
+   public static final String FRACTIONDIGITS = "fractionDigits";
+   public static final String LENGTH = "length";
+   public static final String MINLENGTH = "minLength";
+   public static final String MAXLENGTH = "maxLength";
+   public static final String MINEXCLUSIVE = "minExclusive";
+   public static final String MAXEXCLUSIVE = "maxExclusive";
+   public static final String MININCLUSIVE = "minInclusive";
+   public static final String MAXINCLUSIVE = "maxInclusive";
+
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = WhiteSpaceFilter.class)
+   private Integer whiteSpace;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = StringListFilter.class)
    private List<String> enumeration;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = StringListFilter.class)
    private List<String> pattern;
-   private int totalDigets;
-   private int fractionDigets;
-   private int length;
-   private int minLength;
-   private int maxLength;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   private Integer totalDigits;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   private Integer fractionDigits;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   private Integer length;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   private Integer minLength;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   private Integer maxLength;
    private String minExclusive;
    private String maxExclusive;
    private String minInclusive;
    private String maxInclusive;
 
-   public int getWhiteSpace() { return whiteSpace; }
+   public Integer getWhiteSpace() { return whiteSpace; }
 
-   public void setWhiteSpace(final int whiteSpace) { this.whiteSpace = whiteSpace; }
+   public void setWhiteSpace(final Integer whiteSpace) { this.whiteSpace = whiteSpace; }
 
    public List<String> getEnumeration() { return enumeration; }
 
@@ -44,25 +70,25 @@ public class EMFFacetConstraints {
 
    public void setPattern(final List<String> pattern) { this.pattern = pattern; }
 
-   public int getTotalDigets() { return totalDigets; }
+   public Integer getTotalDigits() { return totalDigits; }
 
-   public void setTotalDigets(final int totalDigets) { this.totalDigets = totalDigets; }
+   public void setTotalDigits(final Integer totalDigits) { this.totalDigits = totalDigits; }
 
-   public int getFractionDigets() { return fractionDigets; }
+   public Integer getFractionDigits() { return fractionDigits; }
 
-   public void setFractionDigets(final int fractionDigets) { this.fractionDigets = fractionDigets; }
+   public void setFractionDigits(final Integer fractionDigits) { this.fractionDigits = fractionDigits; }
 
-   public int getLength() { return length; }
+   public Integer getLength() { return length; }
 
-   public void setLength(final int length) { this.length = length; }
+   public void setLength(final Integer length) { this.length = length; }
 
-   public int getMinLength() { return minLength; }
+   public Integer getMinLength() { return minLength; }
 
-   public void setMinLength(final int minLength) { this.minLength = minLength; }
+   public void setMinLength(final Integer minLength) { this.minLength = minLength; }
 
-   public int getMaxLength() { return maxLength; }
+   public Integer getMaxLength() { return maxLength; }
 
-   public void setMaxLength(final int maxLength) { this.maxLength = maxLength; }
+   public void setMaxLength(final Integer maxLength) { this.maxLength = maxLength; }
 
    public String getMinExclusive() { return minExclusive; }
 
@@ -80,47 +106,53 @@ public class EMFFacetConstraints {
 
    public void setMaxInclusive(final String maxInclusive) { this.maxInclusive = maxInclusive; }
 
-   public boolean isWhiteSpaceDefault() { return whiteSpace == 0; }
-
-   public boolean isEnumerationDefault() { return enumeration.isEmpty(); }
-
-   public boolean isPatternDefault() { return pattern.isEmpty(); }
-
-   public boolean isTotalDigetsDefault() { return totalDigets == -1; }
-
-   public boolean isFractionDigetsDefault() { return fractionDigets == -1; }
-
-   public boolean isLengthDefault() { return length == -1; }
-
-   public boolean isMinLengthDefault() { return minLength == -1; }
-
-   public boolean isMaxLengthDefault() { return maxLength == -1; }
-
-   public boolean isMinExclusiveDefault() { return minExclusive == null; }
-
-   public boolean isMaxExclusiveDefault() { return maxExclusive == null; }
-
-   public boolean isMinInclusiveDefault() { return minInclusive == null; }
-
-   public boolean isMaxInclusiveDefault() { return maxInclusive == null; }
-
-   public EMFFacetConstraints(final int whiteSpace, final List<String> enumeration, final List<String> pattern,
-      final int totalDigets,
-      final int fractionDigets, final int length, final int minLength, final int maxLength, final String minExclusive,
-      final String maxExclusive,
-      final String minInclusive, final String maxInclusive) {
-      this.whiteSpace = whiteSpace;
-      this.enumeration = enumeration;
-      this.pattern = pattern;
-      this.totalDigets = totalDigets;
-      this.fractionDigets = fractionDigets;
-      this.length = length;
-      this.minLength = minLength;
-      this.maxLength = maxLength;
-      this.minExclusive = minExclusive;
-      this.maxExclusive = maxExclusive;
-      this.minInclusive = minInclusive;
-      this.maxInclusive = maxInclusive;
+   public EMFFacetConstraints(final Map<String, Object> facetMap) {
+      this.whiteSpace = (Integer) facetMap.getOrDefault(WHITESPACE, null);
+      this.enumeration = (List<String>) facetMap.getOrDefault(ENUMERATION, null);
+      this.pattern = (List<String>) facetMap.getOrDefault(PATTERN, null);
+      this.totalDigits = (Integer) facetMap.getOrDefault(TOTALDIGITS, null);
+      this.fractionDigits = (Integer) facetMap.getOrDefault(FRACTIONDIGITS, null);
+      this.length = (Integer) facetMap.getOrDefault(LENGTH, null);
+      this.minLength = (Integer) facetMap.getOrDefault(MINLENGTH, null);
+      this.maxLength = (Integer) facetMap.getOrDefault(MAXLENGTH, null);
+      this.minExclusive = (String) facetMap.getOrDefault(MINEXCLUSIVE, null);
+      this.maxExclusive = (String) facetMap.getOrDefault(MAXEXCLUSIVE, null);
+      this.minInclusive = (String) facetMap.getOrDefault(MININCLUSIVE, null);
+      this.maxInclusive = (String) facetMap.getOrDefault(MAXINCLUSIVE, null);
    }
 
+   public EMFFacetConstraints() {
+
+   }
+
+}
+
+class WhiteSpaceFilter {
+   @Override
+   public boolean equals(final Object obj) {
+      if (obj instanceof Integer) {
+         return obj == Integer.valueOf(0);
+      }
+      return true;
+   }
+}
+
+class IntegerFilter {
+   @Override
+   public boolean equals(final Object obj) {
+      if (obj instanceof Integer) {
+         return obj == Integer.valueOf(-1);
+      }
+      return true;
+   }
+}
+
+class StringListFilter {
+   @Override
+   public boolean equals(final Object obj) {
+      if (obj instanceof List) {
+         return ((List) obj).isEmpty();
+      }
+      return true;
+   }
 }

@@ -389,7 +389,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(VALIDATION))
-               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
                .build())
          .build();
 
@@ -727,13 +727,13 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       }
       return false;
    }
-   
+
    @Override
    public CompletableFuture<Response<String>> getValidationConstraints(final String modelUri) {
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(VALIDATION_CONSTRAINTS))
-               .addQueryParameter("modeluri", modelUri)
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
                .build())
          .build();
       return makeCall(request);

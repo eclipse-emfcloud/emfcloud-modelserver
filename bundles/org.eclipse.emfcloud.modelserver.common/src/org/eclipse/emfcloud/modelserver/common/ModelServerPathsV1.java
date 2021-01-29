@@ -25,7 +25,6 @@ interface ModelServerPathsV1 {
    String REDO = "redo"; // accepts query parameter "modeluri"
 
    String VALIDATION = "validation"; // accepts query parameter "modeluri"
-   String VALIDATION_SUBSCRIPTION = "validation/subscribe"; // accepts the query parameter "modeluri"
    String VALIDATION_CONSTRAINTS = "validation/constraints"; // accepts the query parameter "modeluri"
 
    String TYPE_SCHEMA = "typeschema"; // accepts query parameter "modeluri"

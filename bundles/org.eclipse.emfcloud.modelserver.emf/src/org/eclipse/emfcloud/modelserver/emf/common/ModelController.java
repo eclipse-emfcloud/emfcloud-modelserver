@@ -11,24 +11,16 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EClassifier;
-import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.util.ExtendedMetaData;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
@@ -192,7 +184,7 @@ public class ModelController {
          handleError(ctx, 500, "Saving all models failed!");
       }
    }
-   
+
    public void validate(final Context ctx, final String modeluri) {
       ObjectMapper mapper = EMFModule.setupDefaultMapper();
       this.modelRepository.loadResource(modeluri).ifPresentOrElse(res -> {
@@ -204,50 +196,9 @@ public class ModelController {
    }
 
    public void getValidationConstraints(final Context ctx, final String modeluri) {
-      Map<Integer, Map<Integer, JsonNode>> jsonResult = new HashMap<>();
       ObjectMapper mapper = EMFModule.setupDefaultMapper();
-      this.modelRepository.loadResource(modeluri).ifPresentOrElse(res -> {
-         mapper.registerModule(new ValidationMapperModule(res));
-         Optional<EObject> eObject = this.modelRepository.getModel(modeluri);
-         if (eObject.isPresent()) {
-            EPackage ePackage = eObject.get().eClass().getEPackage();
-            for (EClassifier e : ePackage.getEClassifiers()) {
-               if (e instanceof EClass) {
-                  // Map Feature -> ExtendedMetaData
-                  Map<Integer, JsonNode> featureMap = new HashMap<>();
-                  for (EStructuralFeature esf : ((EClass) e).getEStructuralFeatures()) {
-                     if (esf instanceof EAttribute) {
-                        EDataType dataType = ((EAttribute) esf).getEAttributeType();
-                        // Map facet -> Value
-
-                        EMFFacetConstraints emfFacetConstraints = new EMFFacetConstraints(
-                           ExtendedMetaData.INSTANCE.getWhiteSpaceFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getEnumerationFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getPatternFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getTotalDigitsFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getFractionDigitsFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getLengthFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getMinLengthFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getMaxLengthFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getMinExclusiveFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getMaxExclusiveFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getMinInclusiveFacet(dataType),
-                           ExtendedMetaData.INSTANCE.getMaxInclusiveFacet(dataType));
-
-                        featureMap.put(esf.getFeatureID(), mapper.valueToTree(emfFacetConstraints));
-                     }
-                  }
-                  // Map Class -> Features
-                  if (!featureMap.isEmpty()) {
-                     jsonResult.put(e.getClassifierID(), featureMap);
-                  }
-               }
-            }
-         }
-         ctx.json(JsonResponse.success(mapper.valueToTree(jsonResult)));
-      }, () -> handleError(ctx, 404, "Model resource not found"));
+      ctx.json(JsonResponse.success(mapper.valueToTree(this.modelRepository.getValidationConstraints(modeluri))));
    }
-
 
    public void undo(final Context ctx, final String modeluri) {
       CCommand undoCommand = modelRepository.getUndoCommand(modeluri);

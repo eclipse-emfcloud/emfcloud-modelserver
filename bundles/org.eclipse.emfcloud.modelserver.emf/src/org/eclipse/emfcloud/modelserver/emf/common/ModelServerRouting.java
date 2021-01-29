@@ -146,19 +146,19 @@ public class ModelServerRouting extends Routing {
                      param -> getController(ModelController.class).redo(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
-            
+
             // VALIDATE
             get(ModelServerPaths.VALIDATION, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).validate(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
             });
-            
+
             // GET CONSTRAINTS
             get(ModelServerPaths.VALIDATION_CONSTRAINTS, ctx -> {
-               getQueryParam(ctx.queryParamMap(), "modeluri")
+               getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
                   .map(this::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).getValidationConstraints(ctx, param),

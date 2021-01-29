@@ -36,6 +36,27 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class ValidationMapperModule extends SimpleModule {
 
+   public static final String ID = "id";
+   public static final String SEVERITY = "severity";
+   public static final String SOURCE = "source";
+   public static final String CODE = "code";
+   public static final String MESSAGE = "message";
+   public static final String EXCEPTION = "exception";
+   public static final String DATA = "data";
+   public static final String CHILDREN = "children";
+   public static final String WHITESPACE = "whiteSpace";
+   public static final String ENUMERATION = "enumeration";
+   public static final String PATTERN = "pattern";
+   public static final String TOTALDIGETS = "totalDigets";
+   public static final String FRACTIONDIGETS = "fractionDigets";
+   public static final String LENGTH = "length";
+   public static final String MINLENGTH = "minLength";
+   public static final String MAXLENGTH = "maxLength";
+   public static final String MINEXCLUSIVE = "minExclusive";
+   public static final String MAXEXCLUSIVE = "maxExclusive";
+   public static final String MININCLUSIVE = "minInclusive";
+   public static final String MAXINCLUSIVE = "maxInclusive";
+
    /**
     *
     */
@@ -70,14 +91,14 @@ public class ValidationMapperModule extends SimpleModule {
             .filter(EObject.class::isInstance)
             .map(EObject.class::cast)
             .findFirst();
-         gen.writeObjectField("id", res.getURIFragment((eObject.get())));
-         gen.writeObjectField("severity", value.getSeverity());
-         gen.writeObjectField("source", value.getSource());
-         gen.writeObjectField("code", value.getCode());
-         gen.writeObjectField("message", value.getMessage());
-         gen.writeObjectField("exception", value.getException());
-         gen.writeObjectField("data", value.getData());
-         gen.writeObjectField("children", value.getChildren());
+         gen.writeObjectField(ValidationMapperModule.ID, res.getURIFragment((eObject.get())));
+         gen.writeObjectField(ValidationMapperModule.SEVERITY, value.getSeverity());
+         gen.writeObjectField(ValidationMapperModule.SOURCE, value.getSource());
+         gen.writeObjectField(ValidationMapperModule.CODE, value.getCode());
+         gen.writeObjectField(ValidationMapperModule.MESSAGE, value.getMessage());
+         gen.writeObjectField(ValidationMapperModule.EXCEPTION, value.getException());
+         gen.writeObjectField(ValidationMapperModule.DATA, value.getData());
+         gen.writeObjectField(ValidationMapperModule.CHILDREN, value.getChildren());
          gen.writeEndObject();
       }
 
@@ -90,12 +111,12 @@ public class ValidationMapperModule extends SimpleModule {
          throws IOException, JsonProcessingException {
          JsonNode node = p.getCodec().readTree(p);
 
-         String source = node.get("source").asText();
-         int code = node.get("code").asInt();
-         String message = node.get("message").asText();
-         Object[] data = p.getCodec().treeToValue(node.get("data"), Object[].class);
+         String source = node.get(ValidationMapperModule.SOURCE).asText();
+         int code = node.get(ValidationMapperModule.CODE).asInt();
+         String message = node.get(ValidationMapperModule.MESSAGE).asText();
+         Object[] data = p.getCodec().treeToValue(node.get(ValidationMapperModule.DATA), Object[].class);
          List<BasicDiagnostic> children = new ArrayList<>();
-         for (JsonNode child : node.get("children")) {
+         for (JsonNode child : node.get(ValidationMapperModule.CHILDREN)) {
             children.add(p.getCodec().treeToValue(child, BasicDiagnostic.class));
          }
          return new BasicDiagnostic(source, code, children, message, data);
@@ -109,18 +130,18 @@ public class ValidationMapperModule extends SimpleModule {
          final SerializerProvider serializers)
          throws IOException {
          gen.writeStartObject();
-         gen.writeObjectField("whiteSpace", value.getWhiteSpace());
-         gen.writeObjectField("enumeration", value.getEnumeration());
-         gen.writeObjectField("pattern", value.getPattern());
-         gen.writeObjectField("totalDigets", value.getTotalDigets());
-         gen.writeObjectField("fractionDigets", value.getFractionDigets());
-         gen.writeObjectField("length", value.getLength());
-         gen.writeObjectField("minLength", value.getMinLength());
-         gen.writeObjectField("maxLength", value.getMaxLength());
-         gen.writeObjectField("minExclusive", value.getMinExclusive());
-         gen.writeObjectField("maxExclusive", value.getMaxExclusive());
-         gen.writeObjectField("minInclusive", value.getMinInclusive());
-         gen.writeObjectField("maxInclusive", value.getMaxInclusive());
+         gen.writeObjectField(ValidationMapperModule.WHITESPACE, value.getWhiteSpace());
+         gen.writeObjectField(ValidationMapperModule.ENUMERATION, value.getEnumeration());
+         gen.writeObjectField(ValidationMapperModule.PATTERN, value.getPattern());
+         gen.writeObjectField(ValidationMapperModule.TOTALDIGETS, value.getTotalDigits());
+         gen.writeObjectField(ValidationMapperModule.FRACTIONDIGETS, value.getFractionDigits());
+         gen.writeObjectField(ValidationMapperModule.LENGTH, value.getLength());
+         gen.writeObjectField(ValidationMapperModule.MINLENGTH, value.getMinLength());
+         gen.writeObjectField(ValidationMapperModule.MAXLENGTH, value.getMaxLength());
+         gen.writeObjectField(ValidationMapperModule.MINEXCLUSIVE, value.getMinExclusive());
+         gen.writeObjectField(ValidationMapperModule.MAXEXCLUSIVE, value.getMaxExclusive());
+         gen.writeObjectField(ValidationMapperModule.MININCLUSIVE, value.getMinInclusive());
+         gen.writeObjectField(ValidationMapperModule.MAXINCLUSIVE, value.getMaxInclusive());
          gen.writeEndObject();
       }
 
@@ -133,27 +154,26 @@ public class ValidationMapperModule extends SimpleModule {
          throws IOException, JsonProcessingException {
          JsonNode node = p.getCodec().readTree(p);
 
-         int whiteSpace = node.get("whiteSpace").asInt();
+         int whiteSpace = node.get(ValidationMapperModule.WHITESPACE).asInt();
          List<String> enumeration = new ArrayList<>();
-         for (JsonNode n : node.get("enumeration")) {
+         for (JsonNode n : node.get(ValidationMapperModule.ENUMERATION)) {
             enumeration.add(n.asText());
          }
          List<String> pattern = new ArrayList<>();
-         for (JsonNode n : node.get("pattern")) {
+         for (JsonNode n : node.get(ValidationMapperModule.PATTERN)) {
             pattern.add(n.asText());
          }
-         int totalDigets = node.get("totalDigets").asInt();
-         int fractionDigets = node.get("fractionDigets").asInt();
-         int length = node.get("length").asInt();
-         int minLength = node.get("minLength").asInt();
-         int maxLength = node.get("maxLength").asInt();
-         String minExclusive = node.get("minExclusive").asText();
-         String maxExclusive = node.get("maxExclusive").asText();
-         String minInclusive = node.get("minInclusive").asText();
-         String maxInclusive = node.get("maxInclusive").asText();
+         int totalDigets = node.get(ValidationMapperModule.TOTALDIGETS).asInt();
+         int fractionDigets = node.get(ValidationMapperModule.FRACTIONDIGETS).asInt();
+         int length = node.get(ValidationMapperModule.LENGTH).asInt();
+         int minLength = node.get(ValidationMapperModule.MINLENGTH).asInt();
+         int maxLength = node.get(ValidationMapperModule.MAXLENGTH).asInt();
+         String minExclusive = node.get(ValidationMapperModule.MINEXCLUSIVE).asText();
+         String maxExclusive = node.get(ValidationMapperModule.MAXEXCLUSIVE).asText();
+         String minInclusive = node.get(ValidationMapperModule.MININCLUSIVE).asText();
+         String maxInclusive = node.get(ValidationMapperModule.MAXINCLUSIVE).asText();
 
-         return new EMFFacetConstraints(whiteSpace, enumeration, pattern, totalDigets, fractionDigets, length,
-            minLength, maxLength, minExclusive, maxExclusive, minInclusive, maxInclusive);
+         return new EMFFacetConstraints();
       }
    }
 }

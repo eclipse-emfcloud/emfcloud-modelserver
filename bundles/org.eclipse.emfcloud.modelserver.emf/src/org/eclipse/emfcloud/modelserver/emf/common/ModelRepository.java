@@ -25,11 +25,11 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 
 /**
@@ -43,6 +43,8 @@ public class ModelRepository {
    private final ServerConfiguration serverConfiguration;
    @Inject
    private ModelResourceManager modelResourceManager;
+   @Inject
+   private ModelValidator modelValidator;
 
    @Inject
    public ModelRepository(final ServerConfiguration serverConfiguration) {
@@ -167,13 +169,11 @@ public class ModelRepository {
    }
 
    public BasicDiagnostic validate(final String modeluri) {
-      if (!getModel(modeluri).isEmpty()) {
-         BasicDiagnostic diagnostics = Diagnostician.INSTANCE.createDefaultDiagnostic(getModel(modeluri).get());
-         Diagnostician.INSTANCE.validate(getModel(modeluri).get(), diagnostics,
-            Diagnostician.INSTANCE.createDefaultContext());
-         return diagnostics;
-      }
-      return null;
+      return modelValidator.validate(modeluri);
+   }
+
+   public Map<String, Map<String, JsonNode>> getValidationConstraints(final String modeluri) {
+      return modelValidator.getValidationConstraints(modeluri);
    }
 
    public Set<String> getAllModelUris() {
