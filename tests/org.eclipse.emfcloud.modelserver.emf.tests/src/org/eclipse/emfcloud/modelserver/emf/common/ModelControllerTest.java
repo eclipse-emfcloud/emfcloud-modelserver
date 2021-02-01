@@ -25,6 +25,7 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -195,7 +196,11 @@ public class ModelControllerTest {
       // unload to proxify
       res.unload();
       verify(modelRepository).updateModel(eq(modeluri), argThat(eEqualTo(setCommand)));
-      verify(sessionController).modelChanged(eq(modeluri), argThat(eEqualTo(setCommand)));
+
+      // No subscribers registered for this incrementalUpdate, therefore no pre-encoded commands are created and the map
+      // can remain empty for this test
+      Map<String, JsonNode> encodings = new HashMap<>();
+      verify(sessionController).modelChanged(eq(modeluri), eq(encodings));
    }
 
    @Test
@@ -231,7 +236,11 @@ public class ModelControllerTest {
       // unload to proxify
       res.unload();
       verify(modelRepository).updateModel(eq(modeluri), argThat(eEqualTo(addCommand)));
-      verify(sessionController).modelChanged(eq(modeluri), argThat(eEqualTo(addCommand)));
+
+      // No subscribers registered for this incrementalUpdate, therefore no pre-encoded commands are created and the map
+      // can be remain for this test
+      Map<String, JsonNode> encodings = new HashMap<>();
+      verify(sessionController).modelChanged(eq(modeluri), eq(encodings));
    }
 
    @Test
