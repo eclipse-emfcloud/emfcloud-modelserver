@@ -201,19 +201,43 @@ public class ModelServerRouting extends Routing {
                            getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.TIMEOUT)
                               .ifPresentOrElse(
                                  timeout -> {
-                                    if (!getController(SessionController.class).subscribe(ctx, modeluri,
-                                       Long.parseLong(timeout))) {
-                                       handleWsErrorAndCloseSession(ctx, String
-                                          .format("Cannot subscribe to '%s': modeluri is not a valid model resource",
-                                             modeluri));
-                                    }
+                                    getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.LIVE_VALIDATION)
+                                       .ifPresentOrElse(liveValidation -> {
+                                          if (!getController(SessionController.class).subscribe(ctx, modeluri,
+                                             Long.parseLong(timeout), Boolean.parseBoolean(liveValidation))) {
+                                             handleWsErrorAndCloseSession(ctx, String
+                                                .format(
+                                                   "Cannot subscribe to '%s': modeluri is not a valid model resource",
+                                                   modeluri));
+                                          }
+                                       }, () -> {
+                                          if (!getController(SessionController.class).subscribe(ctx, modeluri,
+                                             Long.parseLong(timeout))) {
+                                             handleWsErrorAndCloseSession(ctx, String
+                                                .format(
+                                                   "Cannot subscribe to '%s': modeluri is not a valid model resource",
+                                                   modeluri));
+                                          }
+                                       });
                                  },
                                  () -> {
-                                    if (!getController(SessionController.class).subscribe(ctx, modeluri)) {
-                                       handleWsErrorAndCloseSession(ctx, String
-                                          .format("Cannot subscribe to '%s': modeluri is not a valid model resource",
-                                             modeluri));
-                                    }
+                                    getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.LIVE_VALIDATION)
+                                       .ifPresentOrElse(liveValidation -> {
+                                          if (!getController(SessionController.class).subscribe(ctx, modeluri,
+                                             Boolean.parseBoolean(liveValidation))) {
+                                             handleWsErrorAndCloseSession(ctx, String
+                                                .format(
+                                                   "Cannot subscribe to '%s': modeluri is not a valid model resource",
+                                                   modeluri));
+                                          }
+                                       }, () -> {
+                                          if (!getController(SessionController.class).subscribe(ctx, modeluri)) {
+                                             handleWsErrorAndCloseSession(ctx, String
+                                                .format(
+                                                   "Cannot subscribe to '%s': modeluri is not a valid model resource",
+                                                   modeluri));
+                                          }
+                                       });
                                  });
                         },
                         () -> handleWsErrorAndCloseSession(ctx, "Missing parameter 'modeluri'!"));

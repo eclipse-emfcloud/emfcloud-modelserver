@@ -544,6 +544,76 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       doSubscribe(modelUri, subscriptionListener, request);
    }
 
+   @Override
+   public void subscribeWithValidation(final String modelUri, final SubscriptionListener subscriptionListener) {
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribeWithValidation(final String modelUri, final SubscriptionListener subscriptionListener,
+      final String format) {
+      String checkedFormat = checkedFormat(format);
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
+                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribeWithValidation(final String modelUri, final SubscriptionListener subscriptionListener,
+      final long timeout) {
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
+                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribeWithValidation(final String modelUri, final SubscriptionListener subscriptionListener,
+      final String format,
+      final long timeout) {
+      String checkedFormat = checkedFormat(format);
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
+                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
    private void doSubscribe(final String modelUri, final SubscriptionListener subscriptionListener,
       final Request request) {
       @SuppressWarnings({ "checkstyle:AnonInnerLength" })
@@ -780,4 +850,5 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return makeCallAndParseDataField(request)
          .thenApply(this::getBodyOrThrow);
    }
+
 }

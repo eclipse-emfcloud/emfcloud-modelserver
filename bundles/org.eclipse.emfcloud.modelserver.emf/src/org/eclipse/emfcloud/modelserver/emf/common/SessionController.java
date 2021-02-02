@@ -26,6 +26,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
+import org.emfjson.jackson.module.EMFModule;
 import org.jetbrains.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,6 +46,8 @@ public class SessionController extends WsHandler {
 
    private final Map<String, Set<WsContext>> modelUrisToClients = Maps.newConcurrentMap();
 
+   private final Map<String, Set<WsContext>> modelUrisToValidationClients = Maps.newConcurrentMap();
+
    private final Map<String, BasicDiagnostic> modelUriToLastSendDiagnostic = Maps.newConcurrentMap();
 
    @Inject
@@ -57,9 +60,30 @@ public class SessionController extends WsHandler {
       return this.subscribe(ctx, modeluri, -1); // Do not set an IdleTimeout, keep socket open until client disconnects
    }
 
+   public boolean subscribe(final WsContext ctx, final String modeluri, final boolean liveValidation) {
+      return this.subscribe(ctx, modeluri, -1, liveValidation); // Do not set an IdleTimeout, keep socket open until
+                                                                // client disconnects
+   }
+
    public boolean subscribe(final WsContext ctx, final String modeluri, final long timeout) {
       if (this.modelRepository.hasModel(modeluri)) {
          modelUrisToClients.computeIfAbsent(modeluri, clients -> ConcurrentHashMap.newKeySet()).add(ctx);
+         ctx.session.setIdleTimeout(timeout);
+         ctx.send(JsonResponse.success(ctx.getSessionId()));
+         ctx.send(JsonResponse.dirtyState(modelRepository.getDirtyState(modeluri)));
+         return true;
+      }
+      return false;
+   }
+
+   public boolean subscribe(final WsContext ctx, final String modeluri, final long timeout,
+      final boolean liveValidation) {
+      if (liveValidation == false) {
+         return subscribe(ctx, modeluri, timeout);
+      }
+      if (this.modelRepository.hasModel(modeluri)) {
+         modelUrisToClients.computeIfAbsent(modeluri, clients -> ConcurrentHashMap.newKeySet()).add(ctx);
+         modelUrisToValidationClients.computeIfAbsent(modeluri, clients -> ConcurrentHashMap.newKeySet()).add(ctx);
          ctx.session.setIdleTimeout(timeout);
          ctx.send(JsonResponse.success(ctx.getSessionId()));
          ctx.send(JsonResponse.dirtyState(modelRepository.getDirtyState(modeluri)));
@@ -125,6 +149,7 @@ public class SessionController extends WsHandler {
          eObject -> {
             broadcastFullUpdate(modeluri, eObject);
             broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
+            broadcastValidation(modeluri);
          },
          () -> broadcastError(modeluri, "Could not load changed object"));
    }
@@ -134,13 +159,22 @@ public class SessionController extends WsHandler {
          eObject -> {
             broadcastIncrementalUpdate(modeluri, command);
             broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
+            broadcastValidation(modeluri);
          },
          () -> broadcastError(modeluri, "Could not load changed object"));
    }
 
-   public void modelValidated(final String modeluri, final BasicDiagnostic newResult,
+   public void broadcastValidation(final String modeluri) {
+      ObjectMapper mapper = EMFModule.setupDefaultMapper();
+      this.modelRepository.loadResource(modeluri).ifPresent(res -> {
+         mapper.registerModule(new ValidationMapperModule(res));
+         broadcastValidation(modeluri, modelRepository.validate(modeluri), mapper);
+      });
+   }
+
+   public void broadcastValidation(final String modeluri, final BasicDiagnostic result,
       final ObjectMapper mapper) {
-      broadcastValidationResult(modeluri, newResult, mapper);
+      broadcastValidationResult(modeluri, result, mapper);
    }
 
    public void broadcastUndoRedo(final String modeluri, final Map<String, JsonNode> encodings) {
@@ -148,6 +182,7 @@ public class SessionController extends WsHandler {
          eObject -> {
             broadcastUndoRedoCommands(modeluri, encodings);
             broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
+            broadcastValidation(modeluri);
          },
          () -> broadcastError(modeluri, "Could not load changed object"));
    }
@@ -168,6 +203,11 @@ public class SessionController extends WsHandler {
 
    private Stream<WsContext> getOpenSessions(final String modeluri) {
       return modelUrisToClients.getOrDefault(modeluri, Collections.emptySet()).stream()
+         .filter(ctx -> ctx.session.isOpen());
+   }
+
+   private Stream<WsContext> getOpenValidationSessions(final String modeluri) {
+      return modelUrisToValidationClients.getOrDefault(modeluri, Collections.emptySet()).stream()
          .filter(ctx -> ctx.session.isOpen());
    }
 
@@ -230,8 +270,8 @@ public class SessionController extends WsHandler {
 
    private void broadcastValidationResult(final String modeluri, final BasicDiagnostic newResult,
       final ObjectMapper mapper) {
-      if (modelUrisToClients.containsKey(modeluri)) {
-         getOpenSessions(modeluri)
+      if (modelUrisToValidationClients.containsKey(modeluri)) {
+         getOpenValidationSessions(modeluri)
             .forEach(session -> {
                if (!modelUriToLastSendDiagnostic.containsKey(modeluri)) {
                   modelUriToLastSendDiagnostic.put(modeluri, newResult);

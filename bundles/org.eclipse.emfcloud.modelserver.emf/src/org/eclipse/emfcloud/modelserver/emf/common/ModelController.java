@@ -160,7 +160,6 @@ public class ModelController {
                } catch (EncodingException e) {
                   handleEncodingError(ctx, e);
                }
-               this.modelRepository.validate(modeluri);
                sessionController.modelChanged(modeluri);
             },
                () -> handleError(ctx, 404, "No such model resource to update")),
@@ -190,7 +189,7 @@ public class ModelController {
       this.modelRepository.loadResource(modeluri).ifPresentOrElse(res -> {
          mapper.registerModule(new ValidationMapperModule(res));
          BasicDiagnostic result = this.modelRepository.validate(modeluri);
-         sessionController.modelValidated(modeluri, result, mapper);
+         sessionController.broadcastValidation(modeluri, result, mapper);
          ctx.json(JsonResponse.validationResult(mapper.valueToTree(result)));
       }, () -> handleError(ctx, 404, "Model resource not found"));
    }
@@ -301,7 +300,6 @@ public class ModelController {
                         handleDecodingError(ctx, e);
                      }
                   });
-               this.modelRepository.validate(modelURI);
                ctx.json(JsonResponse.success("Model '" + modelURI + "' successfully updated"));
             }
          },

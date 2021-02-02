@@ -76,6 +76,15 @@ public interface ModelServerClientApiV1<A> {
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format, long timeout);
 
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, long timeout);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format,
+      long timeout);
+
    boolean send(String modelUri, String message);
 
    boolean unsubscribe(String modelUri);
