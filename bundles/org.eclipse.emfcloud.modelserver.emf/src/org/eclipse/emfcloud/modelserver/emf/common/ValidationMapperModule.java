@@ -44,19 +44,6 @@ public class ValidationMapperModule extends SimpleModule {
    public static final String EXCEPTION = "exception";
    public static final String DATA = "data";
    public static final String CHILDREN = "children";
-   public static final String WHITESPACE = "whiteSpace";
-   public static final String ENUMERATION = "enumeration";
-   public static final String PATTERN = "pattern";
-   public static final String TOTALDIGETS = "totalDigets";
-   public static final String FRACTIONDIGETS = "fractionDigets";
-   public static final String LENGTH = "length";
-   public static final String MINLENGTH = "minLength";
-   public static final String MAXLENGTH = "maxLength";
-   public static final String MINEXCLUSIVE = "minExclusive";
-   public static final String MAXEXCLUSIVE = "maxExclusive";
-   public static final String MININCLUSIVE = "minInclusive";
-   public static final String MAXINCLUSIVE = "maxInclusive";
-
    /**
     *
     */
@@ -65,14 +52,10 @@ public class ValidationMapperModule extends SimpleModule {
    public ValidationMapperModule(final Resource res) {
       addSerializer(BasicDiagnostic.class, new BasicDiagnosticSerializer(res));
       addDeserializer(BasicDiagnostic.class, new BasicDiagnosticDeserializer());
-      addSerializer(EMFFacetConstraints.class, new EMFFacetConstraintsSerializer());
-      addDeserializer(EMFFacetConstraints.class, new EMFFacetConstraintsDeserializer());
    }
 
    public ValidationMapperModule() {
       addDeserializer(BasicDiagnostic.class, new BasicDiagnosticDeserializer());
-      addSerializer(EMFFacetConstraints.class, new EMFFacetConstraintsSerializer());
-      addDeserializer(EMFFacetConstraints.class, new EMFFacetConstraintsDeserializer());
    }
 
    private static class BasicDiagnosticSerializer extends JsonSerializer<BasicDiagnostic> {
@@ -120,60 +103,6 @@ public class ValidationMapperModule extends SimpleModule {
             children.add(p.getCodec().treeToValue(child, BasicDiagnostic.class));
          }
          return new BasicDiagnostic(source, code, children, message, data);
-      }
-   }
-
-   private static class EMFFacetConstraintsSerializer extends JsonSerializer<EMFFacetConstraints> {
-
-      @Override
-      public void serialize(final EMFFacetConstraints value, final JsonGenerator gen,
-         final SerializerProvider serializers)
-         throws IOException {
-         gen.writeStartObject();
-         gen.writeObjectField(ValidationMapperModule.WHITESPACE, value.getWhiteSpace());
-         gen.writeObjectField(ValidationMapperModule.ENUMERATION, value.getEnumeration());
-         gen.writeObjectField(ValidationMapperModule.PATTERN, value.getPattern());
-         gen.writeObjectField(ValidationMapperModule.TOTALDIGETS, value.getTotalDigits());
-         gen.writeObjectField(ValidationMapperModule.FRACTIONDIGETS, value.getFractionDigits());
-         gen.writeObjectField(ValidationMapperModule.LENGTH, value.getLength());
-         gen.writeObjectField(ValidationMapperModule.MINLENGTH, value.getMinLength());
-         gen.writeObjectField(ValidationMapperModule.MAXLENGTH, value.getMaxLength());
-         gen.writeObjectField(ValidationMapperModule.MINEXCLUSIVE, value.getMinExclusive());
-         gen.writeObjectField(ValidationMapperModule.MAXEXCLUSIVE, value.getMaxExclusive());
-         gen.writeObjectField(ValidationMapperModule.MININCLUSIVE, value.getMinInclusive());
-         gen.writeObjectField(ValidationMapperModule.MAXINCLUSIVE, value.getMaxInclusive());
-         gen.writeEndObject();
-      }
-
-   }
-
-   private static class EMFFacetConstraintsDeserializer extends JsonDeserializer<EMFFacetConstraints> {
-
-      @Override
-      public EMFFacetConstraints deserialize(final JsonParser p, final DeserializationContext ctxt)
-         throws IOException, JsonProcessingException {
-         JsonNode node = p.getCodec().readTree(p);
-
-         int whiteSpace = node.get(ValidationMapperModule.WHITESPACE).asInt();
-         List<String> enumeration = new ArrayList<>();
-         for (JsonNode n : node.get(ValidationMapperModule.ENUMERATION)) {
-            enumeration.add(n.asText());
-         }
-         List<String> pattern = new ArrayList<>();
-         for (JsonNode n : node.get(ValidationMapperModule.PATTERN)) {
-            pattern.add(n.asText());
-         }
-         int totalDigets = node.get(ValidationMapperModule.TOTALDIGETS).asInt();
-         int fractionDigets = node.get(ValidationMapperModule.FRACTIONDIGETS).asInt();
-         int length = node.get(ValidationMapperModule.LENGTH).asInt();
-         int minLength = node.get(ValidationMapperModule.MINLENGTH).asInt();
-         int maxLength = node.get(ValidationMapperModule.MAXLENGTH).asInt();
-         String minExclusive = node.get(ValidationMapperModule.MINEXCLUSIVE).asText();
-         String maxExclusive = node.get(ValidationMapperModule.MAXEXCLUSIVE).asText();
-         String minInclusive = node.get(ValidationMapperModule.MININCLUSIVE).asText();
-         String maxInclusive = node.get(ValidationMapperModule.MAXINCLUSIVE).asText();
-
-         return new EMFFacetConstraints();
       }
    }
 }

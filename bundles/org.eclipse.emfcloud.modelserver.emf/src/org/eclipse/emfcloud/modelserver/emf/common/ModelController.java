@@ -28,7 +28,6 @@ import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
-import org.emfjson.jackson.module.EMFModule;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,6 +45,9 @@ public class ModelController {
    private final SessionController sessionController;
    private final ServerConfiguration serverConfiguration;
    private final CodecsManager codecs;
+
+   @Inject
+   private ObjectMapper mapper;
 
    @Inject
    public ModelController(final ModelRepository modelRepository, final SessionController sessionController,
@@ -185,7 +187,6 @@ public class ModelController {
    }
 
    public void validate(final Context ctx, final String modeluri) {
-      ObjectMapper mapper = EMFModule.setupDefaultMapper();
       this.modelRepository.loadResource(modeluri).ifPresentOrElse(res -> {
          mapper.registerModule(new ValidationMapperModule(res));
          BasicDiagnostic result = this.modelRepository.validate(modeluri);
@@ -195,7 +196,6 @@ public class ModelController {
    }
 
    public void getValidationConstraints(final Context ctx, final String modeluri) {
-      ObjectMapper mapper = EMFModule.setupDefaultMapper();
       ctx.json(JsonResponse.success(mapper.valueToTree(this.modelRepository.getValidationConstraints(modeluri))));
    }
 

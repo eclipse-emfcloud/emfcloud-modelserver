@@ -40,6 +40,7 @@ import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerEntryPoint;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerStartup;
 import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
@@ -85,6 +86,7 @@ public abstract class ModelServerModule extends AbstractModule {
       bind(ModelResourceManager.class).to(bindModelResourceManager()).in(Singleton.class);
       bind(ModelValidator.class).to(bindModelValidator()).in(Singleton.class);
       bind(FacetConfig.class).to(bindFacetConfig()).in(Singleton.class);
+      bind(ObjectMapper.class).toInstance(bindObjectMapper());
       bind(CodecsManager.class).to(bindCodecsManager()).in(Singleton.class);
       MapBinder<String, Codec> codecsBinder = MapBinder.newMapBinder(binder(), String.class, Codec.class);
       bindFormatCodecs().forEach((format, codec) -> codecsBinder.addBinding(format).to(codec));
@@ -119,6 +121,8 @@ public abstract class ModelServerModule extends AbstractModule {
    protected abstract Class<? extends ModelValidator> bindModelValidator();
 
    protected abstract Class<? extends FacetConfig> bindFacetConfig();
+
+   protected abstract ObjectMapper bindObjectMapper();
 
    /**
     * Bind the codecs manager implementating class.

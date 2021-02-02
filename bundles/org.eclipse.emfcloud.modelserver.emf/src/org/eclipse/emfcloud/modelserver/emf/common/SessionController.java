@@ -26,7 +26,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
-import org.emfjson.jackson.module.EMFModule;
 import org.jetbrains.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -55,6 +54,9 @@ public class SessionController extends WsHandler {
 
    @Inject
    private CodecsManager encoder;
+
+   @Inject
+   private ObjectMapper mapper;
 
    public boolean subscribe(final WsContext ctx, final String modeluri) {
       return this.subscribe(ctx, modeluri, -1); // Do not set an IdleTimeout, keep socket open until client disconnects
@@ -165,7 +167,6 @@ public class SessionController extends WsHandler {
    }
 
    public void broadcastValidation(final String modeluri) {
-      ObjectMapper mapper = EMFModule.setupDefaultMapper();
       this.modelRepository.loadResource(modeluri).ifPresent(res -> {
          mapper.registerModule(new ValidationMapperModule(res));
          broadcastValidation(modeluri, modelRepository.validate(modeluri), mapper);
