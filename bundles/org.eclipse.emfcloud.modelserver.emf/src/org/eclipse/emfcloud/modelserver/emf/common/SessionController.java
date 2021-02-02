@@ -156,7 +156,7 @@ public class SessionController extends WsHandler {
          () -> broadcastError(modeluri, "Could not load changed object"));
    }
 
-   public void modelChanged(final String modeluri, final CCommand command) {
+   public void modelChanged(final String modeluri, final Map<String, JsonNode> encodings) {
       modelRepository.getModel(modeluri).ifPresentOrElse(
          eObject -> {
             broadcastIncrementalUpdate(modeluri, command);
@@ -242,24 +242,12 @@ public class SessionController extends WsHandler {
       }
    }
 
-   private void broadcastUndoRedoCommands(final String modeluri, final Map<String, JsonNode> encodedUndoRedoCommands) {
+   private void broadcastIncrementalUpdates(final String modeluri,
+      final Map<String, JsonNode> encodedIncrementalUpdates) {
       if (modelUrisToClients.containsKey(modeluri)) {
          getOpenSessions(modeluri)
             .forEach(session -> {
-               session.send(JsonResponse.incrementalUpdate(encodedUndoRedoCommands.get(encoder.findFormat(session))));
-            });
-      }
-   }
-
-   private void broadcastIncrementalUpdate(final String modeluri, final CCommand command) {
-      if (modelUrisToClients.containsKey(modeluri)) {
-         getOpenSessions(modeluri)
-            .forEach(session -> {
-               try {
-                  session.send(JsonResponse.incrementalUpdate(encoder.encode(session, command)));
-               } catch (EncodingException e) {
-                  LOG.error("Broadcast incremental update of " + modeluri + " failed", e);
-               }
+               session.send(JsonResponse.incrementalUpdate(encodedIncrementalUpdates.get(encoder.findFormat(session))));
             });
       }
    }

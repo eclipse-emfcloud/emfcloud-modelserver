@@ -10,6 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import static org.eclipse.emfcloud.modelserver.jsonschema.Json.prop;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -17,6 +18,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -29,13 +32,13 @@ import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.eclipse.jetty.websocket.api.Session;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -84,8 +87,11 @@ public class SessionControllerTest {
       assertTrue(
          sessionController.subscribe(validClientCtx, validClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)));
       assertTrue(sessionController.isClientSubscribed(validClientCtx));
+
       verify(validClientCtx).send(argThat(jsonNodeThat(
          containsRegex("\"type\":\"success\",\"data\":\"" + sessionId + "\""))));
+      verify(validClientCtx).send(argThat(jsonNodeThat(
+         containsRegex(".\"type\":\"dirtyState\",\"data\":false."))));
    }
 
    @Test
@@ -113,6 +119,8 @@ public class SessionControllerTest {
 
       verify(validClientCtx).send(argThat(jsonNodeThat(
          containsRegex("\"type\":\"success\",\"data\":\"" + sessionId + "\""))));
+      verify(validClientCtx).send(argThat(jsonNodeThat(
+         containsRegex(".\"type\":\"dirtyState\",\"data\":false."))));
 
       // try to unsubscribe from this valid session
       //
@@ -129,28 +137,45 @@ public class SessionControllerTest {
       assertFalse(sessionController.unsubscribe(invalidClientCtx));
    }
 
-   @Ignore
    @Test
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void testCommandSubscription() throws NoSuchFieldException, SecurityException {
       String sessionId = UUID.randomUUID().toString();
+      String modelUri = "fancytesturi";
+
       initializeValidClientContext(sessionId);
       when(validClientCtx.session.isOpen()).thenReturn(true);
-      when(repository.getModel("fancytesturi")).thenReturn(Optional.of(EcoreFactory.eINSTANCE.createEClass()));
+      when(repository.getModel(modelUri)).thenReturn(Optional.of(EcoreFactory.eINSTANCE.createEClass()));
 
       sessionController.subscribe(validClientCtx, validClientCtx.pathParam(ModelServerPathParameters.MODEL_URI));
       verify(validClientCtx).send(argThat(jsonNodeThat(
          containsRegex(".\"type\":\"success\",\"data\":\"" + sessionId + "\"."))));
+      verify(validClientCtx).send(argThat(jsonNodeThat(
+         containsRegex(".\"type\":\"dirtyState\",\"data\":false."))));
 
       CCommand command = CCommandFactory.eINSTANCE.createCommand();
       command.setType(CommandKind.SET);
-      sessionController.modelChanged("fancytesturi", command);
+
+      Map<String, JsonNode> encodings = new HashMap<>();
+      JsonNode expectedCommand = Json.object(
+         prop("eClass", Json.text("http://www.eclipsesource.com/schema/2019/modelserver/command#//Command")),
+         prop("type", Json.text(command.getType().toString())),
+         prop("owner", Json.object(
+            prop("eClass", Json.text("")),
+            prop("$ref", Json.text("")))),
+         prop("feature", Json.text("")),
+         prop("dataValues", Json.array(Json.text(""))));
+      encodings.put(ModelServerPathParameters.FORMAT_JSON, expectedCommand);
+
+      when(repository.getDirtyState(modelUri)).thenReturn(true);
+
+      sessionController.modelChanged(modelUri, encodings);
 
       verify(validClientCtx).send(argThat(jsonNodeThat(
-         containsRegex(".\"type\":\"incrementalUpdate\",\"data\":.\"type\":\"SET\".*"))));
-
+         containsRegex(".\"type\":\"incrementalUpdate\",\"data\":.*\"type\":\"set\".*"))));
       verify(validClientCtx).send(argThat(jsonNodeThat(
          containsRegex(".\"type\":\"dirtyState\",\"data\":true."))));
+
    }
 
    @Test
@@ -162,9 +187,13 @@ public class SessionControllerTest {
       initializeWsMessageContext(sessionId);
       assertTrue(sessionController.subscribe(messageClientCtx,
          messageClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)));
+
       verify(messageClientCtx)
          .send(argThat(jsonNodeThat(containsRegex(
             "(?i)\"type\":\"success\",\"data\":\"" + sessionId + "\""))));
+      verify(messageClientCtx).send(argThat(jsonNodeThat(
+         containsRegex(".\"type\":\"dirtyState\",\"data\":false."))));
+
       assertTrue(sessionController.isClientSubscribed(messageClientCtx));
       // client sends keepAlive message
       when(messageClientCtx.message()).thenReturn("{\"type\":\"keepAlive\",\"data\":\"\"}");
@@ -179,19 +208,26 @@ public class SessionControllerTest {
    //
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
    private void initializeValidClientContext(final String sessionId) throws NoSuchFieldException, SecurityException {
+      String modelUri = "fancytesturi";
+
+      when(repository.getDirtyState(modelUri)).thenReturn(false);
       when(validClientCtx.getSessionId()).thenReturn(sessionId);
-      when(validClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)).thenReturn("fancytesturi");
+      when(validClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)).thenReturn(modelUri);
       Field sessionField = WsContext.class.getDeclaredField("session");
       FieldSetter.setField(validClientCtx, sessionField, session);
 
-      when(repository.hasModel("fancytesturi")).thenReturn(true);
+      when(codecs.findFormat(validClientCtx)).thenReturn(ModelServerPathParameters.FORMAT_JSON);
+
+      when(repository.hasModel(modelUri)).thenReturn(true);
    }
 
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
    private void initializeWsMessageContext(final String sessionId) throws NoSuchFieldException, SecurityException {
+      String modelUri = "fancytesturi";
+
       when(messageClientCtx.getSessionId()).thenReturn(sessionId);
-      when(messageClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)).thenReturn("fancytesturi");
-      when(repository.hasModel("fancytesturi")).thenReturn(true);
+      when(messageClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)).thenReturn(modelUri);
+      when(repository.hasModel(modelUri)).thenReturn(true);
 
       Field sessionField = WsContext.class.getDeclaredField("session");
       FieldSetter.setField(messageClientCtx, sessionField, session);
@@ -199,14 +235,15 @@ public class SessionControllerTest {
 
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
    private void initializeInvalidClientContext() throws NoSuchFieldException, SecurityException {
-      when(invalidClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)).thenReturn("tedioustesturi");
+      String modelUri = "tedioustesturi";
+
+      when(invalidClientCtx.pathParam(ModelServerPathParameters.MODEL_URI)).thenReturn(modelUri);
       FieldSetter.setField(invalidClientCtx, WsContext.class.getDeclaredField("session"), session);
    }
 
    @Before
    public void createSessionController() {
       sessionController = Guice.createInjector(new AbstractModule() {
-
          @Override
          protected void configure() {
             bind(ServerConfiguration.class).toInstance(serverConfig);
@@ -216,7 +253,6 @@ public class SessionControllerTest {
             bind(CodecsManager.class).toInstance(codecs);
          }
       }).getInstance(SessionController.class);
-
    }
 
    Matcher<Object> jsonNodeThat(final Matcher<String> data) {

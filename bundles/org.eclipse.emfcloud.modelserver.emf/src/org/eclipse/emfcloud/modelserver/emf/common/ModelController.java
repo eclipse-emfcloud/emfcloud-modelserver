@@ -215,7 +215,7 @@ public class ModelController {
          boolean undoSuccess = modelRepository.undo(modeluri);
          if (undoSuccess) {
             ctx.json(JsonResponse.success("Successful undo."));
-            sessionController.broadcastUndoRedo(modeluri, encodings);
+            sessionController.modelChanged(modeluri, encodings);
             return;
          }
       }
@@ -230,7 +230,7 @@ public class ModelController {
          boolean redoSuccess = modelRepository.redo(modeluri);
          if (redoSuccess) {
             ctx.json(JsonResponse.success("Successful redo."));
-            sessionController.broadcastUndoRedo(modeluri, encodings);
+            sessionController.modelChanged(modeluri, encodings);
             return;
          }
       }
@@ -286,11 +286,15 @@ public class ModelController {
 
                         try {
                            EcoreUtil.resolveAll(resource);
-
-                           // Use an unique copy of the command for each operation
-                           // here to ensure isolation in case of side-effects
-                           modelRepository.updateModel(modelURI, EcoreUtil.copy(cmd));
-                           sessionController.modelChanged(modelURI, EcoreUtil.copy(cmd));
+                           /*
+                            * In a similar way as for undo/redo we encode the command beforehand to ensure the encoded
+                            * command for notifying subscribed client contains all necessary element information,
+                            * e.g.the original owner in case of a SET command that changes the name and therefore its
+                            * semantic URI
+                            */
+                           Map<String, JsonNode> encodings = sessionController.getCommandEncodings(modelURI, cmd);
+                           modelRepository.updateModel(modelURI, cmd);
+                           sessionController.modelChanged(modelURI, encodings);
                            ctx.json(JsonResponse.success());
                         } finally {
                            resource.unload();
