@@ -190,7 +190,6 @@ public class ModelController {
       this.modelRepository.loadResource(modeluri).ifPresentOrElse(res -> {
          mapper.registerModule(new ValidationMapperModule(res));
          BasicDiagnostic result = this.modelRepository.validate(modeluri);
-         sessionController.broadcastValidation(modeluri, result, mapper);
          ctx.json(JsonResponse.validationResult(mapper.valueToTree(result)));
       }, () -> handleError(ctx, 404, "Model resource not found"));
    }

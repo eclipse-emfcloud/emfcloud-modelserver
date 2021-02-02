@@ -52,6 +52,7 @@ options:
 - The query parameter `?modeluri=` accepts files in the loaded workspace as well as absolute file paths.
 - Parameters in brackets `[]` are optional.
   - If no format is specified, the default format is JSON.
+  - The livevalidation parameter defaults to false. If set to true the ws will recieve validation results automatically.
 
 ### HTTP Endpoints
 If the model server is up and running, you can access the model server API via `http://localhost:8081/api/v1/*`.
@@ -88,7 +89,7 @@ The following table shows the current WS endpoints:
 
 |Description|Path|Input|Returns
 |-|-|-|-
-|Subscribe to model changes|`/subscribe`|query parameter: `?modeluri=...[&format=...][&timeout=...]`|`sessionId`
+|Subscribe to model changes|`/subscribe`|query parameter: `?modeluri=...[&format=...][&timeout=...][&livevalidation=-...]`|`sessionId`
 
 <br/>
 
@@ -142,7 +143,7 @@ public interface ModelServerClientApiV1<A> {
    
    CompletableFuture<Response<String>> validate(String modelUri);
 
-   CompletableFuture<Response<String>> getConstraints(String modelUri);
+   CompletableFuture<Response<String>> getValidationConstraints(String modelUri);
 
    CompletableFuture<Response<String>> getTypeSchema(String modelUri);
 
@@ -165,6 +166,15 @@ public interface ModelServerClientApiV1<A> {
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, long timeout);
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format, long timeout);
+   
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, long timeout);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format,
+      long timeout);
 
    boolean send(String modelUri, String message);
 

@@ -159,7 +159,7 @@ public class SessionController extends WsHandler {
    public void modelChanged(final String modeluri, final Map<String, JsonNode> encodings) {
       modelRepository.getModel(modeluri).ifPresentOrElse(
          eObject -> {
-            broadcastIncrementalUpdate(modeluri, command);
+            broadcastIncrementalUpdates(modeluri, encodings);
             broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
             broadcastValidation(modeluri);
          },
@@ -176,16 +176,6 @@ public class SessionController extends WsHandler {
    public void broadcastValidation(final String modeluri, final BasicDiagnostic result,
       final ObjectMapper mapper) {
       broadcastValidationResult(modeluri, result, mapper);
-   }
-
-   public void broadcastUndoRedo(final String modeluri, final Map<String, JsonNode> encodings) {
-      modelRepository.getModel(modeluri).ifPresentOrElse(
-         eObject -> {
-            broadcastUndoRedoCommands(modeluri, encodings);
-            broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
-            broadcastValidation(modeluri);
-         },
-         () -> broadcastError(modeluri, "Could not load changed object"));
    }
 
    public void modelDeleted(final String modeluri) {
