@@ -212,6 +212,8 @@ public class ModelServerRouting extends Routing {
                   }
                });
             });
+
+            // TODO: ws for the commands
          });
       });
    }

@@ -37,6 +37,7 @@ pipeline {
     post {
         success {
             junit '**/surefire-reports/*.xml'
+            recordIssues(tools: [checkStyle(pattern: '**/target/checkstyle-results.xml', reportEncoding: 'UTF-8')])
         }
     }
 }

@@ -63,7 +63,7 @@ public class DefaultCommandCodec implements CommandCodec {
       CCommand result;
 
       if (command instanceof CompoundCommand) {
-         // Various special commands are compounds (e.g., Delete).
+         // TODO: Various special commands are compounds (e.g., Delete).
          CCompoundCommand compound = CCommandFactory.eINSTANCE.createCompoundCommand();
          compound.setType(CommandKind.COMPOUND);
 
@@ -104,7 +104,7 @@ public class DefaultCommandCodec implements CommandCodec {
             collectCommandEObjects(remove.getCollection(), result, false);
          }
       } else if (command instanceof SetCommand) {
-         // Still need to handle the UNSET value (needs model change)
+         // FIXME: Handle the UNSET value (needs model change)
          SetCommand set = (SetCommand) command;
          result = CCommandFactory.eINSTANCE.createCommand();
          result.setType(CommandKind.SET);
