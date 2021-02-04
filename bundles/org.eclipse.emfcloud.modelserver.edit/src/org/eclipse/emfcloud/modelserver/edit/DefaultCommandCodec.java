@@ -35,13 +35,13 @@ import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.command.ReplaceCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
-
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CCompoundCommand;
 import org.eclipse.emfcloud.modelserver.command.CommandKind;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
+
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
 
@@ -119,9 +119,9 @@ public class DefaultCommandCodec implements CommandCodec {
             collectCommandEObjects(singleton(set.getValue()), result, true);
          }
       } else if (command instanceof ReplaceCommand) {
-         throw new EncodingException("todo"); // TODO
+         throw new EncodingException("todo");
       } else if (command instanceof MoveCommand) {
-         throw new EncodingException("todo"); // TODO
+         throw new EncodingException("todo");
       } else {
          throw new EncodingException("unsupported command type: " + command.getClass().getName());
       }
@@ -253,13 +253,13 @@ public class DefaultCommandCodec implements CommandCodec {
             break;
          }
          case MOVE: {
-            throw new DecodingException("todo"); // TODO
+            throw new DecodingException("todo");
          }
          case REPLACE: {
-            throw new DecodingException("todo"); // TODO
+            throw new DecodingException("todo");
          }
          default:
-            throw new DecodingException("unsupported command type: " + command.getType().getLiteral()); // TODO
+            throw new DecodingException("unsupported command type: " + command.getType().getLiteral());
       }
 
       return result;

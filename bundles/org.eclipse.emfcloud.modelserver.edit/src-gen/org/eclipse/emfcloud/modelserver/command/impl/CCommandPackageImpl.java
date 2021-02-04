@@ -1,13 +1,13 @@
-/**
+/********************************************************************************
  * Copyright (c) 2019 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- */
+ ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.command.impl;
 
 import org.eclipse.emf.ecore.EAttribute;
@@ -16,9 +16,7 @@ import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EcorePackage;
-
 import org.eclipse.emf.ecore.impl.EPackageImpl;
-
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
@@ -29,14 +27,14 @@ import org.eclipse.emfcloud.modelserver.command.CommandKind;
  * <!-- begin-user-doc -->
  * An implementation of the model <b>Package</b>.
  * <!-- end-user-doc -->
- * 
+ *
  * @generated
  */
 public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage {
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    private EClass commandEClass = null;
@@ -44,7 +42,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    private EClass compoundCommandEClass = null;
@@ -52,7 +50,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    private EEnum commandKindEEnum = null;
@@ -68,7 +66,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
     * if one already exists.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see org.eclipse.emf.ecore.EPackage.Registry
     * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#eNS_URI
     * @see #init()
@@ -81,7 +79,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    private static boolean isInited = false;
@@ -94,15 +92,16 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
     * Clients should not invoke it directly. Instead, they should simply access that field to obtain the package.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #eNS_URI
     * @see #createPackageContents()
     * @see #initializePackageContents()
     * @generated
     */
    public static CCommandPackage init() {
-      if (isInited)
+      if (isInited) {
          return (CCommandPackage) EPackage.Registry.INSTANCE.getEPackage(CCommandPackage.eNS_URI);
+      }
 
       // Obtain or create and register package
       Object registeredCommandPackage = EPackage.Registry.INSTANCE.get(eNS_URI);
@@ -132,7 +131,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -141,7 +140,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -150,7 +149,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -159,7 +158,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -168,7 +167,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -177,7 +176,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -186,7 +185,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -195,7 +194,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -204,7 +203,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -213,7 +212,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -224,7 +223,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -233,7 +232,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -242,7 +241,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    private boolean isCreated = false;
@@ -252,12 +251,13 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
     * guarded to have no affect on any invocation but its first.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    public void createPackageContents() {
-      if (isCreated)
+      if (isCreated) {
          return;
+      }
       isCreated = true;
 
       // Create classes and their features
@@ -280,7 +280,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    private boolean isInitialized = false;
@@ -290,12 +290,13 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
     * method is guarded to have no affect on any invocation but its first.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    public void initializePackageContents() {
-      if (isInitialized)
+      if (isInitialized) {
          return;
+      }
       isInitialized = true;
 
       // Initialize package

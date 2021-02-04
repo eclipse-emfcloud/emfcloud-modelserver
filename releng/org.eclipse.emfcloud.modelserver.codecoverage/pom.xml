@@ -1,116 +1,76 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
-		<groupId>org.eclipse.emfcloud.modelserver</groupId>
-		<version>0.7.0-SNAPSHOT</version>
-		<relativePath>../..</relativePath>
-	</parent>
-	<artifactId>org.eclipse.emfcloud.modelserver.codecoverage</artifactId>
-	<description>code coverage report aggregation of all testable modules</description>
-	<packaging>pom</packaging>
-	<properties>
-		<maven.deploy.skip>true</maven.deploy.skip>
-	</properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>org.eclipse.emfcloud.modelserver.releng.parent</artifactId>
+      <groupId>org.eclipse.emfcloud.modelserver</groupId>
+      <version>0.7.0-SNAPSHOT</version>
+      <relativePath>..</relativePath>
+   </parent>
+   <artifactId>org.eclipse.emfcloud.modelserver.codecoverage</artifactId>
+   <description>code coverage report aggregation of all testable modules</description>
+   <packaging>pom</packaging>
+   <properties>
+      <maven.deploy.skip>true</maven.deploy.skip>
+   </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.eclipse.emfcloud.modelserver</groupId>
-			<artifactId>org.eclipse.emfcloud.modelserver.client</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.emfcloud.modelserver</groupId>
-			<artifactId>org.eclipse.emfcloud.modelserver.common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.emfcloud.modelserver</groupId>
-			<artifactId>org.eclipse.emfcloud.modelserver.emf</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.emfcloud.modelserver</groupId>
-			<artifactId>org.eclipse.emfcloud.modelserver.edit</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-	</dependencies>
+   <dependencies>
+      <dependency>
+         <groupId>org.eclipse.emfcloud.modelserver</groupId>
+         <artifactId>org.eclipse.emfcloud.modelserver.client</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.emfcloud.modelserver</groupId>
+         <artifactId>org.eclipse.emfcloud.modelserver.common</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.emfcloud.modelserver</groupId>
+         <artifactId>org.eclipse.emfcloud.modelserver.emf</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.emfcloud.modelserver</groupId>
+         <artifactId>org.eclipse.emfcloud.modelserver.edit</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+   </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.4</version>
-				<executions>
-					<execution>
-						<id>report-code-coverage</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report-aggregate</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.reporting.outputDirectory}</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <executions>
+               <execution>
+                  <id>report-code-coverage</id>
+                  <phase>test</phase>
+                  <goals>
+                     <goal>report-aggregate</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>${project.reporting.outputDirectory}</outputDirectory>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
 
-	<reporting>
-		<outputDirectory>${basedir}/jacoco</outputDirectory>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.15</version>
-				<configuration>
-					<argLine>${surefireArgLine}</argLine>
-				</configuration>
-			</plugin>
-		</plugins>
-	</reporting>
-
-	<!-- Additional required metadata for deploying releases to mvn central -->
-	<url>https://github.com/eclipse/emfcloud-modelserver</url>
-
-	<licenses>
-		<license>
-			<name>Eclipse Public License - v 2.0</name>
-			<url>http://www.eclipse.org/legal/epl-v20.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-
-	<developers>
-		<developer>
-			<name>Edgar Mueller</name>
-			<email>emueller@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
-		</developer>
-		<developer>
-			<name>Nina Doschek</name>
-			<email>ndoschek@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
-		</developer>
-		<developer>
-			<name>Tobias Ortmayr</name>
-			<email>tortmayr@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
-		</developer>
-	</developers>
-
-	<scm>
-		<url>https://github.com/eclipse/emfcloud-modelserver</url>
-		<connection>scm:git@github.com:eclipse/emfcloud-modelserver.git</connection>
-		<developerConnection>scm:git@github.com:eclipse/emfcloud-modelserver.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
+   <reporting>
+      <outputDirectory>${basedir}/jacoco</outputDirectory>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${maven.surefire.version}</version>
+            <configuration>
+               <argLine>${surefireArgLine}</argLine>
+            </configuration>
+         </plugin>
+      </plugins>
+   </reporting>
 
 </project>

@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <parent>
+      <groupId>org.eclipse.emfcloud.modelserver</groupId>
+      <artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <relativePath>..</relativePath>
+   </parent>
+   <artifactId>org.eclipse.emfcloud.modelserver.releng.parent</artifactId>
+   <packaging>pom</packaging>
+
+   <modules>
+      <module>org.eclipse.emfcloud.modelserver.codecoverage</module>
+      <module>org.eclipse.emfcloud.modelserver.codestyle</module>
+   </modules>
+
+   <profiles>
+      <profile>
+         <id>p2-release</id>
+         <modules>
+            <module>org.eclipse.emfcloud.modelserver.releng.p2</module>
+         </modules>
+      </profile>
+   </profiles>
+</project>
