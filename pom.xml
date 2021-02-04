@@ -132,6 +132,10 @@
       <javalin.version>3.1.0</javalin.version> <!-- we can only upgrade to the latest version after some mocking issue is fixed, see https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/63 -->
       <mockito.inline.version>2.23.0</mockito.inline.version>
       <gmazzo.okhttp.mock.version>1.3.2</gmazzo.okhttp.mock.version>
+      
+      <!-- Release Dependencies for M2 -->
+      <nexus.maven.version>1.6.8</nexus.maven.version>
+      <maven.gpg.version>1.6.0</maven.gpg.version>
    </properties>
 
    <build>
@@ -492,7 +496,7 @@
                <plugin>
                   <groupId>org.sonatype.plugins</groupId>
                   <artifactId>nexus-staging-maven-plugin</artifactId>
-                  <version>1.6.8</version>
+                  <version>${nexus.maven.version}</version>
                   <extensions>true</extensions>
                   <configuration>
                      <serverId>ossrh</serverId>
@@ -541,7 +545,7 @@
                <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-gpg-plugin</artifactId>
-                  <version>1.6</version>
+                  <version>${maven.gpg.version}</version>
                   <executions>
                      <execution>
                         <id>sign-artifacts</id>
