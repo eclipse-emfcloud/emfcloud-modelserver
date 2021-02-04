@@ -135,7 +135,7 @@
       
       <!-- Release Dependencies for M2 -->
       <nexus.maven.version>1.6.8</nexus.maven.version>
-      <maven.gpg.version>1.6.0</maven.gpg.version>
+      <maven.gpg.version>1.6</maven.gpg.version>
    </properties>
 
    <build>
