@@ -44,7 +44,7 @@ public class ModelServerLauncher {
          root.addAppender(new ConsoleAppender(
             new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN)));
       }
-      root.setLevel(Level.INFO);
+      root.setLevel(Level.DEBUG);
 
    }
 
