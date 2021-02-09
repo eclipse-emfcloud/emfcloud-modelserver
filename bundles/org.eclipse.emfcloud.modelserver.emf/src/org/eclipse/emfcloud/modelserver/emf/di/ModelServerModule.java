@@ -13,6 +13,7 @@ package org.eclipse.emfcloud.modelserver.emf.di;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.notify.AdapterFactory;
@@ -24,7 +25,6 @@ import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
-import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRouting;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
@@ -72,7 +72,6 @@ public abstract class ModelServerModule extends AbstractModule {
       bind(SchemaController.class).in(Singleton.class);
       bind(SchemaRepository.class).in(Singleton.class);
       bind(SessionController.class).in(Singleton.class);
-      Multibinder.newSetBinder(binder(), Routing.class).addBinding().to(ModelServerRouting.class).in(Singleton.class);
       MapBinder.newMapBinder(binder(), EntryPointType.class, AppEntryPoint.class).addBinding(EntryPointType.REST)
          .to(ModelServerEntryPoint.class);
 
@@ -84,7 +83,8 @@ public abstract class ModelServerModule extends AbstractModule {
       bind(CodecsManager.class).to(bindCodecsManager()).in(Singleton.class);
       MapBinder<String, Codec> codecsBinder = MapBinder.newMapBinder(binder(), String.class, Codec.class);
       bindFormatCodecs().forEach((format, codec) -> codecsBinder.addBinding(format).to(codec));
-
+      Multibinder<Routing> routingBinder = Multibinder.newSetBinder(binder(), Routing.class);
+      bindModelServerRoutings().forEach(routing -> routingBinder.addBinding().to(routing).in(Singleton.class));
    }
 
    public void addEPackageConfigurations(final Collection<Class<? extends EPackageConfiguration>> configs) {
@@ -95,8 +95,10 @@ public abstract class ModelServerModule extends AbstractModule {
       return Javalin.create(config -> {
          config.enableCorsForAllOrigins();
          config.requestLogger((ctx, ms) -> {
-            LOG.info(ctx.method() + " " + ctx.path() + " -> Status: " + ctx.status() + " (took " + ms + " ms)");
+            String requestPath = ctx.path() + (ctx.queryString() == null ? "" : "?" + ctx.queryString());
+            LOG.info(ctx.method() + " " + requestPath + " -> Status: " + ctx.status() + " (took " + ms + " ms)");
          });
+         config.asyncRequestTimeout = 5000L;
          config.wsLogger(ws -> {
             ws.onConnect(ctx -> LOG.info("WS Connected: " + ctx.getSessionId()));
             ws.onMessage(ctx -> LOG.info("WS Received: " + ctx.message() + " by " + ctx.getSessionId()));
@@ -134,5 +136,7 @@ public abstract class ModelServerModule extends AbstractModule {
     * @return map with formats as key and codec classes to instantiate as values.
     */
    protected abstract Map<String, Class<? extends Codec>> bindFormatCodecs();
+
+   protected abstract Set<Class<? extends Routing>> bindModelServerRoutings();
 
 }
