@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -30,7 +29,6 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
@@ -47,7 +45,7 @@ public class ModelController {
    private final CodecsManager codecs;
 
    @Inject
-   private ObjectMapper mapper;
+   private ModelValidator modelValidator;
 
    @Inject
    public ModelController(final ModelRepository modelRepository, final SessionController sessionController,
@@ -187,15 +185,11 @@ public class ModelController {
    }
 
    public void validate(final Context ctx, final String modeluri) {
-      this.modelRepository.loadResource(modeluri).ifPresentOrElse(res -> {
-         mapper.registerModule(new ValidationMapperModule(res));
-         BasicDiagnostic result = this.modelRepository.validate(modeluri);
-         ctx.json(JsonResponse.validationResult(mapper.valueToTree(result)));
-      }, () -> handleError(ctx, 404, "Model resource not found"));
+      ctx.json(JsonResponse.validationResult(this.modelValidator.validate(modeluri)));
    }
 
    public void getValidationConstraints(final Context ctx, final String modeluri) {
-      ctx.json(JsonResponse.success(mapper.valueToTree(this.modelRepository.getValidationConstraints(modeluri))));
+      ctx.json(JsonResponse.success(this.modelValidator.getValidationConstraints(modeluri)));
    }
 
    public void undo(final Context ctx, final String modeluri) {

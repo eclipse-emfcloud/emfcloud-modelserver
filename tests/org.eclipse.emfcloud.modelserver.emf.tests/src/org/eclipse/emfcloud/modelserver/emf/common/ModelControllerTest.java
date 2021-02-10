@@ -339,7 +339,7 @@ public class ModelControllerTest {
    }
 
    @Test
-   public void getConstraints() throws EncodingException, IOException {
+   public void getValidationConstraints() throws EncodingException, IOException {
       modelController.getValidationConstraints(context, getModelUri("Test1.ecore").toString());
 
       JsonNode expectedResponse = Json.object(

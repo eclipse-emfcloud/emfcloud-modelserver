@@ -15,16 +15,12 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
-import java.util.Map;
-
-import org.eclipse.emf.common.util.BasicDiagnostic;
-
 import com.fasterxml.jackson.databind.JsonNode;
 
 public interface ModelValidator {
 
-   BasicDiagnostic validate(String modeluri);
+   JsonNode validate(String modeluri);
 
-   Map<String, Map<String, JsonNode>> getValidationConstraints(String modeluri);
+   JsonNode getValidationConstraints(String modeluri);
 
 }

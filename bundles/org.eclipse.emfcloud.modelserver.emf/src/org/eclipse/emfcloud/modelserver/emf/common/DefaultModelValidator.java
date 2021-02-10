@@ -27,6 +27,7 @@ import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.ExtendedMetaData;
@@ -51,19 +52,23 @@ public class DefaultModelValidator implements ModelValidator {
    }
 
    @Override
-   public BasicDiagnostic validate(final String modeluri) {
+   public JsonNode validate(final String modeluri) {
       Optional<EObject> model = this.modelRepository.getModel(modeluri);
       if (model.isPresent()) {
-         BasicDiagnostic diagnostics = Diagnostician.INSTANCE.createDefaultDiagnostic(model.get());
-         Diagnostician.INSTANCE.validate(model.get(), diagnostics,
-            Diagnostician.INSTANCE.createDefaultContext());
-         return diagnostics;
+         Optional<Resource> res = this.modelRepository.loadResource(modeluri);
+         if (res.isPresent()) {
+            this.mapper.registerModule(new ValidationMapperModule(res.get()));
+            BasicDiagnostic diagnostics = Diagnostician.INSTANCE.createDefaultDiagnostic(model.get());
+            Diagnostician.INSTANCE.validate(model.get(), diagnostics,
+               Diagnostician.INSTANCE.createDefaultContext());
+            return mapper.valueToTree(diagnostics);
+         }
       }
       return null;
    }
 
    @Override
-   public Map<String, Map<String, JsonNode>> getValidationConstraints(final String modeluri) {
+   public JsonNode getValidationConstraints(final String modeluri) {
       Map<String, Map<String, JsonNode>> jsonResult = new HashMap<>();
       Optional<EObject> eObject = this.modelRepository.getModel(modeluri);
       if (eObject.isPresent()) {
@@ -130,7 +135,7 @@ public class DefaultModelValidator implements ModelValidator {
             }
          }
       }
-      return jsonResult;
+      return mapper.valueToTree(jsonResult);
    }
 
 }

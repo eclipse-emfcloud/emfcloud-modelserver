@@ -21,15 +21,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.emf.common.command.Command;
-import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
-import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.AbstractResourceTest;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -85,17 +82,6 @@ public class ModelRepositoryTest extends AbstractResourceTest {
 
       Set<String> resultSet = repository.getAllModelUris();
       resultSet.equals(expectedModelUriSet);
-   }
-
-   @Test
-   public void validate() throws EncodingException {
-      String modelUri = getModelUri("Test1.json").toString();
-      assertTrue(repository.hasModel(modelUri));
-      BasicDiagnostic expectedDiagnostic = Diagnostician.INSTANCE
-         .createDefaultDiagnostic(repository.getModel(modelUri).get());
-      Diagnostician.INSTANCE.validate(repository.getModel(modelUri).get(), expectedDiagnostic,
-         Diagnostician.INSTANCE.createDefaultContext());
-      assertTrue(repository.validate(modelUri).toString().equals(expectedDiagnostic.toString()));
    }
 
    @Test

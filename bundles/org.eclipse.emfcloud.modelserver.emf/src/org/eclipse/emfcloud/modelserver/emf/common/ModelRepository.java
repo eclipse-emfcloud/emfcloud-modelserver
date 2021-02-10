@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -29,7 +28,6 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 
 /**
@@ -43,8 +41,6 @@ public class ModelRepository {
    private final ServerConfiguration serverConfiguration;
    @Inject
    private ModelResourceManager modelResourceManager;
-   @Inject
-   private ModelValidator modelValidator;
 
    @Inject
    public ModelRepository(final ServerConfiguration serverConfiguration) {
@@ -166,14 +162,6 @@ public class ModelRepository {
 
    public boolean redo(final String modeluri) {
       return modelResourceManager.redo(modeluri);
-   }
-
-   public BasicDiagnostic validate(final String modeluri) {
-      return modelValidator.validate(modeluri);
-   }
-
-   public Map<String, Map<String, JsonNode>> getValidationConstraints(final String modeluri) {
-      return modelValidator.getValidationConstraints(modeluri);
    }
 
    public Set<String> getAllModelUris() {

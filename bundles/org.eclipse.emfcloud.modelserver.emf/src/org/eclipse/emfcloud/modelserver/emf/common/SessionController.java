@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.BasicDiagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
@@ -29,7 +28,6 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.jetbrains.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -47,8 +45,6 @@ public class SessionController extends WsHandler {
 
    private final Map<String, Set<WsContext>> modelUrisToValidationClients = Maps.newConcurrentMap();
 
-   private final Map<String, BasicDiagnostic> modelUriToLastSendDiagnostic = Maps.newConcurrentMap();
-
    @Inject
    private ModelRepository modelRepository;
 
@@ -56,7 +52,7 @@ public class SessionController extends WsHandler {
    private CodecsManager encoder;
 
    @Inject
-   private ObjectMapper mapper;
+   private ModelValidator modelValidator;
 
    public boolean subscribe(final WsContext ctx, final String modeluri) {
       return this.subscribe(ctx, modeluri, -1); // Do not set an IdleTimeout, keep socket open until client disconnects
@@ -167,15 +163,7 @@ public class SessionController extends WsHandler {
    }
 
    public void broadcastValidation(final String modeluri) {
-      this.modelRepository.loadResource(modeluri).ifPresent(res -> {
-         mapper.registerModule(new ValidationMapperModule(res));
-         broadcastValidation(modeluri, modelRepository.validate(modeluri), mapper);
-      });
-   }
-
-   public void broadcastValidation(final String modeluri, final BasicDiagnostic result,
-      final ObjectMapper mapper) {
-      broadcastValidationResult(modeluri, result, mapper);
+      broadcastValidation(modeluri, modelValidator.validate(modeluri));
    }
 
    public void modelDeleted(final String modeluri) {
@@ -247,22 +235,11 @@ public class SessionController extends WsHandler {
          .forEach(session -> session.send(JsonResponse.dirtyState(isDirty)));
    }
 
-   private void broadcastValidationResult(final String modeluri, final BasicDiagnostic newResult,
-      final ObjectMapper mapper) {
+   private void broadcastValidation(final String modeluri, final JsonNode newResult) {
       if (modelUrisToValidationClients.containsKey(modeluri)) {
          getOpenValidationSessions(modeluri)
             .forEach(session -> {
-               if (!modelUriToLastSendDiagnostic.containsKey(modeluri)) {
-                  modelUriToLastSendDiagnostic.put(modeluri, newResult);
-                  session.send(JsonResponse
-                     .validationResult(mapper.valueToTree(mapper.valueToTree(newResult))));
-               } else {
-                  if (!modelUriToLastSendDiagnostic.get(modeluri).getChildren().equals(newResult.getChildren())) {
-                     modelUriToLastSendDiagnostic.replace(modeluri, newResult);
-                     session.send(JsonResponse
-                        .validationResult(mapper.valueToTree(mapper.valueToTree(newResult))));
-                  }
-               }
+               session.send(JsonResponse.validationResult(newResult));
             });
       }
    }
