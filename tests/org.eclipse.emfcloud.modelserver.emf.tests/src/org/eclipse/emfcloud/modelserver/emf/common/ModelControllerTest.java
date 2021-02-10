@@ -25,6 +25,7 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
@@ -54,12 +56,19 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
+import org.emfjson.jackson.module.EMFModule;
 import org.emfjson.jackson.resource.JsonResource;
+import org.hamcrest.CustomTypeSafeMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.internal.util.reflection.FieldSetter;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
@@ -83,14 +92,15 @@ public class ModelControllerTest {
    private SessionController sessionController;
    @Mock
    private ServerConfiguration serverConfiguration;
+   @InjectMocks
+   private DefaultModelValidator modelValidator;
 
    private CodecsManager codecs;
 
    private ModelController modelController;
 
    @Before
-   public void before() {
-
+   public void before() throws NoSuchFieldException, SecurityException {
       ResourceSet set = new ResourceSetImpl();
       set.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
       URI uri = URI.createFileURI("resources/Test1.ecore");
@@ -98,8 +108,16 @@ public class ModelControllerTest {
 
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI("/home/modelserver/workspace/"));
       codecs = new Codecs(Map.of(ModelServerPathParameters.FORMAT_XMI, new XmiCodec()));
+      when(modelRepository.getModel(getModelUri("Test1.ecore").toString()))
+         .thenReturn(Optional.of(resource.get().getContents().get(0)));
       when(modelRepository.loadResource(getModelUri("Test1.ecore").toString())).thenReturn(resource);
       modelController = new ModelController(modelRepository, sessionController, serverConfiguration, codecs);
+
+      modelValidator = new DefaultModelValidator(modelRepository, new DefaultFacetConfig());
+      Field mapperField = DefaultModelValidator.class.getDeclaredField("mapper");
+      FieldSetter.setField(modelValidator, mapperField, EMFModule.setupDefaultMapper());
+      Field validationField = ModelController.class.getDeclaredField("modelValidator");
+      FieldSetter.setField(modelController, validationField, modelValidator);
    }
 
    @Test
@@ -331,28 +349,58 @@ public class ModelControllerTest {
    public void validate() throws EncodingException, IOException {
       modelController.validate(context, getModelUri("Test1.ecore").toString());
 
-      JsonNode expectedResponse = Json.object(
-         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.VALIDATIONRESULT)),
-         prop(JsonResponseMember.DATA, Json.parse("null")));
-
-      verify(context).json(expectedResponse);
+      verify(context)
+         .json(
+            argThat(jsonNodeThat(
+               containsRegex(".\"type\":\"validationResult\",\"data\":.*\"id\".*\"severity\".*\"children\".*"))));
    }
 
    @Test
    public void getValidationConstraints() throws EncodingException, IOException {
       modelController.getValidationConstraints(context, getModelUri("Test1.ecore").toString());
 
-      JsonNode expectedResponse = Json.object(
-         prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
-         prop(JsonResponseMember.DATA, Json.parse("null")));
-
-      (context).json(expectedResponse);
+      verify(context)
+         .json(argThat(jsonNodeThat(containsRegex(".\"type\":\"success\",\"data\":.*"))));
    }
 
    static File getCWD() { return new File(System.getProperty("user.dir")); }
 
    private URI getModelUri(final String modelFileName) {
       return URI.createFileURI(getCWD() + "/resources/" + modelFileName);
+   }
+
+   Matcher<Object> jsonNodeThat(final Matcher<String> data) {
+      return new TypeSafeDiagnosingMatcher<>() {
+         @Override
+         public void describeTo(final Description description) {
+            description.appendText("JsonNode that ");
+            description.appendDescriptionOf(data);
+         }
+
+         @Override
+         protected boolean matchesSafely(final Object item, final Description mismatchDescription) {
+            if (!(item instanceof JsonNode)) {
+               return false;
+            }
+            JsonNode node = (JsonNode) item;
+            String text = node.toString();
+            if (!data.matches(text)) {
+               data.describeMismatch(text, mismatchDescription);
+               return false;
+            }
+            return true;
+         }
+      };
+   }
+
+   Matcher<String> containsRegex(final String pattern) {
+      return new CustomTypeSafeMatcher<>("contains regex '" + pattern + "'") {
+         @Override
+         protected boolean matchesSafely(final String item) {
+            java.util.regex.Matcher m = Pattern.compile(pattern).matcher(item);
+            return m.find();
+         }
+      };
    }
 
 }
