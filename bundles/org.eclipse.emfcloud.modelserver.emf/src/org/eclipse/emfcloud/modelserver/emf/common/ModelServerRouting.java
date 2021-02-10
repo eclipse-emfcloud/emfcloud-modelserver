@@ -10,6 +10,8 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import static io.javalin.apibuilder.ApiBuilder.after;
+import static io.javalin.apibuilder.ApiBuilder.before;
 import static io.javalin.apibuilder.ApiBuilder.delete;
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.patch;
@@ -21,6 +23,7 @@ import static io.javalin.apibuilder.ApiBuilder.ws;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
@@ -42,17 +45,31 @@ public class ModelServerRouting extends Routing {
    private final Javalin javalin;
    private final ServerConfiguration serverConfiguration;
 
+   // Do not process certain requests while server is being configured.
+   protected CompletableFuture<Void> onServerConfigured;
+
    @Inject
    public ModelServerRouting(final Javalin javalin, final ServerConfiguration serverConfiguration) {
       this.javalin = javalin;
       this.serverConfiguration = serverConfiguration;
+      this.onServerConfigured = CompletableFuture.completedFuture(null);
    }
 
    @Override
-   @SuppressWarnings("checkstyle:MethodLength")
+   @SuppressWarnings({ "checkstyle:MethodLength", "JavaNCSS", "checkstyle:CyclomaticComplexity" })
    public void bindRoutes() {
       javalin.routes(() -> {
          path("api/v1", () -> {
+
+            // Wait until all preconditions are fulfilled
+            before(ctx -> {
+               if (requiresConfiguredServer(ctx) && !this.onServerConfigured.isDone()) {
+                  String requestPath = ctx.path() + (ctx.queryString() == null ? "" : "?" + ctx.queryString());
+                  LOG.debug("Waiting for sever configuration to be completed: " + requestPath);
+                  this.onServerConfigured.get();
+               }
+            });
+
             // CREATE
             post(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
@@ -186,7 +203,19 @@ public class ModelServerRouting extends Routing {
             });
 
             // SERVER CONFIGURATION
-            put(ModelServerPaths.SERVER_CONFIGURE, getController(ServerController.class).getConfigureHandler());
+            before(ModelServerPaths.SERVER_CONFIGURE, ctx -> {
+               LOG.debug("SERVER_CONFIGURE started");
+               this.onServerConfigured = new CompletableFuture<>();
+            });
+
+            put(ModelServerPaths.SERVER_CONFIGURE, ctx -> {
+               ctx.result(getController(ServerController.class).configure(ctx));
+            });
+
+            after(ModelServerPaths.SERVER_CONFIGURE, ctx -> {
+               LOG.debug("SERVER_CONFIGURE completed -> pending requests will be processed now");
+               this.onServerConfigured.complete(null);
+            });
 
             // PING SERVER
             get(ModelServerPaths.SERVER_PING, getController(ServerController.class).getPingHandler());
@@ -260,6 +289,11 @@ public class ModelServerRouting extends Routing {
       });
    }
 
+   protected boolean requiresConfiguredServer(final Context ctx) {
+      return !ctx.path().contains(ModelServerPaths.SERVER_CONFIGURE)
+         && !ctx.path().contains(ModelServerPaths.SERVER_PING);
+   }
+
    private Optional<String> getQueryParam(final Map<String, List<String>> queryParams, final String paramKey) {
       if (queryParams.containsKey(paramKey)) {
          return Optional.of(queryParams.get(paramKey).get(0));
@@ -283,8 +317,9 @@ public class ModelServerRouting extends Routing {
          }
          return URI.createFileURI(modelUri).toString();
       }
-
-      return uri.toString();
+      // Create file URI from path if modelUri is already absolute path (file:/ or full path file:///)
+      // to ensure consistent usage of org.eclipse.emf.common.util.URI
+      return URI.createFileURI(uri.path()).toString();
    }
 
    private void handleHttpError(final Context ctx, final int statusCode, final String errorMsg) {

@@ -1,20 +1,30 @@
 pipeline {
     agent any
+
     tools {
         maven 'apache-maven-latest'
         jdk 'openjdk-jdk11-latest'
     }
+
     stages {
         stage ('Build: Plain Maven (M2)') {
             steps {
-                sh 'mvn clean verify -Pm2 --batch-mode package' 
+                // ignore test failures since we parse the test results afterwards
+                sh 'mvn clean verify -Pm2 --batch-mode package -Dmaven.test.failure.ignore=true' 
             }
         }
         
         stage ('Build: Eclipse-based (P2)') {
             steps {
-                sh 'mvn clean verify -Pp2 --batch-mode package' 
+                // ignore test failures since we parse the test results afterwards
+                sh 'mvn clean verify -Pp2 --batch-mode package -Dmaven.test.failure.ignore=true' 
             }
+        }
+        
+        stage ('Generate: Reports') {
+            steps {
+                junit '**/surefire-reports/*.xml'
+                recordIssues failOnError: true, qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]], tools: [checkStyle(pattern: '**/target/checkstyle-result.xml', reportEncoding: 'UTF-8')]            }
         }
 
         stage('Deploy') {

@@ -1,27 +1,23 @@
-/**
+/********************************************************************************
  * Copyright (c) 2019 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- */
+ ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.command.impl;
 
 import java.util.Collection;
 
 import org.eclipse.emf.common.notify.NotificationChain;
-
 import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.InternalEList;
-
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.command.CCompoundCommand;
@@ -44,7 +40,7 @@ public class CCompoundCommandImpl extends CCommandImpl implements CCompoundComma
     * The cached value of the '{@link #getCommands() <em>Commands</em>}' containment reference list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getCommands()
     * @generated
     * @ordered
@@ -54,7 +50,7 @@ public class CCompoundCommandImpl extends CCommandImpl implements CCompoundComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    protected CCompoundCommandImpl() {
@@ -64,7 +60,7 @@ public class CCompoundCommandImpl extends CCommandImpl implements CCompoundComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -75,13 +71,13 @@ public class CCompoundCommandImpl extends CCommandImpl implements CCompoundComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
    public EList<CCommand> getCommands() {
       if (commands == null) {
-         commands = new EObjectContainmentEList<CCommand>(CCommand.class, this,
+         commands = new EObjectContainmentEList<>(CCommand.class, this,
             CCommandPackage.COMPOUND_COMMAND__COMMANDS);
       }
       return commands;
@@ -90,11 +86,12 @@ public class CCompoundCommandImpl extends CCommandImpl implements CCompoundComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
+   public NotificationChain eInverseRemove(final InternalEObject otherEnd, final int featureID,
+      final NotificationChain msgs) {
       switch (featureID) {
          case CCommandPackage.COMPOUND_COMMAND__COMMANDS:
             return ((InternalEList<?>) getCommands()).basicRemove(otherEnd, msgs);
@@ -105,11 +102,11 @@ public class CCompoundCommandImpl extends CCommandImpl implements CCompoundComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public Object eGet(int featureID, boolean resolve, boolean coreType) {
+   public Object eGet(final int featureID, final boolean resolve, final boolean coreType) {
       switch (featureID) {
          case CCommandPackage.COMPOUND_COMMAND__COMMANDS:
             return getCommands();
@@ -120,12 +117,12 @@ public class CCompoundCommandImpl extends CCommandImpl implements CCompoundComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @SuppressWarnings("unchecked")
    @Override
-   public void eSet(int featureID, Object newValue) {
+   public void eSet(final int featureID, final Object newValue) {
       switch (featureID) {
          case CCommandPackage.COMPOUND_COMMAND__COMMANDS:
             getCommands().clear();
@@ -138,11 +135,11 @@ public class CCompoundCommandImpl extends CCommandImpl implements CCompoundComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public void eUnset(int featureID) {
+   public void eUnset(final int featureID) {
       switch (featureID) {
          case CCommandPackage.COMPOUND_COMMAND__COMMANDS:
             getCommands().clear();
@@ -154,11 +151,11 @@ public class CCompoundCommandImpl extends CCommandImpl implements CCompoundComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public boolean eIsSet(int featureID) {
+   public boolean eIsSet(final int featureID) {
       switch (featureID) {
          case CCommandPackage.COMPOUND_COMMAND__COMMANDS:
             return commands != null && !commands.isEmpty();

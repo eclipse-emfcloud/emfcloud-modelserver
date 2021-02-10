@@ -81,6 +81,11 @@ The following table shows the current HTTP endpoints:
 
 <br/>
 
+Per default, updating the server configuration (`/server/configure`) with a new workspaceRoot, enables queueing of further incoming requests until configuration is completed.
+Please see `ModelServerRouting` for details.
+
+<br/>
+
 ### WebSocket Endpoints
 
 Subscriptions are implemented via websockets `ws://localhost:8081/api/v1/*`.

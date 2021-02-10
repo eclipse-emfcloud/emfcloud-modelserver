@@ -42,6 +42,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
@@ -63,7 +64,6 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -179,7 +179,6 @@ public class ModelControllerTest {
       assertThat(response.get().get(JsonResponseMember.DATA), is(equalTo(new JsonCodec().encode(brewingUnit))));
    }
 
-   @Ignore
    @Test
    public void updateXmi() throws EncodingException {
       final EClass brewingUnit = EcoreFactory.eINSTANCE.createEClass();
@@ -190,10 +189,9 @@ public class ModelControllerTest {
       when(context.body()).thenReturn(
          Json.object(Json.prop(JsonResponseMember.DATA, new XmiCodec().encode(brewingUnit))).toString());
       String modeluri = "SuperBrewer3000.json";
-      when(modelResourceManager.getResourceSet(modeluri)).thenReturn(new ResourceSetImpl());
+      when(modelRepository.updateModel(eq(modeluri), any(EClass.class))).thenReturn(Optional.of(new ResourceImpl()));
       modelController.update(context, modeluri);
-      verify(modelRepository, times(1))
-         .updateModel(eq(modeluri), any(EClass.class));
+      verify(modelRepository, times(1)).updateModel(eq(modeluri), any(EClass.class));
    }
 
    @Test

@@ -48,6 +48,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Inject
    protected CommandCodec commandCodec;
+
    @Inject
    protected final ServerConfiguration serverConfiguration;
 
@@ -171,7 +172,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
          resource.load(Collections.EMPTY_MAP);
          return Optional.of(resource);
       } catch (final Throwable e) {
-         LOG.error("Could not load resource with URI: " + modeluri);
+         LOG.debug("Could not load resource with URI: " + modeluri);
          if (removeUnloadableResources) {
             // properly remove model again so the resource set does not hold a broken resource
             removeResourceSafe(modeluri);

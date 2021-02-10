@@ -65,7 +65,7 @@ public class EMFJsonConverter {
          final T t = mapper.readValue(json, clazz);
          return Optional.of(t).map(clazz::cast);
       } catch (IOException | ClassCastException e) {
-         LOG.error(String.format("The json input \"%s\" could not be converted to an EObject of type \"%s\"", json,
+         LOG.warn(String.format("The json input \"%s\" could not be converted to an EObject of type \"%s\"", json,
             clazz.getSimpleName()));
          return Optional.empty();
       }

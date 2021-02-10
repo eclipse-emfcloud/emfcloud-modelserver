@@ -10,10 +10,13 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 
 import io.javalin.http.Context;
@@ -30,16 +33,18 @@ public class ServerController {
       ctx.json(JsonResponse.success());
    }
 
-   protected void configure(final Context ctx) {
+   public CompletableFuture<ObjectNode> configure(final Context ctx) {
       ServerConfiguration newConf = ctx.bodyAsClass(ServerConfiguration.class);
+      CompletableFuture<ObjectNode> future = new CompletableFuture<>();
       try {
          if (updateServerConfiguration(newConf)) {
             modelRepository.initialize();
-            ctx.json(JsonResponse.success());
+            return CompletableFuture.completedFuture(JsonResponse.success());
          }
       } catch (IllegalArgumentException exception) {
          handleError(ctx, 400, exception.getMessage());
       }
+      return future;
    }
 
    protected boolean updateServerConfiguration(final ServerConfiguration newConfiguration) {
@@ -69,7 +74,5 @@ public class ServerController {
    }
 
    public Handler getPingHandler() { return this::ping; }
-
-   public Handler getConfigureHandler() { return this::configure; }
 
 }

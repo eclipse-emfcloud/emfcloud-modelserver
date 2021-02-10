@@ -1,34 +1,29 @@
-/**
+/********************************************************************************
  * Copyright (c) 2019 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- */
+ ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.command.impl;
 
 import java.util.Collection;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-
 import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
-
 import org.eclipse.emf.ecore.util.EDataTypeUniqueEList;
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.EObjectResolvingEList;
 import org.eclipse.emf.ecore.util.InternalEList;
-
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.command.CommandKind;
@@ -57,7 +52,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * The default value of the '{@link #getType() <em>Type</em>}' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getType()
     * @generated
     * @ordered
@@ -68,7 +63,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * The cached value of the '{@link #getType() <em>Type</em>}' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getType()
     * @generated
     * @ordered
@@ -79,7 +74,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * The cached value of the '{@link #getOwner() <em>Owner</em>}' reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getOwner()
     * @generated
     * @ordered
@@ -90,7 +85,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * The default value of the '{@link #getFeature() <em>Feature</em>}' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getFeature()
     * @generated
     * @ordered
@@ -101,7 +96,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * The cached value of the '{@link #getFeature() <em>Feature</em>}' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getFeature()
     * @generated
     * @ordered
@@ -112,7 +107,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * The cached value of the '{@link #getIndices() <em>Indices</em>}' attribute list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getIndices()
     * @generated
     * @ordered
@@ -123,7 +118,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * The cached value of the '{@link #getDataValues() <em>Data Values</em>}' attribute list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getDataValues()
     * @generated
     * @ordered
@@ -134,7 +129,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * The cached value of the '{@link #getObjectValues() <em>Object Values</em>}' reference list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getObjectValues()
     * @generated
     * @ordered
@@ -145,7 +140,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * The cached value of the '{@link #getObjectsToAdd() <em>Objects To Add</em>}' containment reference list.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @see #getObjectsToAdd()
     * @generated
     * @ordered
@@ -155,7 +150,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    protected CCommandImpl() {
@@ -165,7 +160,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -176,7 +171,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -185,21 +180,22 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public void setType(CommandKind newType) {
+   public void setType(final CommandKind newType) {
       CommandKind oldType = type;
       type = newType == null ? TYPE_EDEFAULT : newType;
-      if (eNotificationRequired())
+      if (eNotificationRequired()) {
          eNotify(new ENotificationImpl(this, Notification.SET, CCommandPackage.COMMAND__TYPE, oldType, type));
+      }
    }
 
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -208,9 +204,10 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
          InternalEObject oldOwner = (InternalEObject) owner;
          owner = eResolveProxy(oldOwner);
          if (owner != oldOwner) {
-            if (eNotificationRequired())
+            if (eNotificationRequired()) {
                eNotify(
                   new ENotificationImpl(this, Notification.RESOLVE, CCommandPackage.COMMAND__OWNER, oldOwner, owner));
+            }
          }
       }
       return owner;
@@ -219,7 +216,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    public EObject basicGetOwner() {
@@ -229,21 +226,22 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public void setOwner(EObject newOwner) {
+   public void setOwner(final EObject newOwner) {
       EObject oldOwner = owner;
       owner = newOwner;
-      if (eNotificationRequired())
+      if (eNotificationRequired()) {
          eNotify(new ENotificationImpl(this, Notification.SET, CCommandPackage.COMMAND__OWNER, oldOwner, owner));
+      }
    }
 
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
@@ -252,27 +250,28 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public void setFeature(String newFeature) {
+   public void setFeature(final String newFeature) {
       String oldFeature = feature;
       feature = newFeature;
-      if (eNotificationRequired())
+      if (eNotificationRequired()) {
          eNotify(new ENotificationImpl(this, Notification.SET, CCommandPackage.COMMAND__FEATURE, oldFeature, feature));
+      }
    }
 
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
    public EList<Integer> getIndices() {
       if (indices == null) {
-         indices = new EDataTypeUniqueEList<Integer>(Integer.class, this, CCommandPackage.COMMAND__INDICES);
+         indices = new EDataTypeUniqueEList<>(Integer.class, this, CCommandPackage.COMMAND__INDICES);
       }
       return indices;
    }
@@ -280,13 +279,13 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
    public EList<String> getDataValues() {
       if (dataValues == null) {
-         dataValues = new EDataTypeUniqueEList<String>(String.class, this, CCommandPackage.COMMAND__DATA_VALUES);
+         dataValues = new EDataTypeUniqueEList<>(String.class, this, CCommandPackage.COMMAND__DATA_VALUES);
       }
       return dataValues;
    }
@@ -294,13 +293,13 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
    public EList<EObject> getObjectValues() {
       if (objectValues == null) {
-         objectValues = new EObjectResolvingEList<EObject>(EObject.class, this, CCommandPackage.COMMAND__OBJECT_VALUES);
+         objectValues = new EObjectResolvingEList<>(EObject.class, this, CCommandPackage.COMMAND__OBJECT_VALUES);
       }
       return objectValues;
    }
@@ -308,13 +307,13 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
    public EList<EObject> getObjectsToAdd() {
       if (objectsToAdd == null) {
-         objectsToAdd = new EObjectContainmentEList<EObject>(EObject.class, this,
+         objectsToAdd = new EObjectContainmentEList<>(EObject.class, this,
             CCommandPackage.COMMAND__OBJECTS_TO_ADD);
       }
       return objectsToAdd;
@@ -323,11 +322,12 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
+   public NotificationChain eInverseRemove(final InternalEObject otherEnd, final int featureID,
+      final NotificationChain msgs) {
       switch (featureID) {
          case CCommandPackage.COMMAND__OBJECTS_TO_ADD:
             return ((InternalEList<?>) getObjectsToAdd()).basicRemove(otherEnd, msgs);
@@ -338,17 +338,18 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public Object eGet(int featureID, boolean resolve, boolean coreType) {
+   public Object eGet(final int featureID, final boolean resolve, final boolean coreType) {
       switch (featureID) {
          case CCommandPackage.COMMAND__TYPE:
             return getType();
          case CCommandPackage.COMMAND__OWNER:
-            if (resolve)
+            if (resolve) {
                return getOwner();
+            }
             return basicGetOwner();
          case CCommandPackage.COMMAND__FEATURE:
             return getFeature();
@@ -367,12 +368,12 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @SuppressWarnings("unchecked")
    @Override
-   public void eSet(int featureID, Object newValue) {
+   public void eSet(final int featureID, final Object newValue) {
       switch (featureID) {
          case CCommandPackage.COMMAND__TYPE:
             setType((CommandKind) newValue);
@@ -406,11 +407,11 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public void eUnset(int featureID) {
+   public void eUnset(final int featureID) {
       switch (featureID) {
          case CCommandPackage.COMMAND__TYPE:
             setType(TYPE_EDEFAULT);
@@ -440,11 +441,11 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
-   public boolean eIsSet(int featureID) {
+   public boolean eIsSet(final int featureID) {
       switch (featureID) {
          case CCommandPackage.COMMAND__TYPE:
             return type != TYPE_EDEFAULT;
@@ -467,13 +468,14 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * 
+    *
     * @generated
     */
    @Override
    public String toString() {
-      if (eIsProxy())
+      if (eIsProxy()) {
          return super.toString();
+      }
 
       StringBuilder result = new StringBuilder(super.toString());
       result.append(" (type: ");
