@@ -191,7 +191,7 @@ public class ModelServerRouting extends Routing {
             });
 
             put(ModelServerPaths.SERVER_CONFIGURE, ctx -> {
-               ctx.result(getController(ServerController.class).configure(ctx));
+               getController(ServerController.class).configure(ctx).thenApply(ctx::json);
             });
 
             after(ModelServerPaths.SERVER_CONFIGURE, ctx -> {
