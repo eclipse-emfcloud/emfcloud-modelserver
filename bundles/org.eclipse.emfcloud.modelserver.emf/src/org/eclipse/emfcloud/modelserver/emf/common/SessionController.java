@@ -76,7 +76,7 @@ public class SessionController extends WsHandler {
 
    public boolean subscribe(final WsContext ctx, final String modeluri, final long timeout,
       final boolean liveValidation) {
-      if (liveValidation == false) {
+      if (!liveValidation) {
          return subscribe(ctx, modeluri, timeout);
       }
       if (this.modelRepository.hasModel(modeluri)) {

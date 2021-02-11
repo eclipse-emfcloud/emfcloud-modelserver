@@ -56,7 +56,8 @@ public class ModelServerRouting extends Routing {
    }
 
    @Override
-   @SuppressWarnings({ "checkstyle:MethodLength", "JavaNCSS", "checkstyle:CyclomaticComplexity" })
+   @SuppressWarnings({ "checkstyle:MethodLength", "JavaNCSS", "checkstyle:CyclomaticComplexity",
+      "checkstyle:NPathComplexity" })
    public void bindRoutes() {
       javalin.routes(() -> {
          path("api/v1", () -> {

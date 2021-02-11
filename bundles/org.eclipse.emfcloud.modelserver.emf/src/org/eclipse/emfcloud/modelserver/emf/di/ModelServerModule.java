@@ -25,7 +25,6 @@ import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
-import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRouting;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelValidator;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
