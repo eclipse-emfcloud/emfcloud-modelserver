@@ -68,6 +68,8 @@ The following table shows the current HTTP endpoints:
 | |Delete model|__DELETE__|`/models`|query parameter: `?modeluri=...`
 | |Save|__GET__|`/save`|query parameter: `?modeluri=...`
 | |SaveAll|__GET__|`/saveall`| -
+| |Undo|__GET__|`/undo`|query parameter: `?modeluri=...`
+| |Redo|__GET__|`/redo`|query parameter: `?modeluri=...`
 | |Execute commands|__PATCH__|`/edit`|query parameter: `?modeluri=...`
 | |Get all available model URIs in the workspace|__GET__|`/modeluris`| -
 | |Get model element by id|__GET__|`/modelelement`|query parameter: `?modeluri=...&elementid=...[&format=...]`
