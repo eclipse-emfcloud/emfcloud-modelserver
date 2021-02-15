@@ -49,15 +49,13 @@ public class DefaultModelValidator implements ModelValidator {
    @Override
    public JsonNode validate(final String modeluri, final ObjectMapper mapper) {
       Optional<EObject> model = this.modelRepository.getModel(modeluri);
-      if (model.isPresent()) {
-         Optional<Resource> res = this.modelRepository.loadResource(modeluri);
-         if (res.isPresent()) {
-            mapper.registerModule(new ValidationMapperModule(res.get()));
-            BasicDiagnostic diagnostics = Diagnostician.INSTANCE.createDefaultDiagnostic(model.get());
-            Diagnostician.INSTANCE.validate(model.get(), diagnostics,
-               Diagnostician.INSTANCE.createDefaultContext());
-            return mapper.valueToTree(diagnostics);
-         }
+      Optional<Resource> res = this.modelRepository.loadResource(modeluri);
+      if (res.isPresent()) {
+         mapper.registerModule(new ValidationMapperModule(res.get()));
+         BasicDiagnostic diagnostics = Diagnostician.INSTANCE.createDefaultDiagnostic(model.get());
+         Diagnostician.INSTANCE.validate(model.get(), diagnostics,
+            Diagnostician.INSTANCE.createDefaultContext());
+         return mapper.valueToTree(diagnostics);
       }
       return null;
    }
