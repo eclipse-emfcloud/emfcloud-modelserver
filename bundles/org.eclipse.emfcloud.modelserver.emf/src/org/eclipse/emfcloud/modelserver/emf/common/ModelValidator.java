@@ -11,10 +11,11 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface ModelValidator {
 
-   JsonNode validate(String modeluri);
+   JsonNode validate(String modeluri, ObjectMapper mapper);
 
    JsonNode getValidationConstraints(String modeluri);
 

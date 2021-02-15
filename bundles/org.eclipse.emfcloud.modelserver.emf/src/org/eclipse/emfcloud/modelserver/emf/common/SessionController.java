@@ -25,9 +25,11 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
+import org.emfjson.jackson.module.EMFModule;
 import org.jetbrains.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -163,7 +165,8 @@ public class SessionController extends WsHandler {
    }
 
    public void broadcastValidation(final String modeluri) {
-      broadcastValidation(modeluri, modelValidator.validate(modeluri));
+      ObjectMapper mapper = EMFModule.setupDefaultMapper();
+      broadcastValidation(modeluri, modelValidator.validate(modeluri, mapper));
    }
 
    public void modelDeleted(final String modeluri) {

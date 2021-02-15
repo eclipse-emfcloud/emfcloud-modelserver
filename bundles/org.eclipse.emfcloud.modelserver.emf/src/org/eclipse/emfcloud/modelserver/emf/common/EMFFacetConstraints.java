@@ -101,6 +101,7 @@ public class EMFFacetConstraints {
 
    public void setMaxInclusive(final String maxInclusive) { this.maxInclusive = maxInclusive; }
 
+   @SuppressWarnings("unchecked")
    public EMFFacetConstraints(final Map<String, Object> facetMap) {
       this.whiteSpace = (Integer) facetMap.getOrDefault(WHITESPACE, null);
       this.enumeration = (List<String>) facetMap.getOrDefault(ENUMERATION, null);
@@ -133,7 +134,6 @@ class WhiteSpaceFilter {
 
    @Override
    public int hashCode() {
-      // TODO Auto-generated method stub
       return super.hashCode();
    }
 }
@@ -149,7 +149,6 @@ class IntegerFilter {
 
    @Override
    public int hashCode() {
-      // TODO Auto-generated method stub
       return super.hashCode();
    }
 }
@@ -158,14 +157,13 @@ class StringListFilter {
    @Override
    public boolean equals(final Object obj) {
       if (obj instanceof List) {
-         return ((List) obj).isEmpty();
+         return ((List<?>) obj).isEmpty();
       }
       return true;
    }
 
    @Override
    public int hashCode() {
-      // TODO Auto-generated method stub
       return super.hashCode();
    }
 }
