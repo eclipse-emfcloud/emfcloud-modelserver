@@ -50,7 +50,7 @@ public class DefaultModelValidator implements ModelValidator {
    public JsonNode validate(final String modeluri, final ObjectMapper mapper) {
       Optional<EObject> model = this.modelRepository.getModel(modeluri);
       Optional<Resource> res = this.modelRepository.loadResource(modeluri);
-      if (res.isPresent()) {
+      if (model.isPresent() && res.isPresent()) {
          mapper.registerModule(new ValidationMapperModule(res.get()));
          BasicDiagnostic diagnostics = Diagnostician.INSTANCE.createDefaultDiagnostic(model.get());
          Diagnostician.INSTANCE.validate(model.get(), diagnostics,
