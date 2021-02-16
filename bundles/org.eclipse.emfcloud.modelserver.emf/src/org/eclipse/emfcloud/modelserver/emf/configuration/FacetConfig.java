@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2020 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -8,18 +8,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-package org.eclipse.emfcloud.modelserver.common;
+package org.eclipse.emfcloud.modelserver.emf.configuration;
 
-interface ModelServerPathParametersV1 {
+import java.util.Set;
 
-   String MODEL_URI = "modeluri";
-   String FORMAT = "format";
-   String FORMAT_JSON = "json";
-   String FORMAT_XMI = "xmi";
-   String ELEMENT_ID = "elementid";
-   String ELEMENT_NAME = "elementname";
-   String SCHEMA_NAME = "schemaname";
-   String TIMEOUT = "timeout";
-   String LIVE_VALIDATION = "livevalidation";
+public interface FacetConfig {
+
+   Set<String> getFacetSet();
 
 }

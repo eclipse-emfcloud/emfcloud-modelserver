@@ -58,6 +58,18 @@ public final class JsonResponse {
       return Json.merge(success(), data(message));
    }
 
+   public static ObjectNode validationResult() {
+      return type(JsonResponseType.VALIDATIONRESULT);
+   }
+
+   public static JsonNode validationResult(@Nullable final JsonNode jsonNode) {
+      return Json.merge(validationResult(), data(jsonNode));
+   }
+
+   public static JsonNode validationResult(final String message) {
+      return Json.merge(validationResult(), data(message));
+   }
+
    public static ObjectNode warning() {
       return type(JsonResponseType.WARNING);
    }

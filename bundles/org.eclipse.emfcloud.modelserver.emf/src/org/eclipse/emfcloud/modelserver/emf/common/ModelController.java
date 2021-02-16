@@ -27,8 +27,10 @@ import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.emfjson.jackson.module.EMFModule;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
@@ -43,6 +45,9 @@ public class ModelController {
    private final SessionController sessionController;
    private final ServerConfiguration serverConfiguration;
    private final CodecsManager codecs;
+
+   @Inject
+   private ModelValidator modelValidator;
 
    @Inject
    public ModelController(final ModelRepository modelRepository, final SessionController sessionController,
@@ -179,6 +184,15 @@ public class ModelController {
       } else {
          handleError(ctx, 500, "Saving all models failed!");
       }
+   }
+
+   public void validate(final Context ctx, final String modeluri) {
+      ObjectMapper mapper = EMFModule.setupDefaultMapper();
+      ctx.json(JsonResponse.validationResult(this.modelValidator.validate(modeluri, mapper)));
+   }
+
+   public void getValidationConstraints(final Context ctx, final String modeluri) {
+      ctx.json(JsonResponse.success(this.modelValidator.getValidationConstraints(modeluri)));
    }
 
    public void undo(final Context ctx, final String modeluri) {

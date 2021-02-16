@@ -73,6 +73,8 @@ public class SessionControllerTest {
    private ModelResourceManager modelResourceManager;
    @Mock
    private CodecsManager codecs;
+   @Mock
+   private ModelValidator modelValidator;
 
    private SessionController sessionController;
 
@@ -251,6 +253,7 @@ public class SessionControllerTest {
             bind(ModelRepository.class).toInstance(repository);
             bind(ModelResourceManager.class).toInstance(modelResourceManager);
             bind(CodecsManager.class).toInstance(codecs);
+            bind(ModelValidator.class).toInstance(modelValidator);
          }
       }).getInstance(SessionController.class);
    }

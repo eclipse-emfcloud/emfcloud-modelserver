@@ -50,6 +50,10 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<Boolean>> saveAll();
 
+   CompletableFuture<Response<String>> validate(String modelUri);
+
+   CompletableFuture<Response<String>> getValidationConstraints(String modelUri);
+
    CompletableFuture<Response<String>> getTypeSchema(String modelUri);
 
    CompletableFuture<Response<String>> getUiSchema(String schemaName);
@@ -71,6 +75,15 @@ public interface ModelServerClientApiV1<A> {
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, long timeout);
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format, long timeout);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, long timeout);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format,
+      long timeout);
 
    boolean send(String modelUri, String message);
 

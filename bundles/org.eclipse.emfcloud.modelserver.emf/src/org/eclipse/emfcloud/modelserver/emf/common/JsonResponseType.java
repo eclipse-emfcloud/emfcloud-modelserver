@@ -18,6 +18,7 @@ public interface JsonResponseType {
    String FULLUPDATE = "fullUpdate";
    String INCREMENTALUPDATE = "incrementalUpdate";
    String DIRTYSTATE = "dirtyState";
+   String VALIDATIONRESULT = "validationResult";
    String KEEPALIVE = "keepAlive";
 
 }

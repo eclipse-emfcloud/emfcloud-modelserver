@@ -385,6 +385,18 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
+   public CompletableFuture<Response<String>> validate(final String modelUri) {
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(VALIDATION))
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .build())
+         .build();
+
+      return makeCall(request);
+   }
+
+   @Override
    public CompletableFuture<Response<String>> getTypeSchema(final String modelUri) {
       final Request request = new Request.Builder()
          .url(
@@ -523,6 +535,76 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
                   .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribeWithValidation(final String modelUri, final SubscriptionListener subscriptionListener) {
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribeWithValidation(final String modelUri, final SubscriptionListener subscriptionListener,
+      final String format) {
+      String checkedFormat = checkedFormat(format);
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
+                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribeWithValidation(final String modelUri, final SubscriptionListener subscriptionListener,
+      final long timeout) {
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
+                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
+                  .build()
+                  .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   @Override
+   public void subscribeWithValidation(final String modelUri, final SubscriptionListener subscriptionListener,
+      final String format,
+      final long timeout) {
+      String checkedFormat = checkedFormat(format);
+      Request request = new Request.Builder()
+         .url(
+            makeWsUrl(
+               createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
+                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
                   .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
                   .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
                   .build()
@@ -717,6 +799,17 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
+   public CompletableFuture<Response<String>> getValidationConstraints(final String modelUri) {
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(VALIDATION_CONSTRAINTS))
+               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .build())
+         .build();
+      return makeCall(request);
+   }
+
+   @Override
    public CompletableFuture<Response<Boolean>> undo(final String modelUri) {
       final Request request = new Request.Builder()
          .url(
@@ -757,4 +850,5 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return makeCallAndParseDataField(request)
          .thenApply(this::getBodyOrThrow);
    }
+
 }
