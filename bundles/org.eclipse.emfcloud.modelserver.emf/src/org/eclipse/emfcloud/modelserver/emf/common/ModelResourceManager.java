@@ -62,4 +62,19 @@ public interface ModelResourceManager {
 
    boolean getDirtyState(String modeluri);
 
+   /**
+    * Adapt the model URI specified by the client.
+    *
+    * Subclasses may override for taking in account the server configuration and specific URI schemes.
+    *
+    * @param modelUri the client-supplied model URI
+    * @return the adapted URI ready to be consumed
+    */
+   default String adaptModelUri(final String modelUri) {
+      URI uri = URI.createURI(modelUri, true);
+      // we do not know the server configuration for relative URIs nor the possible schemes here...
+      // concrete implementations would probably override
+      return uri.toString();
+   }
+
 }
