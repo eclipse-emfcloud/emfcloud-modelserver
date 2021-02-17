@@ -26,11 +26,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPaths;
 import org.eclipse.emfcloud.modelserver.common.Routing;
-import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
 import com.google.inject.Inject;
 
@@ -43,15 +41,15 @@ public class ModelServerRouting extends Routing {
    private static final Logger LOG = Logger.getLogger(ModelServerRouting.class.getSimpleName());
 
    private final Javalin javalin;
-   private final ServerConfiguration serverConfiguration;
+   private final ModelResourceManager resourceManager;
 
    // Do not process certain requests while server is being configured.
    protected CompletableFuture<Void> onServerConfigured;
 
    @Inject
-   public ModelServerRouting(final Javalin javalin, final ServerConfiguration serverConfiguration) {
+   public ModelServerRouting(final Javalin javalin, final ModelResourceManager resourceManager) {
       this.javalin = javalin;
-      this.serverConfiguration = serverConfiguration;
+      this.resourceManager = resourceManager;
       this.onServerConfigured = CompletableFuture.completedFuture(null);
    }
 
@@ -74,7 +72,7 @@ public class ModelServerRouting extends Routing {
             // CREATE
             post(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).create(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -83,7 +81,7 @@ public class ModelServerRouting extends Routing {
             // GET ONE MODEL/GET ALL MODELS
             get(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).getOne(ctx, param),
                      () -> getController(ModelController.class).getAll(ctx));
@@ -92,7 +90,7 @@ public class ModelServerRouting extends Routing {
             // GET MODEL ELEMENT
             get(ModelServerPaths.MODEL_ELEMENT, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      modelUriParam -> {
                         getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.ELEMENT_ID).ifPresentOrElse(
@@ -111,7 +109,7 @@ public class ModelServerRouting extends Routing {
             // UPDATE
             patch(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).update(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -120,7 +118,7 @@ public class ModelServerRouting extends Routing {
             // DELETE
             delete(ModelServerPaths.MODEL_BASE_PATH, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).delete(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -129,7 +127,7 @@ public class ModelServerRouting extends Routing {
             // EDIT - execute commands
             patch(ModelServerPaths.EDIT, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).executeCommand(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -138,7 +136,7 @@ public class ModelServerRouting extends Routing {
             // SAVE
             get(ModelServerPaths.SAVE, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).save(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -150,7 +148,7 @@ public class ModelServerRouting extends Routing {
             // UNDO
             get(ModelServerPaths.UNDO, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).undo(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -159,7 +157,7 @@ public class ModelServerRouting extends Routing {
             // REDO
             get(ModelServerPaths.REDO, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).redo(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -168,7 +166,7 @@ public class ModelServerRouting extends Routing {
             // VALIDATE
             get(ModelServerPaths.VALIDATION, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).validate(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -177,7 +175,7 @@ public class ModelServerRouting extends Routing {
             // GET CONSTRAINTS
             get(ModelServerPaths.VALIDATION_CONSTRAINTS, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(ModelController.class).getValidationConstraints(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -189,7 +187,7 @@ public class ModelServerRouting extends Routing {
             // GET JSON TYPE SCHEMA
             get(ModelServerPaths.TYPE_SCHEMA, ctx -> {
                getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                  .map(this::adaptModelUri)
+                  .map(resourceManager::adaptModelUri)
                   .ifPresentOrElse(
                      param -> getController(SchemaController.class).getTypeSchema(ctx, param),
                      () -> handleHttpError(ctx, 400, "Missing parameter 'modeluri'!"));
@@ -225,7 +223,7 @@ public class ModelServerRouting extends Routing {
             ws(ModelServerPaths.SUBSCRIPTION, wsHandler -> {
                wsHandler.onConnect(ctx -> {
                   getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.MODEL_URI)
-                     .map(this::adaptModelUri)
+                     .map(resourceManager::adaptModelUri)
                      .ifPresentOrElse(
                         modeluri -> {
                            getQueryParam(ctx.queryParamMap(), ModelServerPathParameters.TIMEOUT)
@@ -301,26 +299,6 @@ public class ModelServerRouting extends Routing {
       }
 
       return Optional.empty();
-   }
-
-   /**
-    * Adapt the model URI specified by the client to an absolute <tt>file</tt>
-    * scheme URI.
-    *
-    * @param modelUri the client-supplied model URI
-    * @return the absolute file URI
-    */
-   private String adaptModelUri(final String modelUri) {
-      URI uri = URI.createURI(modelUri, true);
-      if (uri.isRelative()) {
-         if (serverConfiguration.getWorkspaceRootURI().isFile()) {
-            return uri.resolve(serverConfiguration.getWorkspaceRootURI()).toString();
-         }
-         return URI.createFileURI(modelUri).toString();
-      }
-      // Create file URI from path if modelUri is already absolute path (file:/ or full path file:///)
-      // to ensure consistent usage of org.eclipse.emf.common.util.URI
-      return URI.createFileURI(uri.path()).toString();
    }
 
    private void handleHttpError(final Context ctx, final int statusCode, final String errorMsg) {

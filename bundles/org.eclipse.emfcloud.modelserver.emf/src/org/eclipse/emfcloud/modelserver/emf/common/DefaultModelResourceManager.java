@@ -39,6 +39,7 @@ import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.emfjson.jackson.resource.JsonResourceFactory;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
@@ -330,6 +331,30 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    @Override
    public boolean getDirtyState(final String modeluri) {
       return getEditingDomain(getResourceSet(modeluri)).isDirty();
+   }
+
+   /**
+    * Adapt the model URI specified by the client to an absolute <tt>file</tt>
+    * scheme URI.
+    *
+    * @param modelUri the client-supplied model URI
+    * @return the absolute file URI
+    */
+   @Override
+   public String adaptModelUri(final String modelUri) {
+      URI uri = URI.createURI(modelUri, true);
+      if (uri.isRelative()) {
+         if (serverConfiguration.getWorkspaceRootURI().isFile()) {
+            return uri.resolve(serverConfiguration.getWorkspaceRootURI()).toString();
+         }
+         return URI.createFileURI(modelUri).toString();
+      }
+      // Create file URI from path if modelUri is already absolute path (file:/ or full path file:///)
+      // to ensure consistent usage of org.eclipse.emf.common.util.URI
+      if (uri.hasDevice() && !Strings.isNullOrEmpty(uri.device())) {
+         return URI.createFileURI(uri.device() + uri.path()).toString();
+      }
+      return URI.createFileURI(uri.path()).toString();
    }
 
 }
