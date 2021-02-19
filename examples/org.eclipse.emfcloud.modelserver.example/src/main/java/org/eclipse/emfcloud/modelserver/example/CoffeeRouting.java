@@ -12,6 +12,7 @@ package org.eclipse.emfcloud.modelserver.example;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.path;
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1.BASE_PATH;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest.getIntegerParam;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest.getParam;
 
@@ -50,7 +51,7 @@ public class CoffeeRouting implements Routing {
    }
 
    protected void endpoints() {
-      path("api/v1", this::coffeeEndpoints);
+      path(BASE_PATH, this::coffeeEndpoints);
    }
 
    protected void coffeeEndpoints() {

@@ -56,15 +56,7 @@ public final class ExampleServerLauncher {
    protected static CLIParser createCLIParser(final String[] args) throws ParseException {
       CLIParser parser = new CLIParser(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME, 8081);
       ensureWorkspaceRoot(parser);
-      ensureUISchemaFolder(parser);
       return parser;
-   }
-
-   protected static void ensureUISchemaFolder(final CLIParser parser) throws ParseException {
-      if (!parser.optionExists(CLIParser.OPTION_UI_SCHEMA_ROOT)) {
-         URI uiSchemaRoot = new File(TEMP_DIR + "/" + WORKSPACE_UISCHEMA_FOLDER).toURI();
-         parser.setOption(CLIParser.OPTION_UI_SCHEMA_ROOT, uiSchemaRoot);
-      }
    }
 
    protected static void ensureWorkspaceRoot(final CLIParser parser) throws ParseException {
@@ -77,6 +69,15 @@ public final class ExampleServerLauncher {
          }
          Runtime.getRuntime().addShutdownHook(new Thread(() -> cleanupTempTestWorkspace(workspaceRoot)));
          parser.setOption(CLIParser.OPTION_WORKSPACE_ROOT, workspaceRoot.toURI());
+
+         ensureUISchemaFolder(parser);
+      }
+   }
+
+   protected static void ensureUISchemaFolder(final CLIParser parser) throws ParseException {
+      if (!parser.optionExists(CLIParser.OPTION_UI_SCHEMA_ROOT)) {
+         URI uiSchemaRoot = new File(TEMP_DIR + "/" + WORKSPACE_UISCHEMA_FOLDER).toURI();
+         parser.setOption(CLIParser.OPTION_UI_SCHEMA_ROOT, uiSchemaRoot);
       }
    }
 

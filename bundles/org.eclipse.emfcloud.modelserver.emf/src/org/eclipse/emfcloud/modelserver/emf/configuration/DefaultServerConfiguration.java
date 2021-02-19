@@ -32,7 +32,7 @@ import com.google.inject.Inject;
  *
  */
 public class DefaultServerConfiguration implements ServerConfiguration {
-   private static Logger LOG = Logger.getLogger(DefaultServerConfiguration.class);
+   private static Logger LOG = Logger.getLogger(DefaultServerConfiguration.class.getSimpleName());
 
    private URI workspaceRootURI = URI.createURI("");
    private URI uiSchemaFolderURI = URI.createURI("");
