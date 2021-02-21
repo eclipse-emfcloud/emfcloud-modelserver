@@ -11,9 +11,9 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.command.BasicCommandStack;
+import org.eclipse.emf.transaction.impl.TransactionalCommandStackImpl;
 
-public class ModelServerCommandStack extends BasicCommandStack {
+public class ModelServerCommandStack extends TransactionalCommandStackImpl {
 
    private static Logger LOG = Logger.getLogger(ModelServerCommandStack.class.getSimpleName());
 

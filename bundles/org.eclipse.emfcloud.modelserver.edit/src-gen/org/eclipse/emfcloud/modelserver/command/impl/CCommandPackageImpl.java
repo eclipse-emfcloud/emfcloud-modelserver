@@ -1,5 +1,5 @@
-/********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+/**
+ * Copyright (c) 2021 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -7,7 +7,7 @@
  * available at https://opensource.org/licenses/MIT.
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- ********************************************************************************/
+ */
 package org.eclipse.emfcloud.modelserver.command.impl;
 
 import org.eclipse.emf.ecore.EAttribute;
@@ -18,10 +18,11 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.impl.EPackageImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.command.CCompoundCommand;
-import org.eclipse.emfcloud.modelserver.command.CommandKind;
+import org.eclipse.emfcloud.modelserver.command.ExecutionContext;
 
 /**
  * <!-- begin-user-doc -->
@@ -53,7 +54,15 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
     *
     * @generated
     */
-   private EEnum commandKindEEnum = null;
+   private EClass commandExecutionResultEClass = null;
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   private EEnum executionContextEEnum = null;
 
    /**
     * Creates an instance of the model <b>Package</b>, registered with
@@ -207,6 +216,15 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
     * @generated
     */
    @Override
+   public EReference getCommand_Properties() { return (EReference) commandEClass.getEStructuralFeatures().get(7); }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
    public EClass getCompoundCommand() { return compoundCommandEClass; }
 
    /**
@@ -227,7 +245,71 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
     * @generated
     */
    @Override
-   public EEnum getCommandKind() { return commandKindEEnum; }
+   public EClass getCommandExecutionResult() { return commandExecutionResultEClass; }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public EReference getCommandExecutionResult_Source() {
+      return (EReference) commandExecutionResultEClass.getEStructuralFeatures().get(0);
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public EReference getCommandExecutionResult_AffectedObjects() {
+      return (EReference) commandExecutionResultEClass.getEStructuralFeatures().get(1);
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public EAttribute getCommandExecutionResult_Context() {
+      return (EAttribute) commandExecutionResultEClass.getEStructuralFeatures().get(2);
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public EReference getCommandExecutionResult_Properties() {
+      return (EReference) commandExecutionResultEClass.getEStructuralFeatures().get(3);
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public EReference getCommandExecutionResult_Changes() {
+      return (EReference) commandExecutionResultEClass.getEStructuralFeatures().get(4);
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public EEnum getExecutionContext() { return executionContextEEnum; }
 
    /**
     * <!-- begin-user-doc -->
@@ -269,12 +351,20 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
       createEAttribute(commandEClass, COMMAND__DATA_VALUES);
       createEReference(commandEClass, COMMAND__OBJECT_VALUES);
       createEReference(commandEClass, COMMAND__OBJECTS_TO_ADD);
+      createEReference(commandEClass, COMMAND__PROPERTIES);
 
       compoundCommandEClass = createEClass(COMPOUND_COMMAND);
       createEReference(compoundCommandEClass, COMPOUND_COMMAND__COMMANDS);
 
+      commandExecutionResultEClass = createEClass(COMMAND_EXECUTION_RESULT);
+      createEReference(commandExecutionResultEClass, COMMAND_EXECUTION_RESULT__SOURCE);
+      createEReference(commandExecutionResultEClass, COMMAND_EXECUTION_RESULT__AFFECTED_OBJECTS);
+      createEAttribute(commandExecutionResultEClass, COMMAND_EXECUTION_RESULT__CONTEXT);
+      createEReference(commandExecutionResultEClass, COMMAND_EXECUTION_RESULT__PROPERTIES);
+      createEReference(commandExecutionResultEClass, COMMAND_EXECUTION_RESULT__CHANGES);
+
       // Create enums
-      commandKindEEnum = createEEnum(COMMAND_KIND);
+      executionContextEEnum = createEEnum(EXECUTION_CONTEXT);
    }
 
    /**
@@ -316,7 +406,7 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
 
       // Initialize classes, features, and operations; add parameters
       initEClass(commandEClass, CCommand.class, "Command", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-      initEAttribute(getCommand_Type(), this.getCommandKind(), "type", null, 1, 1, CCommand.class, !IS_TRANSIENT,
+      initEAttribute(getCommand_Type(), ecorePackage.getEString(), "type", null, 1, 1, CCommand.class, !IS_TRANSIENT,
          !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
       initEReference(getCommand_Owner(), theEcorePackage.getEObject(), null, "owner", null, 0, 1, CCommand.class,
          !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE,
@@ -333,6 +423,9 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
       initEReference(getCommand_ObjectsToAdd(), theEcorePackage.getEObject(), null, "objectsToAdd", null, 0, -1,
          CCommand.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE,
          IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+      initEReference(getCommand_Properties(), theEcorePackage.getEStringToStringMapEntry(), null, "properties", null, 0,
+         -1, CCommand.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES,
+         !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
       initEClass(compoundCommandEClass, CCompoundCommand.class, "CompoundCommand", !IS_ABSTRACT, !IS_INTERFACE,
          IS_GENERATED_INSTANCE_CLASS);
@@ -340,14 +433,29 @@ public class CCommandPackageImpl extends EPackageImpl implements CCommandPackage
          CCompoundCommand.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES,
          !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+      initEClass(commandExecutionResultEClass, CCommandExecutionResult.class, "CommandExecutionResult", !IS_ABSTRACT,
+         !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+      initEReference(getCommandExecutionResult_Source(), this.getCommand(), null, "source", null, 0, 1,
+         CCommandExecutionResult.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES,
+         !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+      initEReference(getCommandExecutionResult_AffectedObjects(), theEcorePackage.getEObject(), null, "affectedObjects",
+         null, 0, -1, CCommandExecutionResult.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE,
+         IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+      initEAttribute(getCommandExecutionResult_Context(), this.getExecutionContext(), "context", null, 0, 1,
+         CCommandExecutionResult.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE,
+         !IS_DERIVED, IS_ORDERED);
+      initEReference(getCommandExecutionResult_Properties(), theEcorePackage.getEStringToStringMapEntry(), null,
+         "properties", null, 0, -1, CCommandExecutionResult.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE,
+         IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+      initEReference(getCommandExecutionResult_Changes(), theEcorePackage.getEObject(), null, "changes", null, 0, 1,
+         CCommandExecutionResult.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES,
+         !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
       // Initialize enums and add enum literals
-      initEEnum(commandKindEEnum, CommandKind.class, "CommandKind");
-      addEEnumLiteral(commandKindEEnum, CommandKind.COMPOUND);
-      addEEnumLiteral(commandKindEEnum, CommandKind.ADD);
-      addEEnumLiteral(commandKindEEnum, CommandKind.REMOVE);
-      addEEnumLiteral(commandKindEEnum, CommandKind.SET);
-      addEEnumLiteral(commandKindEEnum, CommandKind.REPLACE);
-      addEEnumLiteral(commandKindEEnum, CommandKind.MOVE);
+      initEEnum(executionContextEEnum, ExecutionContext.class, "ExecutionContext");
+      addEEnumLiteral(executionContextEEnum, ExecutionContext.EXECUTE);
+      addEEnumLiteral(executionContextEEnum, ExecutionContext.UNDO);
+      addEEnumLiteral(executionContextEEnum, ExecutionContext.REDO);
 
       // Create resource
       createResource(eNS_URI);

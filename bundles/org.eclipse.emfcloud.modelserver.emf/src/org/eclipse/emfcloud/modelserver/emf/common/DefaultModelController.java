@@ -29,9 +29,8 @@ import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
@@ -216,49 +215,33 @@ public class DefaultModelController implements ModelController {
 
    @Override
    public void undo(final Context ctx, final String modeluri) {
-      CCommand undoCommand = modelRepository.getUndoCommand(modeluri);
-      if (undoCommand != null) {
-         /*
-          * In order to encode certain commands (e.g., commands that remove model elements) we need all element
-          * information,
-          * e.g., the info which element was removed before it is gone. Therefore we encode the command in all formats
-          * and provide them to the model repository which will select the correct format for each subscribed client.
-          * This means that we encode the command once for all formats beforehand. The alternative would be to encode it
-          * once per subscribed client.
-          * The same applies to the redo method below.
-          */
-         Map<String, JsonNode> encodings = getCommandEncodings(modeluri, undoCommand);
-         boolean undoSuccess = modelRepository.undo(modeluri);
-         if (undoSuccess) {
-            success(ctx, "Successful undo.");
-            sessionController.commandExecuted(modeluri, encodings);
-            return;
-         }
+      Optional<CCommandExecutionResult> undoExecution = modelRepository.undo(modeluri);
+      if (undoExecution.isPresent()) {
+         success(ctx, "Successful undo.");
+         Map<String, JsonNode> encodings = getCommandEncodings(modeluri, undoExecution.get());
+         sessionController.commandExecuted(modeluri, encodings);
+         return;
       }
       accepted(ctx, "Cannot undo");
    }
 
    @Override
    public void redo(final Context ctx, final String modeluri) {
-      CCommand redoCommand = modelRepository.getRedoCommand(modeluri);
-      if (redoCommand != null) {
-         /* Please see comment in undo method */
-         Map<String, JsonNode> encodings = getCommandEncodings(modeluri, redoCommand);
-         boolean redoSuccess = modelRepository.redo(modeluri);
-         if (redoSuccess) {
-            success(ctx, "Successful redo.");
-            sessionController.commandExecuted(modeluri, encodings);
-            return;
-         }
+      Optional<CCommandExecutionResult> redoExecution = modelRepository.redo(modeluri);
+      if (redoExecution.isPresent()) {
+         success(ctx, "Successful redo.");
+         Map<String, JsonNode> encodings = getCommandEncodings(modeluri, redoExecution.get());
+         sessionController.commandExecuted(modeluri, encodings);
+         return;
       }
       accepted(ctx, "Cannot redo");
    }
 
-   protected Map<String, JsonNode> getCommandEncodings(final String modeluri, final CCommand command) {
+   protected Map<String, JsonNode> getCommandEncodings(final String modeluri, final EObject execution) {
       Map<String, JsonNode> encodings = new HashMap<>();
       if (sessionController.hasSession(modeluri)) {
          try {
-            encodings = codecs.encode(command);
+            encodings = codecs.encode(execution);
          } catch (EncodingException exception) {
             LOG.error("Pre encoding of undo/redo command for " + modeluri + " failed", exception);
          }
@@ -301,36 +284,14 @@ public class DefaultModelController implements ModelController {
          badRequest(ctx, "Could not read command.");
          return;
       }
-      doExecuteCommand(ctx, modelURI, command);
-   }
-
-   protected void doExecuteCommand(final Context ctx, final String modelURI, final Optional<CCommand> command) {
       try {
-         // Create a temporary resource in the workspace
-         // so that we can resolve cross-references into
-         // the user model from the command(s)
-         URI uri = URI.createURI("$command.res").resolve(serverConfiguration.getWorkspaceRootURI());
-         Resource resource = new ResourceImpl(uri);
-         modelRepository.addTemporaryCommandResource(modelURI, resource, command.get());
-
-         try {
-            EcoreUtil.resolveAll(resource);
-            /*
-             * In a similar way as for undo/redo we encode the command beforehand to ensure the encoded
-             * command for notifying subscribed client contains all necessary element information,
-             * e.g.the original owner in case of a SET command that changes the name and therefore its
-             * semantic URI
-             */
-            Map<String, JsonNode> encodings = getCommandEncodings(modelURI, command.get());
-            modelRepository.executeCommand(modelURI, command.get());
-            sessionController.commandExecuted(modelURI, encodings);
-            success(ctx, "Model '%s' successfully updated", modelURI);
-         } finally {
-            resource.unload();
-            modelRepository.removeTemporaryCommandResource(modelURI, resource);
-         }
+         CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, command.get());
+         Map<String, JsonNode> encodings = getCommandEncodings(modelURI, execution);
+         sessionController.commandExecuted(modelURI, encodings);
+         success(ctx, "Model '%s' successfully updated", modelURI);
       } catch (DecodingException exception) {
          decodingError(ctx, exception);
       }
    }
+
 }

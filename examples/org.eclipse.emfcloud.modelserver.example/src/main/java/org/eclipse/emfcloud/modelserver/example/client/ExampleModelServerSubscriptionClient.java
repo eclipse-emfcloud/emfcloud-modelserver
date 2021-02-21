@@ -24,7 +24,9 @@ import org.eclipse.emfcloud.modelserver.client.ModelServerClient;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.CoffeeFactory;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.CoffeePackage;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.Workflow;
+import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
+import org.eclipse.emfcloud.modelserver.edit.EMFCommandCodec;
 
 @SuppressWarnings("uncommentedmain")
 public final class ExampleModelServerSubscriptionClient {
@@ -42,12 +44,11 @@ public final class ExampleModelServerSubscriptionClient {
          client.subscribe("SuperBrewer3000.json", new ExampleJsonStringSubscriptionListener("SuperBrewer3000.json"));
          client.subscribe("Coffee.ecore", new ExampleXMISubscriptionListener("Coffee.ecore"), "xmi");
 
-         client.edit("SuperBrewer3000.coffee", getEditWorkflowNameCommand()).thenAccept(response -> {
+         client.edit("SuperBrewer3000.coffee", getEditWorkflowNameCommand(), null).thenAccept(response -> {
             if (response.body()) {
                client.undo("SuperBrewer3000.coffee");
             }
          });
-
       } catch (MalformedURLException e) {
          e.printStackTrace();
       }
@@ -59,13 +60,14 @@ public final class ExampleModelServerSubscriptionClient {
       CoffeePackage.eINSTANCE.eClass();
    }
 
-   private static Command getEditWorkflowNameCommand() {
+   private static CCommand getEditWorkflowNameCommand() {
       AdapterFactoryEditingDomain domain = new AdapterFactoryEditingDomain(new ComposedAdapterFactory(),
          new BasicCommandStack());
       Workflow workflowEClass = CoffeeFactory.eINSTANCE.createWorkflow();
       ((InternalEObject) workflowEClass).eSetProxyURI(URI.createURI("SuperBrewer3000.coffee#//@workflows.0"));
-      return SetCommand.create(domain, workflowEClass, EcorePackage.Literals.ENAMED_ELEMENT__NAME,
+      Command setCommand = SetCommand.create(domain, workflowEClass, EcorePackage.Literals.ENAMED_ELEMENT__NAME,
          "Simple Renamed Workflow");
+      return EMFCommandCodec.clientCommand((SetCommand) setCommand);
    }
 
 }

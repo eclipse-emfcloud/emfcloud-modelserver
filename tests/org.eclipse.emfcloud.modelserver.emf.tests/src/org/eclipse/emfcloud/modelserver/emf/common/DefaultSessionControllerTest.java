@@ -27,9 +27,9 @@ import java.util.regex.Pattern;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
-import org.eclipse.emfcloud.modelserver.command.CommandKind;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
+import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
@@ -156,7 +156,7 @@ public class DefaultSessionControllerTest {
          containsRegex(".\"type\":\"dirtyState\",\"data\":false."))));
 
       CCommand command = CCommandFactory.eINSTANCE.createCommand();
-      command.setType(CommandKind.SET);
+      command.setType(EMFCommandType.SET);
 
       Map<String, JsonNode> encodings = new HashMap<>();
       JsonNode expectedCommand = Json.object(

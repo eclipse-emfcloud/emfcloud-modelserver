@@ -9,9 +9,12 @@ Require-Bundle: com.google.guava;bundle-version="[27.1.0,28.0.0)",
  org.eclipse.emf.common;bundle-version="[2.17.0,3.0.0)",
  org.eclipse.emf.ecore;bundle-version="[2.20.0,3.0.0)",
  org.eclipse.emf.edit;bundle-version="[2.16.0,3.0.0)",
- org.eclipse.emfcloud.modelserver.common;bundle-version="[0.7.0,1.0.0)"
+ org.eclipse.emfcloud.modelserver.common;bundle-version="[0.7.0,1.0.0)",
+ com.google.inject,
+ org.eclipse.emf.transaction
 Export-Package: org.eclipse.emfcloud.modelserver.command,
  org.eclipse.emfcloud.modelserver.command.impl,
  org.eclipse.emfcloud.modelserver.command.util,
- org.eclipse.emfcloud.modelserver.edit
+ org.eclipse.emfcloud.modelserver.edit,
+ org.eclipse.emfcloud.modelserver.edit.command
 Bundle-Vendor: EclipseSource

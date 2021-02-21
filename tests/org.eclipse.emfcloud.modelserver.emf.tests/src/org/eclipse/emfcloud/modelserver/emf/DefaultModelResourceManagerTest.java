@@ -15,7 +15,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -33,7 +32,6 @@ import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreAdapterFactory;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
@@ -72,7 +70,7 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
    @Before
    public void beforeTests() throws DecodingException {
       when(command.canExecute()).thenReturn(true);
-      when(commandCodec.decode(any(), any())).thenReturn(command);
+      when(commandCodec.clientToServer(any(), any(), any())).thenReturn(command);
       when(serverConfig.getWorkspaceRootURI())
          .thenReturn(URI.createFileURI(getCWD().getAbsolutePath() + "/" + RESOURCE_PATH));
       modelResourceManager = Guice.createInjector(new AbstractModule() {
@@ -145,13 +143,6 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
       assertTrue(modelResourceManager.isResourceLoaded(modelUri));
 
       cleanUpResource(modelUri);
-   }
-
-   @Test
-   public void updateResource() throws DecodingException {
-      modelResourceManager.updateResource(adaptModelUri("Test1.json"),
-         CCommandFactory.eINSTANCE.createCommand());
-      verify(command).execute();
    }
 
    @Test

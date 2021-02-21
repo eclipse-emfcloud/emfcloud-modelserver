@@ -39,12 +39,13 @@ import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
-import org.eclipse.emfcloud.modelserver.command.CommandKind;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPaths;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
+import org.eclipse.emfcloud.modelserver.edit.EMFCommandCodec;
+import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponse;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
@@ -93,8 +94,8 @@ public class ModelServerClientTest {
    public void get() throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);
       String getUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
+         .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
          .build().toString();
       interceptor.addRule()
          .get()
@@ -112,9 +113,9 @@ public class ModelServerClientTest {
    public void getXmi() throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
       String getXmiUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_XMI)
+         .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_XMI)
          .build().toString();
       interceptor.addRule()
          .get()
@@ -123,7 +124,7 @@ public class ModelServerClientTest {
       ModelServerClient client = createClient();
 
       final CompletableFuture<Response<EObject>> f = client.get("SuperBrewer3000.json",
-         ModelServerPathParameters.FORMAT_XMI);
+         ModelServerPathParametersV1.FORMAT_XMI);
 
       assertTrue(EcoreUtil.equals(f.get().body(), eClass));
    }
@@ -133,7 +134,7 @@ public class ModelServerClientTest {
    public void getModelUris()
       throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       String getModelUrisUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_URIS)
+         .addPathSegment(ModelServerPathsV1.MODEL_URIS)
          .build().toString();
       interceptor.addRule()
          .get()
@@ -156,7 +157,7 @@ public class ModelServerClientTest {
       ArrayNode allModels = Json.array(model);
 
       String getAllUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
+         .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
          .build().toString();
       interceptor.addRule()
          .get()
@@ -175,8 +176,8 @@ public class ModelServerClientTest {
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
 
       String getAllXmiUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_XMI)
+         .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_XMI)
          .build().toString();
       interceptor.addRule()
          .get()
@@ -186,7 +187,7 @@ public class ModelServerClientTest {
             .toString());
       ModelServerClient client = createClient();
 
-      final CompletableFuture<Response<List<Model<EObject>>>> f = client.getAll(ModelServerPathParameters.FORMAT_XMI);
+      final CompletableFuture<Response<List<Model<EObject>>>> f = client.getAll(ModelServerPathParametersV1.FORMAT_XMI);
       List<Model<EObject>> response = f.get().body();
       assertThat(response.size(), is(1));
       assertThat(response.get(0).getModelUri(), is(modelUri));
@@ -199,9 +200,9 @@ public class ModelServerClientTest {
       throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);
       String getElementByIdUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_ELEMENT)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.ELEMENT_ID, "//@workflows.0/@nodes.0")
+         .addPathSegment(ModelServerPathsV1.MODEL_ELEMENT)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.ELEMENT_ID, "//@workflows.0/@nodes.0")
          .build().toString();
       interceptor.addRule()
          .get()
@@ -221,10 +222,10 @@ public class ModelServerClientTest {
       throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
       String getElementByIdXMIUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_ELEMENT)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.ELEMENT_ID, "//@workflows.0")
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_XMI)
+         .addPathSegment(ModelServerPathsV1.MODEL_ELEMENT)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.ELEMENT_ID, "//@workflows.0")
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_XMI)
          .build().toString();
       interceptor.addRule()
          .get()
@@ -233,7 +234,7 @@ public class ModelServerClientTest {
       ModelServerClient client = createClient();
 
       final CompletableFuture<Response<EObject>> f = client.getModelElementById("SuperBrewer3000.json",
-         "//@workflows.0", ModelServerPathParameters.FORMAT_XMI);
+         "//@workflows.0", ModelServerPathParametersV1.FORMAT_XMI);
 
       assertTrue(EcoreUtil.equals(f.get().body(), eClass));
    }
@@ -244,9 +245,9 @@ public class ModelServerClientTest {
       throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(EcoreFactory.eINSTANCE.createEClass());
       String getElementByNameUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_ELEMENT)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.ELEMENT_NAME, "PreHeat")
+         .addPathSegment(ModelServerPathsV1.MODEL_ELEMENT)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.ELEMENT_NAME, "PreHeat")
          .build().toString();
       interceptor.addRule()
          .get()
@@ -265,10 +266,10 @@ public class ModelServerClientTest {
       throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
       String getElementByNameXMIUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_ELEMENT)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.ELEMENT_NAME, "Simple Workflow")
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_XMI)
+         .addPathSegment(ModelServerPathsV1.MODEL_ELEMENT)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.ELEMENT_NAME, "Simple Workflow")
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_XMI)
          .build().toString();
       interceptor.addRule()
          .get()
@@ -277,7 +278,7 @@ public class ModelServerClientTest {
       ModelServerClient client = createClient();
 
       final CompletableFuture<Response<EObject>> f = client.getModelElementByName("SuperBrewer3000.json",
-         "Simple Workflow", ModelServerPathParameters.FORMAT_XMI);
+         "Simple Workflow", ModelServerPathParametersV1.FORMAT_XMI);
 
       assertTrue(EcoreUtil.equals(f.get().body(), eClass));
    }
@@ -285,8 +286,8 @@ public class ModelServerClientTest {
    @Test
    public void delete() throws ExecutionException, InterruptedException, MalformedURLException {
       String deleteUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
+         .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
          .build().toString();
       interceptor.addRule()
          .url(deleteUrl)
@@ -304,9 +305,9 @@ public class ModelServerClientTest {
    public void create() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);
       String createUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_JSON)
+         .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_JSON)
          .build().toString();
       interceptor.addRule()
          .url(createUrl)
@@ -326,9 +327,9 @@ public class ModelServerClientTest {
    public void createModel() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);
       String createModelUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_JSON)
+         .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_JSON)
          .build().toString();
       interceptor.addRule()
          .url(createModelUrl)
@@ -339,7 +340,7 @@ public class ModelServerClientTest {
       CompletableFuture<Response<EObject>> f = client.create(
          "SuperBrewer3000.json",
          eClass,
-         ModelServerPathParameters.FORMAT_JSON);
+         ModelServerPathParametersV1.FORMAT_JSON);
 
       assertThat(jsonCodec.encode(f.get().body()), equalTo(expected));
    }
@@ -349,9 +350,9 @@ public class ModelServerClientTest {
    public void update() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);
       String updateUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_JSON)
+         .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_JSON)
          .build().toString();
       interceptor.addRule()
          .url(updateUrl)
@@ -372,9 +373,9 @@ public class ModelServerClientTest {
       throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final EClass expected = EcoreFactory.eINSTANCE.createEClass();
       String updateWithFormatUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.MODEL_BASE_PATH)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_XMI)
+         .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_XMI)
          .build().toString();
       interceptor.addRule()
          .url(updateWithFormatUrl)
@@ -385,7 +386,7 @@ public class ModelServerClientTest {
       final CompletableFuture<Response<EObject>> f = client.update(
          "SuperBrewer3000.json",
          EcoreFactory.eINSTANCE.createEClass(),
-         ModelServerPathParameters.FORMAT_XMI);
+         ModelServerPathParametersV1.FORMAT_XMI);
 
       assertTrue(EcoreUtil.equals(f.get().body(), expected));
    }
@@ -406,8 +407,8 @@ public class ModelServerClientTest {
       throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = JsonCodec.encode(Json.object(Json.prop(JsonResponseMember.TYPE, Json.text("object"))));
       String typeSchemaUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.TYPE_SCHEMA)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
+         .addPathSegment(ModelServerPathsV1.TYPE_SCHEMA)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
          .build().toString();
       interceptor.addRule()
          .url(typeSchemaUrl)
@@ -425,8 +426,8 @@ public class ModelServerClientTest {
    public void getUiSchema() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = JsonCodec.encode(Json.object(Json.prop(JsonResponseMember.TYPE, Json.text("object"))));
       String uiSchemaUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.UI_SCHEMA)
-         .addQueryParameter(ModelServerPathParameters.SCHEMA_NAME, "controlunit")
+         .addPathSegment(ModelServerPathsV1.UI_SCHEMA)
+         .addQueryParameter(ModelServerPathParametersV1.SCHEMA_NAME, "controlunit")
          .build().toString();
       interceptor.addRule()
          .url(uiSchemaUrl)
@@ -441,7 +442,7 @@ public class ModelServerClientTest {
 
    @Test
    public void pingTrue() throws ExecutionException, InterruptedException, MalformedURLException {
-      String pingUrl = baseHttpUrlBuilder.addPathSegments(ModelServerPaths.SERVER_PING).build().toString();
+      String pingUrl = baseHttpUrlBuilder.addPathSegments(ModelServerPathsV1.SERVER_PING).build().toString();
       interceptor.addRule()
          .url(pingUrl)
          .get()
@@ -454,7 +455,7 @@ public class ModelServerClientTest {
 
    @Test
    public void pingFalse() throws ExecutionException, InterruptedException, MalformedURLException {
-      String pingUrl = baseHttpUrlBuilder.addPathSegments(ModelServerPaths.SERVER_PING).build().toString();
+      String pingUrl = baseHttpUrlBuilder.addPathSegments(ModelServerPathsV1.SERVER_PING).build().toString();
       interceptor.addRule()
          .url(pingUrl)
          .get()
@@ -468,7 +469,7 @@ public class ModelServerClientTest {
 
    @Test
    public void configure() throws MalformedURLException, ExecutionException, InterruptedException {
-      String configureUrl = baseHttpUrlBuilder.addPathSegments(ModelServerPaths.SERVER_CONFIGURE).build().toString();
+      String configureUrl = baseHttpUrlBuilder.addPathSegments(ModelServerPathsV1.SERVER_CONFIGURE).build().toString();
       interceptor.addRule()
          .url(configureUrl)
          .put()
@@ -488,7 +489,7 @@ public class ModelServerClientTest {
       EClass eClass = EcoreFactory.eINSTANCE.createEClass();
       ((InternalEObject) eClass).eSetProxyURI(URI.createURI("SuperBrewer3000.json#//workflows.0"));
       CCommand add = CCommandFactory.eINSTANCE.createCommand();
-      add.setType(CommandKind.ADD);
+      add.setType(EMFCommandType.ADD);
       add.setOwner(eClass);
       add.setFeature("eAttributes");
       add.getObjectsToAdd().add(EcoreFactory.eINSTANCE.createEAttribute());
@@ -504,9 +505,9 @@ public class ModelServerClientTest {
       assertThat(expected.toString(), containsString("\"objectValues\":[{\"eClass\":"));
 
       String editUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.EDIT)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_JSON)
+         .addPathSegment(ModelServerPathsV1.EDIT)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_JSON)
          .build().toString();
 
       interceptor.addRule().url(editUrl)
@@ -531,7 +532,7 @@ public class ModelServerClientTest {
       ModelServerClient client = createClient();
 
       final CompletableFuture<Response<Boolean>> f = client.edit("SuperBrewer3000.json", add,
-         ModelServerPathParameters.FORMAT_JSON);
+         ModelServerPathParametersV1.FORMAT_JSON);
 
       assertThat(f.get().body(), is(true));
    }
@@ -548,9 +549,9 @@ public class ModelServerClientTest {
          EcoreFactory.eINSTANCE.createEAttribute());
 
       String editUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.EDIT)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, "SuperBrewer3000.json")
-         .addQueryParameter(ModelServerPathParameters.FORMAT, ModelServerPathParameters.FORMAT_JSON)
+         .addPathSegment(ModelServerPathsV1.EDIT)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_JSON)
          .build().toString();
 
       interceptor.addRule().url(editUrl)
@@ -574,8 +575,9 @@ public class ModelServerClientTest {
          });
       ModelServerClient client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.edit("SuperBrewer3000.json", add,
-         ModelServerPathParameters.FORMAT_JSON);
+      final CompletableFuture<Response<Boolean>> f = client.edit("SuperBrewer3000.json",
+         EMFCommandCodec.clientCommand((AddCommand) add),
+         ModelServerPathParametersV1.FORMAT_JSON);
 
       assertThat(f.get().body(), is(true));
    }
@@ -584,8 +586,8 @@ public class ModelServerClientTest {
    public void undo() throws ExecutionException, InterruptedException, MalformedURLException {
       String modelUri = "SuperBrewer3000.coffee";
       String undoUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.UNDO)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .addPathSegment(ModelServerPathsV1.UNDO)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
          .build().toString();
 
       interceptor.addRule()
@@ -603,8 +605,8 @@ public class ModelServerClientTest {
    public void cannotUndo() throws ExecutionException, InterruptedException, MalformedURLException {
       String modelUri = "SuperBrewer3000.coffee";
       String undoUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.UNDO)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .addPathSegment(ModelServerPathsV1.UNDO)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
          .build().toString();
 
       interceptor.addRule()
@@ -622,8 +624,8 @@ public class ModelServerClientTest {
    public void redo() throws ExecutionException, InterruptedException, MalformedURLException {
       String modelUri = "SuperBrewer3000.coffee";
       String redoUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.REDO)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .addPathSegment(ModelServerPathsV1.REDO)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
          .build().toString();
 
       interceptor.addRule()
@@ -641,8 +643,8 @@ public class ModelServerClientTest {
    public void cannotRedo() throws ExecutionException, InterruptedException, MalformedURLException {
       String modelUri = "SuperBrewer3000.coffee";
       String redoUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.REDO)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .addPathSegment(ModelServerPathsV1.REDO)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
          .build().toString();
 
       interceptor.addRule()
@@ -660,8 +662,8 @@ public class ModelServerClientTest {
    public void save() throws ExecutionException, InterruptedException, MalformedURLException {
       String modelUri = "SuperBrewer3000.coffee";
       String redoUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.SAVE)
-         .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+         .addPathSegment(ModelServerPathsV1.SAVE)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
          .build().toString();
 
       interceptor.addRule()
@@ -678,7 +680,7 @@ public class ModelServerClientTest {
    @Test
    public void saveAll() throws ExecutionException, InterruptedException, MalformedURLException {
       String redoUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPaths.SAVE_ALL)
+         .addPathSegment(ModelServerPathsV1.SAVE_ALL)
          .build().toString();
 
       interceptor.addRule()

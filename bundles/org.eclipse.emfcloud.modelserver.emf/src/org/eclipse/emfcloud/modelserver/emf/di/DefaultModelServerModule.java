@@ -18,11 +18,11 @@ import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
 import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
-import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
+import org.eclipse.emfcloud.modelserver.edit.CommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.DICommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultFacetConfig;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelRepository;
-import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelValidator;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultSchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultSchemaRepository;
@@ -33,6 +33,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelValidator;
+import org.eclipse.emfcloud.modelserver.emf.common.RecordingModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ServerController;
@@ -89,7 +90,7 @@ public class DefaultModelServerModule extends ModelServerModule {
    }
 
    protected Class<? extends CommandCodec> bindCommandCodec() {
-      return DefaultCommandCodec.class;
+      return DICommandCodec.class;
    }
 
    protected Class<? extends FacetConfig> bindFacetConfig() {
@@ -109,7 +110,7 @@ public class DefaultModelServerModule extends ModelServerModule {
    }
 
    protected Class<? extends ModelResourceManager> bindModelResourceManager() {
-      return DefaultModelResourceManager.class;
+      return RecordingModelResourceManager.class;
    }
 
    @Override
@@ -162,9 +163,12 @@ public class DefaultModelServerModule extends ModelServerModule {
     *
     * @param binding map binding from format to codec
     */
-
    protected void configureCodecs(final MapBinding<String, Codec> binding) {
       binding.putAll(MultiBindingDefaults.DEFAULT_CODECS);
+   }
+
+   protected void configureCommandCodecs(final MapBinding<String, CommandCodecContribution> binding) {
+      binding.putAll(MultiBindingDefaults.DEFAULT_COMMAND_CODECS);
    }
 
    protected void configureEPackages(final MultiBinding<EPackageConfiguration> binding) {
@@ -176,6 +180,7 @@ public class DefaultModelServerModule extends ModelServerModule {
       configure(MultiBinding.create(Routing.class), this::configureRoutings);
       configure(MapBinding.create(EntryPointType.class, AppEntryPoint.class), this::configureAppEntryPoints);
       configure(MapBinding.create(String.class, Codec.class), this::configureCodecs);
+      configure(MapBinding.create(String.class, CommandCodecContribution.class), this::configureCommandCodecs);
    }
 
    protected void configureRoutings(final MultiBinding<Routing> binding) {

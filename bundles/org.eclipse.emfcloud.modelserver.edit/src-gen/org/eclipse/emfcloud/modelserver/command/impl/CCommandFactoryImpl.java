@@ -1,5 +1,5 @@
-/********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+/**
+ * Copyright (c) 2021 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -7,7 +7,7 @@
  * available at https://opensource.org/licenses/MIT.
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- ********************************************************************************/
+ */
 package org.eclipse.emfcloud.modelserver.command.impl;
 
 import org.eclipse.emf.ecore.EClass;
@@ -17,10 +17,11 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.impl.EFactoryImpl;
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.command.CCompoundCommand;
-import org.eclipse.emfcloud.modelserver.command.CommandKind;
+import org.eclipse.emfcloud.modelserver.command.ExecutionContext;
 
 /**
  * <!-- begin-user-doc -->
@@ -74,6 +75,8 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
             return createCommand();
          case CCommandPackage.COMPOUND_COMMAND:
             return createCompoundCommand();
+         case CCommandPackage.COMMAND_EXECUTION_RESULT:
+            return createCommandExecutionResult();
          default:
             throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
       }
@@ -88,8 +91,8 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    @Override
    public Object createFromString(final EDataType eDataType, final String initialValue) {
       switch (eDataType.getClassifierID()) {
-         case CCommandPackage.COMMAND_KIND:
-            return createCommandKindFromString(eDataType, initialValue);
+         case CCommandPackage.EXECUTION_CONTEXT:
+            return createExecutionContextFromString(eDataType, initialValue);
          default:
             throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
       }
@@ -104,8 +107,8 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    @Override
    public String convertToString(final EDataType eDataType, final Object instanceValue) {
       switch (eDataType.getClassifierID()) {
-         case CCommandPackage.COMMAND_KIND:
-            return convertCommandKindToString(eDataType, instanceValue);
+         case CCommandPackage.EXECUTION_CONTEXT:
+            return convertExecutionContextToString(eDataType, instanceValue);
          default:
             throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
       }
@@ -141,8 +144,20 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
     *
     * @generated
     */
-   public CommandKind createCommandKindFromString(final EDataType eDataType, final String initialValue) {
-      CommandKind result = CommandKind.get(initialValue);
+   @Override
+   public CCommandExecutionResult createCommandExecutionResult() {
+      CCommandExecutionResultImpl commandExecutionResult = new CCommandExecutionResultImpl();
+      return commandExecutionResult;
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   public ExecutionContext createExecutionContextFromString(final EDataType eDataType, final String initialValue) {
+      ExecutionContext result = ExecutionContext.get(initialValue);
       if (result == null) {
          throw new IllegalArgumentException(
             "The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
@@ -156,7 +171,7 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
     *
     * @generated
     */
-   public String convertCommandKindToString(final EDataType eDataType, final Object instanceValue) {
+   public String convertExecutionContextToString(final EDataType eDataType, final Object instanceValue) {
       return instanceValue == null ? null : instanceValue.toString();
    }
 

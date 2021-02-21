@@ -13,7 +13,6 @@ package org.eclipse.emfcloud.modelserver.client;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import org.eclipse.emf.common.command.Command;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 
 public interface ModelServerClientApiV1<A> {
@@ -61,10 +60,6 @@ public interface ModelServerClientApiV1<A> {
    CompletableFuture<Response<Boolean>> configure(ServerConfiguration configuration);
 
    CompletableFuture<Response<Boolean>> ping();
-
-   CompletableFuture<Response<Boolean>> edit(String modelUri, Command command);
-
-   CompletableFuture<Response<Boolean>> edit(String modelUri, Command command, String format);
 
    CompletableFuture<Response<Boolean>> edit(String modelUri, CCommand command, String format);
 

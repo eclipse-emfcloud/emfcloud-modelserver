@@ -25,16 +25,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPaths;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
-import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
 import org.eclipse.emfcloud.modelserver.internal.client.EditingContextImpl;
@@ -91,7 +90,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .build();
 
@@ -105,8 +104,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
                .build())
          .build();
 
@@ -127,7 +126,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
             List<Model<String>> models = new ArrayList<>();
             try {
                for (JsonNode modelNode : Json.parse(body)) {
-                  Optional<String> modelUri = getJsonField(modelNode, ModelServerPathParameters.MODEL_URI);
+                  Optional<String> modelUri = getJsonField(modelNode, ModelServerPathParametersV1.MODEL_URI);
                   Optional<String> content = getJsonField(modelNode, "content");
                   if (modelUri.isPresent() && content.isPresent()) {
                      models.add(new Model<>(modelUri.get(), content.get()));
@@ -149,7 +148,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter(ModelServerPathParameters.FORMAT, format)
+               .addQueryParameter(ModelServerPathParametersV1.FORMAT, format)
                .build())
          .build();
 
@@ -198,8 +197,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-               .addQueryParameter(ModelServerPathParameters.ELEMENT_ID, elementid)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.ELEMENT_ID, elementid)
                .build())
          .build();
 
@@ -214,9 +213,9 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-               .addQueryParameter(ModelServerPathParameters.ELEMENT_ID, elementid)
-               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.ELEMENT_ID, elementid)
+               .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
                .build())
          .build();
 
@@ -230,8 +229,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-               .addQueryParameter(ModelServerPathParameters.ELEMENT_NAME, elementname)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.ELEMENT_NAME, elementname)
                .build())
          .build();
 
@@ -246,9 +245,9 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_ELEMENT))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-               .addQueryParameter(ModelServerPathParameters.ELEMENT_NAME, elementname)
-               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.ELEMENT_NAME, elementname)
+               .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
                .build())
          .build();
 
@@ -262,7 +261,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .delete()
          .build();
@@ -273,7 +272,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    @Override
    public CompletableFuture<Response<String>> create(final String modelUri, final String createdModelAsJsonText) {
       TextNode dataNode = Json.text(createdModelAsJsonText);
-      final Request request = buildCreateOrUpdateRequest(modelUri, POST, ModelServerPathParameters.FORMAT_JSON,
+      final Request request = buildCreateOrUpdateRequest(modelUri, POST, ModelServerPathParametersV1.FORMAT_JSON,
          dataNode);
 
       return makeCallAndGetDataBody(request);
@@ -304,8 +303,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
                .build())
          .method(httpMethod,
             RequestBody.create(
@@ -318,7 +317,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    @Override
    public CompletableFuture<Response<String>> update(final String modelUri, final String updatedModelAsJsonText) {
       TextNode dataNode = Json.text(updatedModelAsJsonText);
-      final Request request = buildCreateOrUpdateRequest(modelUri, PATCH, ModelServerPathParameters.FORMAT_JSON,
+      final Request request = buildCreateOrUpdateRequest(modelUri, PATCH, ModelServerPathParametersV1.FORMAT_JSON,
          dataNode);
 
       return makeCallAndGetDataBody(request);
@@ -361,14 +360,14 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
     *
     * @return default format
     */
-   protected String getDefaultFormat() { return ModelServerPathParameters.FORMAT_JSON; }
+   protected String getDefaultFormat() { return ModelServerPathParametersV1.FORMAT_JSON; }
 
    @Override
    public CompletableFuture<Response<Boolean>> save(final String modelUri) {
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(SAVE))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .build();
 
@@ -389,7 +388,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(VALIDATION))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .build();
 
@@ -401,7 +400,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(TYPE_SCHEMA))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .build();
 
@@ -413,7 +412,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(UI_SCHEMA))
-               .addQueryParameter(ModelServerPathParameters.SCHEMA_NAME, schemaname)
+               .addQueryParameter(ModelServerPathParametersV1.SCHEMA_NAME, schemaname)
                .build())
          .build();
 
@@ -445,31 +444,14 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
-   public CompletableFuture<Response<Boolean>> edit(final String modelUri, final Command command) {
-      return edit(modelUri, command, ModelServerPathParameters.FORMAT_JSON);
-   }
-
-   @Override
-   public CompletableFuture<Response<Boolean>> edit(final String modelUri, final Command command, final String format) {
-      CCommand encoded;
-      try {
-         encoded = new DefaultCommandCodec().encode(command);
-      } catch (EncodingException e) {
-         LOG.error("Encoding of " + command + " failed: " + e.getMessage());
-         throw new IllegalArgumentException(e);
-      }
-      return edit(modelUri, encoded, format);
-   }
-
-   @Override
    public CompletableFuture<Response<Boolean>> edit(final String modelUri, final CCommand command,
       final String format) {
       String checkedFormat = checkedFormat(format);
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(EDIT))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-               .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
                .build())
          .patch(
             RequestBody.create(
@@ -487,7 +469,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                   .build()
                   .toString()))
          .build();
@@ -502,8 +484,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+                  .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
                   .build()
                   .toString()))
          .build();
@@ -517,8 +499,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
+                  .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParametersV1.TIMEOUT, String.valueOf(timeout))
                   .build()
                   .toString()))
          .build();
@@ -534,9 +516,9 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
-                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
+                  .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
+                  .addQueryParameter(ModelServerPathParametersV1.TIMEOUT, String.valueOf(timeout))
                   .build()
                   .toString()))
          .build();
@@ -550,8 +532,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
+                  .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParametersV1.LIVE_VALIDATION, "true")
                   .build()
                   .toString()))
          .build();
@@ -567,9 +549,9 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
-                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
+                  .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParametersV1.LIVE_VALIDATION, "true")
+                  .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
                   .build()
                   .toString()))
          .build();
@@ -584,9 +566,9 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
-                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
+                  .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParametersV1.LIVE_VALIDATION, "true")
+                  .addQueryParameter(ModelServerPathParametersV1.TIMEOUT, String.valueOf(timeout))
                   .build()
                   .toString()))
          .build();
@@ -603,10 +585,10 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .url(
             makeWsUrl(
                createHttpUrlBuilder(makeUrl(SUBSCRIPTION))
-                  .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
-                  .addQueryParameter(ModelServerPathParameters.LIVE_VALIDATION, "true")
-                  .addQueryParameter(ModelServerPathParameters.FORMAT, checkedFormat)
-                  .addQueryParameter(ModelServerPathParameters.TIMEOUT, String.valueOf(timeout))
+                  .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+                  .addQueryParameter(ModelServerPathParametersV1.LIVE_VALIDATION, "true")
+                  .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
+                  .addQueryParameter(ModelServerPathParametersV1.TIMEOUT, String.valueOf(timeout))
                   .build()
                   .toString()))
          .build();
@@ -735,12 +717,12 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    public String encode(final EObject eObject) {
-      return encode(eObject, ModelServerPathParameters.FORMAT_JSON);
+      return encode(eObject, ModelServerPathParametersV1.FORMAT_JSON);
    }
 
    public String encode(final EObject eObject, final String format) {
       try {
-         if (format.equals(ModelServerPathParameters.FORMAT_XMI)) {
+         if (format.equals(ModelServerPathParametersV1.FORMAT_XMI)) {
             return new XmiCodec().encode(eObject).asText();
          }
          return new DefaultJsonCodec().encode(eObject).toString();
@@ -751,12 +733,12 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    public Optional<EObject> decode(final String payload) {
-      return decode(payload, ModelServerPathParameters.FORMAT_JSON);
+      return decode(payload, ModelServerPathParametersV1.FORMAT_JSON);
    }
 
    public Optional<EObject> decode(final String payload, final String format) {
       try {
-         if (format.equals(ModelServerPathParameters.FORMAT_XMI)) {
+         if (format.equals(ModelServerPathParametersV1.FORMAT_XMI)) {
             return new XmiCodec().decode(payload);
          }
          return new DefaultJsonCodec().decode(payload);
@@ -803,7 +785,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(VALIDATION_CONSTRAINTS))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .build();
       return makeCall(request);
@@ -814,7 +796,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(UNDO))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .build();
 
@@ -826,7 +808,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       final Request request = new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(REDO))
-               .addQueryParameter(ModelServerPathParameters.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .build();
 

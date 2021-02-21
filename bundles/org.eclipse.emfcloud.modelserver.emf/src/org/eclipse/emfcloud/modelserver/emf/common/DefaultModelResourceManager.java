@@ -23,18 +23,23 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.notify.AdapterFactory;
-import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
+import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
+import org.eclipse.emfcloud.modelserver.command.ExecutionContext;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
+import org.eclipse.emfcloud.modelserver.edit.ModelServerCommand;
+import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.emfjson.jackson.resource.JsonResourceFactory;
@@ -243,18 +248,12 @@ public class DefaultModelResourceManager implements ModelResourceManager {
     */
    @Override
    public Optional<Resource> updateResource(final String modeluri, final EObject updatedModel) {
-      return loadResource(modeluri).map(res -> {
-         ECollections.setEList(res.getContents(), ECollections.singletonEList(updatedModel));
-         return res;
-      });
+      Optional<Resource> resource = loadResource(modeluri);
+      resource.ifPresent(res -> execute(modeluri, UpdateModelCommandContribution.createClientCommand(updatedModel)));
+      return resource;
    }
 
-   @Override
-   public void updateResource(final String modeluri, final CCommand command) throws DecodingException {
-      Command decoded = commandCodec.decode(getEditingDomain(getResourceSet(modeluri)), command);
-      getEditingDomain(getResourceSet(modeluri)).execute(decoded);
-   }
-
+   @Deprecated
    @Override
    public CCommand getUndoCommand(final String modeluri) {
       Command undoCommand = getEditingDomain(getResourceSet(modeluri)).getUndoCommand();
@@ -265,10 +264,39 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    }
 
    @Override
-   public boolean undo(final String modeluri) {
-      return getEditingDomain(getResourceSet(modeluri)).undo();
+   public Optional<CCommandExecutionResult> undo(final String modeluri) {
+      ResourceSet resourceSet = getResourceSet(modeluri);
+      ModelServerEditingDomain domain = getEditingDomain(resourceSet);
+      if (!domain.canUndo()) {
+         return Optional.empty();
+      }
+
+      Command undoCommand = domain.getUndoCommand();
+      Optional<CCommand> clientCommand = ModelServerCommand.getClientCommand(undoCommand);
+      if (clientCommand.isEmpty()) {
+         return Optional.empty();
+      }
+
+      Optional<CommandExecutionContext> context = undoCommand(domain, undoCommand, clientCommand.get());
+      if (context.isEmpty()) {
+         return Optional.empty();
+      }
+
+      CCommandExecutionResult result = createExecutionResult(context.get());
+      ReadResourceSet readResourceSet = new ReadResourceSet(domain);
+      readResourceSet.resolve(result, "$command.undo.res");
+      return Optional.of(result);
    }
 
+   protected Optional<CommandExecutionContext> undoCommand(final ModelServerEditingDomain domain,
+      final Command serverCommand, final CCommand clientCommand) {
+      if (!domain.undo()) {
+         return Optional.empty();
+      }
+      return Optional.of(new CommandExecutionContext(clientCommand, serverCommand, ExecutionContext.UNDO));
+   }
+
+   @Deprecated
    @Override
    public CCommand getRedoCommand(final String modeluri) {
       Command redoCommand = getEditingDomain(getResourceSet(modeluri)).getRedoCommand();
@@ -278,9 +306,42 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       return null;
    }
 
+   @Override
+   public Optional<CCommandExecutionResult> redo(final String modeluri) {
+      ResourceSet resourceSet = getResourceSet(modeluri);
+      ModelServerEditingDomain domain = getEditingDomain(resourceSet);
+      if (!domain.canRedo()) {
+         return Optional.empty();
+      }
+
+      Command redoCommand = domain.getRedoCommand();
+      Optional<CCommand> clientCommand = ModelServerCommand.getClientCommand(redoCommand);
+      if (clientCommand.isEmpty()) {
+         return Optional.empty();
+      }
+
+      Optional<CommandExecutionContext> context = redoCommand(domain, redoCommand, clientCommand.get());
+      if (context.isEmpty()) {
+         return Optional.empty();
+      }
+
+      CCommandExecutionResult result = createExecutionResult(context.get());
+      ReadResourceSet readResourceSet = new ReadResourceSet(domain);
+      readResourceSet.resolve(result, "$command.redo.res");
+      return Optional.of(result);
+   }
+
+   protected Optional<CommandExecutionContext> redoCommand(final ModelServerEditingDomain domain,
+      final Command serverCommand, final CCommand clientCommand) {
+      if (!domain.redo()) {
+         return Optional.empty();
+      }
+      return Optional.of(new CommandExecutionContext(clientCommand, serverCommand, ExecutionContext.REDO));
+   }
+
    protected CCommand encodeCommand(final Command command) {
       try {
-         return commandCodec.encode(command);
+         return commandCodec.serverToClient(command);
       } catch (EncodingException e) {
          LOG.error("Encoding of " + command + " failed: " + e.getMessage());
          throw new IllegalArgumentException(e);
@@ -288,8 +349,49 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    }
 
    @Override
-   public boolean redo(final String modeluri) {
-      return getEditingDomain(getResourceSet(modeluri)).redo();
+   public CCommandExecutionResult execute(final String modeluri, final CCommand clientCommand) {
+      try {
+
+         ResourceSet resourceSet = getResourceSet(modeluri);
+         ModelServerEditingDomain domain = getEditingDomain(resourceSet);
+         URI uri = createURI(modeluri);
+
+         // resolve client command
+         ReadResourceSet readResourceSet = new ReadResourceSet(domain);
+         readResourceSet.resolve(clientCommand, "$command.res");
+
+         // translate to server EMF command
+         Command command = commandCodec.clientToServer(uri, domain, clientCommand);
+         Command modelServerCommand = ModelServerCommand.wrap(command, clientCommand);
+
+         // execute command
+         CommandExecutionContext context = executeCommand(domain, modelServerCommand, clientCommand);
+
+         // create result
+         CCommandExecutionResult result = createExecutionResult(context);
+         readResourceSet.resolve(result, "$command.exec.res");
+         return result;
+      } catch (DecodingException exception) {
+         LOG.error("Encoding of " + clientCommand + " failed: " + exception.getMessage());
+         throw new IllegalArgumentException(exception);
+      }
+   }
+
+   protected CommandExecutionContext executeCommand(final ModelServerEditingDomain domain, final Command serverCommand,
+      final CCommand clientCommand) {
+      domain.execute(serverCommand);
+      return new CommandExecutionContext(clientCommand, serverCommand, ExecutionContext.EXECUTE);
+   }
+
+   protected CCommandExecutionResult createExecutionResult(final CommandExecutionContext context) {
+      CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
+      result.setContext(context.getExecutionContext());
+      result.setSource(EcoreUtil.copy(context.getClientCommand()));
+      context.getServerCommand().getAffectedObjects().stream()
+         .filter(EObject.class::isInstance)
+         .map(EObject.class::cast)
+         .forEach(result.getAffectedObjects()::add);
+      return result;
    }
 
    @Override
@@ -356,4 +458,23 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       return URI.createFileURI(uri.path()).toString();
    }
 
+   public static class CommandExecutionContext {
+      private final CCommand clientCommand;
+      private final Command serverCommand;
+      private final ExecutionContext executionContext;
+
+      public CommandExecutionContext(final CCommand clientCommand, final Command serverCommand,
+         final ExecutionContext executionContext) {
+         super();
+         this.clientCommand = clientCommand;
+         this.serverCommand = serverCommand;
+         this.executionContext = executionContext;
+      }
+
+      public CCommand getClientCommand() { return clientCommand; }
+
+      public Command getServerCommand() { return serverCommand; }
+
+      public ExecutionContext getExecutionContext() { return executionContext; }
+   }
 }

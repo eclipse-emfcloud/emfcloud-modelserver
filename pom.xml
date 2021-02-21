@@ -112,6 +112,7 @@
       <emf.ecore.version>2.23.0</emf.ecore.version>
       <emf.ecore.xmi.version>2.16.0</emf.ecore.xmi.version>
       <emf.edit.version>2.16.0</emf.edit.version>
+      <emf.transaction.version>1.4.0-v20100331-1738</emf.transaction.version>
       <emfjson.jackson.version>1.2.0</emfjson.jackson.version>
       <commons.io.version>2.6</commons.io.version>
       <junit.version>4.13.1</junit.version>
@@ -383,6 +384,11 @@
                <name>Sonatype</name>
                <url>https://oss.sonatype.org/content/groups/public</url>
             </repository>
+            <repository>
+               <id>irisa</id>
+               <name>Irisa</name>
+               <url>http://maven.irisa.fr/artifactory/list/kermeta-public-release/</url>
+            </repository>
          </repositories>
 
          <!-- Provide a list of dependencies that are provided by the target platform in p2 -->
@@ -422,6 +428,11 @@
                <groupId>org.eclipse.emf</groupId>
                <artifactId>org.eclipse.emf.edit</artifactId>
                <version>${emf.edit.version}</version>
+            </dependency>
+            <dependency>
+               <groupId>org.eclipse.emf</groupId>
+               <artifactId>transaction</artifactId>
+               <version>${emf.transaction.version}</version>
             </dependency>
             <dependency>
                <groupId>org.eclipse.emf</groupId>

@@ -46,11 +46,11 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
-import org.eclipse.emfcloud.modelserver.command.CommandKind;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
+import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
@@ -199,7 +199,7 @@ public class DefaultModelControllerTest {
       final EClass task = EcoreFactory.eINSTANCE.createEClass();
       res.getContents().add(task);
       CCommand setCommand = CCommandFactory.eINSTANCE.createCommand();
-      setCommand.setType(CommandKind.SET);
+      setCommand.setType(EMFCommandType.SET);
       setCommand.setOwner(task);
       setCommand.setFeature("name");
       setCommand.getDataValues().add("Foo");
@@ -236,7 +236,7 @@ public class DefaultModelControllerTest {
 
       final EAttribute attribute = EcoreFactory.eINSTANCE.createEAttribute();
       CCommand addCommand = CCommandFactory.eINSTANCE.createCommand();
-      addCommand.setType(CommandKind.ADD);
+      addCommand.setType(EMFCommandType.ADD);
       addCommand.setOwner(eClass);
       addCommand.setFeature("eAttributes");
       addCommand.getObjectsToAdd().add(attribute);

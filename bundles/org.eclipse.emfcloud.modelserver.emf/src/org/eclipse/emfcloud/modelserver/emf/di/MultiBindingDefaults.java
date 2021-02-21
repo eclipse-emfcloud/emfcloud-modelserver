@@ -19,6 +19,13 @@ import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
+import org.eclipse.emfcloud.modelserver.edit.CommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
+import org.eclipse.emfcloud.modelserver.edit.command.AddCommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.command.CompoundCommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.command.RemoveCommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.command.SetCommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRoutingV1;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
@@ -42,4 +49,11 @@ public final class MultiBindingDefaults {
    public static final Map<String, Class<? extends Codec>> DEFAULT_CODECS = Map.of(
       ModelServerPathParameters.FORMAT_XMI, XmiCodec.class,
       ModelServerPathParameters.FORMAT_JSON, JsonCodec.class);
+
+   public static final Map<String, Class<? extends CommandCodecContribution>> DEFAULT_COMMAND_CODECS = Map.of(
+      EMFCommandType.ADD, AddCommandCodecContribution.class,
+      EMFCommandType.SET, SetCommandCodecContribution.class,
+      EMFCommandType.REMOVE, RemoveCommandCodecContribution.class,
+      EMFCommandType.COMPOUND, CompoundCommandCodecContribution.class,
+      UpdateModelCommandContribution.TYPE, UpdateModelCommandContribution.class);
 }

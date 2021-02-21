@@ -12,13 +12,12 @@
 package org.eclipse.emfcloud.modelserver.internal.client;
 
 import org.eclipse.emf.common.command.Command;
-
 import org.eclipse.emfcloud.modelserver.client.EditingContext;
 import org.eclipse.emfcloud.modelserver.client.ModelServerClient;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
-import org.eclipse.emfcloud.modelserver.edit.DefaultCommandCodec;
+import org.eclipse.emfcloud.modelserver.edit.EMFCommandCodec;
 
 import okhttp3.Response;
 import okhttp3.WebSocket;
@@ -30,13 +29,13 @@ import okhttp3.WebSocketListener;
 public class EditingContextImpl extends WebSocketListener implements EditingContext {
 
    private final ModelServerClient owner;
-   private final CommandCodec codec = new DefaultCommandCodec();
+   private final CommandCodec codec = new EMFCommandCodec();
    private WebSocket socket;
    private int referenceCount = 1;
 
    /**
     * Initializes me.
-    * 
+    *
     * @param owner ModelServerClient which owns this EditingContext.
     */
    public EditingContextImpl(final ModelServerClient owner) {
@@ -47,7 +46,7 @@ public class EditingContextImpl extends WebSocketListener implements EditingCont
 
    @Override
    public boolean execute(final Command command) throws EncodingException {
-      CCommand serializable = codec.encode(command);
+      CCommand serializable = codec.serverToClient(command);
       String message = owner.encode(serializable);
       return execute(message);
    }

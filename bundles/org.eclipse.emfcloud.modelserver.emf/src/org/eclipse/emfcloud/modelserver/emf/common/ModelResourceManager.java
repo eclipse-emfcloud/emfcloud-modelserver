@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 
 public interface ModelResourceManager {
@@ -44,17 +45,19 @@ public interface ModelResourceManager {
 
    Optional<Resource> updateResource(String modeluri, EObject updatedModel);
 
-   void updateResource(String modeluri, CCommand command) throws DecodingException;
+   CCommandExecutionResult execute(String modeluri, CCommand command) throws DecodingException;
 
    void removeResource(String modeluri) throws IOException;
 
+   @Deprecated
    CCommand getUndoCommand(String modeluri);
 
-   boolean undo(String modeluri);
+   Optional<CCommandExecutionResult> undo(String modeluri);
 
+   @Deprecated
    CCommand getRedoCommand(String modeluri);
 
-   boolean redo(String modeluri);
+   Optional<CCommandExecutionResult> redo(String modeluri);
 
    boolean save(String modeluri);
 
@@ -76,5 +79,4 @@ public interface ModelResourceManager {
       // concrete implementations would probably override
       return uri.toString();
    }
-
 }
