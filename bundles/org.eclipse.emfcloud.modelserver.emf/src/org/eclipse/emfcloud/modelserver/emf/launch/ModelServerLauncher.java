@@ -63,13 +63,13 @@ public class ModelServerLauncher implements Runnable {
    public void run() {
       Injector runInjector = getInjector();
 
-      ModelServerStartup startup = getModelServerStartup(runInjector);
-      if (startup == null) {
+      ServerConfiguration configuration = getServerConfiguration(runInjector);
+      if (configuration == null) {
          return;
       }
 
-      ServerConfiguration configuration = getServerConfiguration(runInjector);
-      if (configuration == null) {
+      ModelServerStartup startup = getModelServerStartup(runInjector);
+      if (startup == null) {
          return;
       }
 
