@@ -25,7 +25,6 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -48,12 +47,12 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CommandKind;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
-import org.eclipse.emfcloud.modelserver.emf.common.codecs.Codecs;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
@@ -68,7 +67,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.internal.util.reflection.FieldSetter;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
@@ -80,7 +78,7 @@ import io.javalin.http.Context;
  * Unit tests for the {@link ModelController} class.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ModelControllerTest {
+public class DefaultModelControllerTest {
 
    @Mock
    private ModelRepository modelRepository;
@@ -107,17 +105,14 @@ public class ModelControllerTest {
       Optional<Resource> resource = Optional.of(set.getResource(uri, true));
 
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI("/home/modelserver/workspace/"));
-      codecs = new Codecs(Map.of(ModelServerPathParameters.FORMAT_XMI, new XmiCodec()));
+      codecs = new DICodecsManager(Map.of(ModelServerPathParametersV1.FORMAT_XMI, new XmiCodec()));
       when(modelRepository.getModel(getModelUri("Test1.ecore").toString()))
          .thenReturn(Optional.of(resource.get().getContents().get(0)));
       when(modelRepository.loadResource(getModelUri("Test1.ecore").toString())).thenReturn(resource);
-      modelController = new ModelController(modelRepository, sessionController, serverConfiguration, codecs);
-
-      modelValidator = new DefaultModelValidator(modelRepository, new DefaultFacetConfig());
-      Field mapperField = DefaultModelValidator.class.getDeclaredField("mapper");
-      FieldSetter.setField(modelValidator, mapperField, EMFModule.setupDefaultMapper());
-      Field validationField = ModelController.class.getDeclaredField("modelValidator");
-      FieldSetter.setField(modelController, validationField, modelValidator);
+      modelValidator = new DefaultModelValidator(modelRepository, new DefaultFacetConfig(),
+         EMFModule::setupDefaultMapper);
+      modelController = new DefaultModelController(modelRepository, sessionController, serverConfiguration, codecs,
+         modelValidator, EMFModule::setupDefaultMapper);
    }
 
    @Test
@@ -130,8 +125,8 @@ public class ModelControllerTest {
       };
       doAnswer(answer).when(context).json(any(JsonNode.class));
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put(ModelServerPathParameters.FORMAT,
-         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
+      queryParams.put(ModelServerPathParametersV1.FORMAT,
+         Collections.singletonList(ModelServerPathParametersV1.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(modelRepository.getModel("test")).thenReturn(Optional.of(brewingUnit));
 
@@ -150,8 +145,8 @@ public class ModelControllerTest {
       };
       doAnswer(answer).when(context).json(any(JsonNode.class));
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put(ModelServerPathParameters.FORMAT,
-         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
+      queryParams.put(ModelServerPathParametersV1.FORMAT,
+         Collections.singletonList(ModelServerPathParametersV1.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       final Map<URI, EObject> allModels = Collections.singletonMap(URI.createURI("test"), brewingUnit);
       when(modelRepository.getAllModels()).thenReturn(allModels);
@@ -183,8 +178,8 @@ public class ModelControllerTest {
    public void updateXmi() throws EncodingException {
       final EClass brewingUnit = EcoreFactory.eINSTANCE.createEClass();
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put(ModelServerPathParameters.FORMAT,
-         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
+      queryParams.put(ModelServerPathParametersV1.FORMAT,
+         Collections.singletonList(ModelServerPathParametersV1.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(context.body()).thenReturn(
          Json.object(Json.prop(JsonResponseMember.DATA, new XmiCodec().encode(brewingUnit))).toString());
@@ -212,7 +207,7 @@ public class ModelControllerTest {
       cmdRes.getContents().add(setCommand);
 
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put(ModelServerPathParameters.MODEL_URI, Collections.singletonList(modeluri));
+      queryParams.put(ModelServerPathParametersV1.MODEL_URI, Collections.singletonList(modeluri));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(context.body())
          .thenReturn(Json.object(Json.prop(JsonResponseMember.DATA, new JsonCodec().encode(setCommand))).toString());
@@ -221,12 +216,12 @@ public class ModelControllerTest {
 
       // unload to proxify
       res.unload();
-      verify(modelRepository).updateModel(eq(modeluri), argThat(eEqualTo(setCommand)));
+      verify(modelRepository).executeCommand(eq(modeluri), argThat(eEqualTo(setCommand)));
 
       // No subscribers registered for this incrementalUpdate, therefore no pre-encoded commands are created and the map
       // can remain empty for this test
       Map<String, JsonNode> encodings = new HashMap<>();
-      verify(sessionController).modelChanged(eq(modeluri), eq(encodings));
+      verify(sessionController).commandExecuted(eq(modeluri), eq(encodings));
    }
 
    @Test
@@ -253,7 +248,7 @@ public class ModelControllerTest {
          .toString();
 
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put(ModelServerPathParameters.MODEL_URI, Collections.singletonList(modeluri));
+      queryParams.put(ModelServerPathParametersV1.MODEL_URI, Collections.singletonList(modeluri));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(context.body()).thenReturn(commandAsString);
       when(modelRepository.getModel(modeluri)).thenReturn(Optional.of(attribute));
@@ -261,12 +256,12 @@ public class ModelControllerTest {
 
       // unload to proxify
       res.unload();
-      verify(modelRepository).updateModel(eq(modeluri), argThat(eEqualTo(addCommand)));
+      verify(modelRepository).executeCommand(eq(modeluri), argThat(eEqualTo(addCommand)));
 
       // No subscribers registered for this incrementalUpdate, therefore no pre-encoded commands are created and the map
       // can be remain for this test
       Map<String, JsonNode> encodings = new HashMap<>();
-      verify(sessionController).modelChanged(eq(modeluri), eq(encodings));
+      verify(sessionController).commandExecuted(eq(modeluri), eq(encodings));
    }
 
    @Test
@@ -291,8 +286,8 @@ public class ModelControllerTest {
       final EClass simpleWorkflow = EcoreFactory.eINSTANCE.createEClass();
       simpleWorkflow.setName("SimpleWorkflow");
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put(ModelServerPathParameters.FORMAT,
-         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
+      queryParams.put(ModelServerPathParametersV1.FORMAT,
+         Collections.singletonList(ModelServerPathParametersV1.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(modelRepository.getModelElementById("test", "//@workflows.0")).thenReturn(Optional.of(simpleWorkflow));
 
@@ -328,8 +323,8 @@ public class ModelControllerTest {
       final EClass preHeatTask = EcoreFactory.eINSTANCE.createEClass();
       preHeatTask.setName("PreHeat");
       final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
-      queryParams.put(ModelServerPathParameters.FORMAT,
-         Collections.singletonList(ModelServerPathParameters.FORMAT_XMI));
+      queryParams.put(ModelServerPathParametersV1.FORMAT,
+         Collections.singletonList(ModelServerPathParametersV1.FORMAT_XMI));
       when(context.queryParamMap()).thenReturn(queryParams);
       when(modelRepository.getModelElementById("test", "PreHeat")).thenReturn(Optional.of(preHeatTask));
 

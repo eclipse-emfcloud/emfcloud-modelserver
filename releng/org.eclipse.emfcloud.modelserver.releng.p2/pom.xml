@@ -73,8 +73,7 @@
                   <configuration>
                      <executionEnvironment>JavaSE-11</executionEnvironment>
                      <!-- IMPORTANT: DO NOT split the arg line -->
-                     <appArgLine>-application org.eclipse.ant.core.antRunner -buildfile packaging-p2composite.ant p2.composite.add -Dsite.label="Eclipse EMF.Cloud Model Server Nightly Updatesite"
-                        -Dproject.build.directory=${project.build.directory} -DunqualifiedVersion=${unqualifiedVersion} -DbuildQualifier=${buildQualifier} -Dsoftware.download.area=${rsync.local.dir}</appArgLine>
+                     <appArgLine>-application org.eclipse.ant.core.antRunner -buildfile packaging-p2composite.ant p2.composite.add -Dsite.label="Eclipse EMF.Cloud Model Server Nightly Updatesite" -Dproject.build.directory=${project.build.directory} -DunqualifiedVersion=${unqualifiedVersion} -DbuildQualifier=${buildQualifier} -Dsoftware.download.area=${rsync.local.dir}</appArgLine>
                      <repositories>
                         <repository>
                            <id>2020-09</id>

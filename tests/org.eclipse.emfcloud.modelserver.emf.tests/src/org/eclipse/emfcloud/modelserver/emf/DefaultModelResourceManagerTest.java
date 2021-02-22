@@ -54,7 +54,7 @@ import com.google.inject.Guice;
 import com.google.inject.multibindings.Multibinder;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ModelResourceManagerTest extends AbstractResourceTest {
+public class DefaultModelResourceManagerTest extends AbstractResourceTest {
 
    @Mock
    private CommandCodec commandCodec;
@@ -65,7 +65,7 @@ public class ModelResourceManagerTest extends AbstractResourceTest {
 
    private static ModelResourceManager modelResourceManager;
 
-   public ModelResourceManagerTest() {
+   public DefaultModelResourceManagerTest() {
       super();
    }
 

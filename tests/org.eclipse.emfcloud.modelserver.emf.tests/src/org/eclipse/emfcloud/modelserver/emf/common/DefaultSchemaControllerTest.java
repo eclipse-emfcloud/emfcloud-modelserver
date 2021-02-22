@@ -21,7 +21,6 @@ import java.util.Optional;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcoreFactory;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
 import org.junit.Before;
@@ -37,7 +36,7 @@ import io.javalin.http.Context;
  * Unit tests for the {@link SchemaController} class.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class SchemaControllerTest {
+public class DefaultSchemaControllerTest {
 
    private SchemaController schemaController;
 
@@ -52,7 +51,7 @@ public class SchemaControllerTest {
       modelRepository = mock(ModelRepository.class);
       schemaRepository = mock(SchemaRepository.class);
       jsonSchemaConverter = mock(JsonSchemaConverter.class);
-      schemaController = new SchemaController(modelRepository, schemaRepository, jsonSchemaConverter);
+      schemaController = new DefaultSchemaController(modelRepository, schemaRepository, jsonSchemaConverter);
    }
 
    @Test
@@ -81,7 +80,6 @@ public class SchemaControllerTest {
 
    @Test
    public void getTypeSchema_modelUnavailable() {
-      when(context.queryParam(ModelServerPathParameters.MODEL_URI)).thenReturn("SuperBrewer3000.json");
       when(modelRepository.getModel("SuperBrewer3000.json")).thenReturn(Optional.empty());
 
       schemaController.getTypeSchema(context, "SuperBrewer3000.json");
@@ -121,12 +119,9 @@ public class SchemaControllerTest {
 
    @Test
    public void getUiSchema_schemaUnavailable() {
-      when(context.queryParam(ModelServerPathParameters.SCHEMA_NAME)).thenReturn("brewing");
-      when(schemaRepository.loadUiSchema("brewing")).thenReturn(Optional.empty());
-
       schemaController.getUiSchema(context, "brewing");
 
-      String expectedErrorMsg = "UI schema 'brewing' not found!";
+      String expectedErrorMsg = "UI schema for 'brewing' not found!";
       JsonNode expectedResponse = Json.object(
          prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.ERROR)),
          prop(JsonResponseMember.DATA, Json.text(expectedErrorMsg)));

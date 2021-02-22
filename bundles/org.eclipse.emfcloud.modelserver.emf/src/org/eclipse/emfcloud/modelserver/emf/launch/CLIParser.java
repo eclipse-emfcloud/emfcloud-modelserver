@@ -10,6 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.launch;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import org.apache.commons.cli.CommandLine;
@@ -17,33 +18,44 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultUriHelper;
+import org.eclipse.emfcloud.modelserver.emf.common.UriHelper;
 
 public final class CLIParser {
-   private static CLIParser INSTANCE;
-   private final CommandLine cmd;
+   public static final String OPTION_PORT = "p";
+   public static final String OPTION_WORKSPACE_ROOT = "r";
+   public static final String OPTION_UI_SCHEMA_ROOT = "u";
+   public static final String OPTION_HELP = "h";
+   public static final String OPTION_LOG_ERRORS_ONLY = "e";
+
+   private static final UriHelper URI_HELPER = new DefaultUriHelper();
+
    private final Options options;
    private final String processName;
+   private final int defaultPort;
 
-   private CLIParser(final String[] args, final Options options, final String processName) throws ParseException {
-      this.cmd = new DefaultParser().parse(options, args);
-      this.options = options;
-      this.processName = processName;
-   }
+   private String[] args;
+   private CommandLine cmd;
 
-   public static void create(final String[] args, final Options options, final String processName)
+   public CLIParser(final String[] args, final Options options, final String processName, final int defaultPort)
       throws ParseException {
-      INSTANCE = new CLIParser(args, options, processName);
+      this.args = args;
+      this.options = options;
+      this.cmd = new DefaultParser().parse(options, args);
+      this.processName = processName;
+      this.defaultPort = defaultPort;
    }
 
-   public static CLIParser getInstance() { return INSTANCE; }
+   public CommandLine getCommandLine() { return cmd; }
 
-   public static boolean initialized() {
-      return INSTANCE != null;
+   public boolean optionExists(final String option) {
+      return cmd.hasOption(option);
    }
 
-   public boolean optionExists(final String identifier) {
-      return cmd.hasOption(identifier);
+   public void setOption(final String option, final Object value) throws ParseException {
+      args = Arrays.copyOf(args, args.length + 1);
+      args[args.length - 1] = "-" + option + "=" + value;
+      this.cmd = new DefaultParser().parse(options, args);
    }
 
    /**
@@ -53,27 +65,30 @@ public final class CLIParser {
     * @throws ParseException is thrown if the parsed argument is not a valid port
     */
    public Integer parsePort() throws ParseException {
-      String portArg = cmd.getOptionValue("p");
-      int port = ModelServerLauncher.DEFAULT_JAVALIN_PORT;
+      String portArg = cmd.getOptionValue(OPTION_PORT);
+      int port = defaultPort;
       if (portArg != null) {
          try {
             port = Integer.parseInt(portArg);
-            if (!ServerConfiguration.isValidPort(port)) {
+            if (!isValidPort(port)) {
                throw new NumberFormatException();
             }
          } catch (NumberFormatException e) {
             throw new ParseException(String.format("'%s' is not a valid port! The default port '%s' is used",
-               portArg, ModelServerLauncher.DEFAULT_JAVALIN_PORT));
+               portArg, defaultPort));
          }
       }
-
       return port;
    }
 
+   protected boolean isValidPort(final Integer port) {
+      return port >= 0 && port <= 65535;
+   }
+
    public Optional<String> parseWorkspaceRoot() throws ParseException {
-      String rootArg = cmd.getOptionValue("r");
+      String rootArg = cmd.getOptionValue(OPTION_WORKSPACE_ROOT);
       if (rootArg != null) {
-         if (!ServerConfiguration.isValidFileURI(rootArg)) {
+         if (!URI_HELPER.exists(rootArg)) {
             throw new ParseException(String.format("Could not set workspace! The path '%s' is invalid.", rootArg));
          }
          return Optional.of(rootArg);
@@ -82,9 +97,9 @@ public final class CLIParser {
    }
 
    public Optional<String> parseUiSchemaFolder() throws ParseException {
-      String uiSchemaFolderArg = cmd.getOptionValue("u");
+      String uiSchemaFolderArg = cmd.getOptionValue(OPTION_UI_SCHEMA_ROOT);
       if (uiSchemaFolderArg != null) {
-         if (!ServerConfiguration.isValidFileURI(uiSchemaFolderArg)) {
+         if (!URI_HELPER.exists(uiSchemaFolderArg)) {
             throw new ParseException(
                String.format("Could not set UI schema folder! The path '%s' is invalid.", uiSchemaFolderArg));
          }
@@ -94,7 +109,7 @@ public final class CLIParser {
    }
 
    public void printHelp() {
-      CLIParser.printHelp(this.processName, this.options);
+      printHelp(this.processName, this.options);
    }
 
    public static void printHelp(final String processName, final Options options) {
@@ -104,11 +119,11 @@ public final class CLIParser {
 
    public static Options getDefaultCLIOptions() {
       Options options = new Options();
-      options.addOption("h", "help", false, "Display usage information about ModelServer");
-      options.addOption("p", "port", true, "Set server port, otherwise default port 8081 is used");
-      options.addOption("r", "root", true, "Set workspace root");
-      options.addOption("u", "uiSchemaUri", true, "Set UI schema folder uri");
-      options.addOption("e", "errorsOnly", false, "Only log errors");
+      options.addOption(OPTION_HELP, "help", false, "Display usage information about ModelServer");
+      options.addOption(OPTION_PORT, "port", true, "Set server port, otherwise a default port is used");
+      options.addOption(OPTION_WORKSPACE_ROOT, "root", true, "Set workspace root");
+      options.addOption(OPTION_UI_SCHEMA_ROOT, "uiSchemaUri", true, "Set UI schema folder uri");
+      options.addOption(OPTION_LOG_ERRORS_ONLY, "errorsOnly", false, "Only log errors");
       return options;
    }
 }

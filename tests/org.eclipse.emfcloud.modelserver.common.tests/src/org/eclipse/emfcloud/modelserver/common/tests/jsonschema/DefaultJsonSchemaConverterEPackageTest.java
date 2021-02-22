@@ -21,6 +21,7 @@ import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emfcloud.modelserver.jsonschema.DefaultJsonSchemaConverter;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
 import org.eclipse.emfcloud.modelserver.tests.util.EcoreTestUtil;
@@ -34,7 +35,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 /**
  * Unit tests for the {@link JsonSchemaConverter} class.
  */
-public class JsonSchemaTestEPackage extends JsonSchemaTestHelper {
+public class DefaultJsonSchemaConverterEPackageTest extends DefaultJsonSchemaConverterTestHelper {
 
    private static final String EPACKAGE = "ModelEPackage";
    private static final String ABSTRACT_NAMEDELEMENT_CLASS = "NamedElement";
@@ -63,7 +64,7 @@ public class JsonSchemaTestEPackage extends JsonSchemaTestHelper {
 
    @Before
    public void before() {
-      jsonSchemaCreator = new JsonSchemaConverter();
+      jsonSchemaCreator = new DefaultJsonSchemaConverter();
 
       ePackage = EcoreFactory.eINSTANCE.createEPackage();
       ePackage.setName(EPACKAGE);

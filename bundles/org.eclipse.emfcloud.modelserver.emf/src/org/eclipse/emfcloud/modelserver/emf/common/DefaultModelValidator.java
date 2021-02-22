@@ -27,110 +27,119 @@ import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.ExtendedMetaData;
 import org.eclipse.emfcloud.modelserver.emf.configuration.FacetConfig;
+import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 public class DefaultModelValidator implements ModelValidator {
+   private static final Diagnostician DIAGNOSTICIAN = Diagnostician.INSTANCE;
 
    protected final ModelRepository modelRepository;
    protected final FacetConfig facetConfig;
+   protected final Provider<ObjectMapper> mapperProvider;
 
    @Inject
-   private ObjectMapper mapper;
-
-   @Inject
-   public DefaultModelValidator(final ModelRepository modelRepository, final FacetConfig facetConfig) {
+   public DefaultModelValidator(final ModelRepository modelRepository, final FacetConfig facetConfig,
+      final Provider<ObjectMapper> mapperProvider) {
       this.modelRepository = modelRepository;
       this.facetConfig = facetConfig;
+      this.mapperProvider = mapperProvider;
    }
 
    @Override
-   public JsonNode validate(final String modeluri, final ObjectMapper mapper) {
+   public JsonNode validate(final String modeluri) {
       Optional<EObject> model = this.modelRepository.getModel(modeluri);
       Optional<Resource> res = this.modelRepository.loadResource(modeluri);
-      if (model.isPresent() && res.isPresent()) {
-         mapper.registerModule(new ValidationMapperModule(res.get()));
-         BasicDiagnostic diagnostics = Diagnostician.INSTANCE.createDefaultDiagnostic(model.get());
-         Diagnostician.INSTANCE.validate(model.get(), diagnostics,
-            Diagnostician.INSTANCE.createDefaultContext());
-         return mapper.valueToTree(diagnostics);
+      if (model.isEmpty() || res.isEmpty()) {
+         return Json.text("Model not found!");
       }
-      return null;
+      ObjectMapper mapper = mapperProvider.get();
+      mapper.registerModule(new ValidationMapperModule(res.get()));
+      BasicDiagnostic diagnostics = DIAGNOSTICIAN.createDefaultDiagnostic(model.get());
+      DIAGNOSTICIAN.validate(model.get(), diagnostics, DIAGNOSTICIAN.createDefaultContext());
+      return mapper.valueToTree(diagnostics);
    }
 
    @Override
-   @SuppressWarnings({ "checkstyle:MethodLength", "JavaNCSS", "checkstyle:CyclomaticComplexity" })
    public JsonNode getValidationConstraints(final String modeluri) {
       Map<String, Map<String, JsonNode>> jsonResult = new HashMap<>();
       Optional<EObject> eObject = this.modelRepository.getModel(modeluri);
-      if (eObject.isPresent()) {
-         EPackage ePackage = eObject.get().eClass().getEPackage();
-         for (EClassifier e : ePackage.getEClassifiers()) {
-            if (e instanceof EClass) {
-               // Map Feature -> ExtendedMetaData
-               Map<String, JsonNode> featureMap = new HashMap<>();
-               for (EStructuralFeature esf : ((EClass) e).getEStructuralFeatures()) {
-                  if (esf instanceof EAttribute) {
-                     EDataType dataType = ((EAttribute) esf).getEAttributeType();
-                     // Map facet -> Value
-                     Map<String, Object> result = new HashMap<>();
-
-                     for (String s : facetConfig.getFacetSet()) {
-                        switch (s) {
-                           case EMFFacetConstraints.WHITESPACE:
-                              result.put(s, ExtendedMetaData.INSTANCE.getWhiteSpaceFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.ENUMERATION:
-                              result.put(s, ExtendedMetaData.INSTANCE.getEnumerationFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.PATTERN:
-                              result.put(s, ExtendedMetaData.INSTANCE.getPatternFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.TOTALDIGITS:
-                              result.put(s, ExtendedMetaData.INSTANCE.getTotalDigitsFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.FRACTIONDIGITS:
-                              result.put(s, ExtendedMetaData.INSTANCE.getFractionDigitsFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.LENGTH:
-                              result.put(s, ExtendedMetaData.INSTANCE.getLengthFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.MINLENGTH:
-                              result.put(s, ExtendedMetaData.INSTANCE.getMinLengthFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.MAXLENGTH:
-                              result.put(s, ExtendedMetaData.INSTANCE.getMaxLengthFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.MINEXCLUSIVE:
-                              result.put(s, ExtendedMetaData.INSTANCE.getMinExclusiveFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.MAXEXCLUSIVE:
-                              result.put(s, ExtendedMetaData.INSTANCE.getMaxExclusiveFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.MININCLUSIVE:
-                              result.put(s, ExtendedMetaData.INSTANCE.getMinInclusiveFacet(dataType));
-                              break;
-                           case EMFFacetConstraints.MAXINCLUSIVE:
-                              result.put(s, ExtendedMetaData.INSTANCE.getMaxInclusiveFacet(dataType));
-                              break;
-                           default:
-                              break;
-                        }
-                     }
-                     EMFFacetConstraints emfFacetConstraints = new EMFFacetConstraints(result);
-                     featureMap.put(esf.getName(), mapper.valueToTree(emfFacetConstraints));
-                  }
+      ObjectMapper mapper = this.mapperProvider.get();
+      if (eObject.isEmpty()) {
+         return mapper.valueToTree(jsonResult);
+      }
+      EPackage ePackage = eObject.get().eClass().getEPackage();
+      for (EClassifier classifier : ePackage.getEClassifiers()) {
+         if (classifier instanceof EClass) {
+            // Map Feature -> ExtendedMetaData
+            Map<String, JsonNode> featureMap = new HashMap<>();
+            for (EStructuralFeature feature : ((EClass) classifier).getEStructuralFeatures()) {
+               if (feature instanceof EAttribute) {
+                  EDataType dataType = ((EAttribute) feature).getEAttributeType();
+                  // Map facet -> Value
+                  Map<String, Object> constraints = getConstraints(dataType);
+                  EMFFacetConstraints emfFacetConstraints = new EMFFacetConstraints(constraints);
+                  featureMap.put(feature.getName(), mapper.valueToTree(emfFacetConstraints));
                }
-               // Map Class -> Features
-               if (!featureMap.isEmpty()) {
-                  jsonResult.put(EcoreUtil.getURI(e).toString(), featureMap);
-               }
+            }
+            // Map Class -> Features
+            if (!featureMap.isEmpty()) {
+               jsonResult.put(EcoreUtil.getURI(classifier).toString(), featureMap);
             }
          }
       }
       return mapper.valueToTree(jsonResult);
+   }
+
+   @SuppressWarnings("checkstyle:CyclomaticComplexity")
+   protected Map<String, Object> getConstraints(final EDataType dataType) {
+      Map<String, Object> result = new HashMap<>();
+      for (String constraint : facetConfig.getFacetSet()) {
+         switch (constraint) {
+            case EMFFacetConstraints.WHITESPACE:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getWhiteSpaceFacet(dataType));
+               break;
+            case EMFFacetConstraints.ENUMERATION:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getEnumerationFacet(dataType));
+               break;
+            case EMFFacetConstraints.PATTERN:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getPatternFacet(dataType));
+               break;
+            case EMFFacetConstraints.TOTALDIGITS:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getTotalDigitsFacet(dataType));
+               break;
+            case EMFFacetConstraints.FRACTIONDIGITS:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getFractionDigitsFacet(dataType));
+               break;
+            case EMFFacetConstraints.LENGTH:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getLengthFacet(dataType));
+               break;
+            case EMFFacetConstraints.MINLENGTH:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getMinLengthFacet(dataType));
+               break;
+            case EMFFacetConstraints.MAXLENGTH:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getMaxLengthFacet(dataType));
+               break;
+            case EMFFacetConstraints.MINEXCLUSIVE:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getMinExclusiveFacet(dataType));
+               break;
+            case EMFFacetConstraints.MAXEXCLUSIVE:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getMaxExclusiveFacet(dataType));
+               break;
+            case EMFFacetConstraints.MININCLUSIVE:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getMinInclusiveFacet(dataType));
+               break;
+            case EMFFacetConstraints.MAXINCLUSIVE:
+               result.put(constraint, ExtendedMetaData.INSTANCE.getMaxInclusiveFacet(dataType));
+               break;
+            default:
+               break;
+         }
+      }
+      return result;
    }
 
 }

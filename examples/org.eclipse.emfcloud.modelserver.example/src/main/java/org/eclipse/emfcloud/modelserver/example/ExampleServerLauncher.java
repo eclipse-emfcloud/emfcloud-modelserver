@@ -12,17 +12,14 @@ package org.eclipse.emfcloud.modelserver.example;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.net.URI;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.emfcloud.modelserver.emf.di.DefaultModelServerModule;
+import org.eclipse.emfcloud.modelserver.emf.launch.CLIBasedModelServerLauncher;
 import org.eclipse.emfcloud.modelserver.emf.launch.CLIParser;
-import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerLauncher;
 import org.eclipse.emfcloud.modelserver.example.util.ResourceUtil;
-
-import com.google.common.collect.Lists;
 
 public final class ExampleServerLauncher {
    private static String TEMP_DIR = ".temp";
@@ -49,11 +46,21 @@ public final class ExampleServerLauncher {
 
    private ExampleServerLauncher() {}
 
-   public static void main(String[] args) throws ParseException {
-      ModelServerLauncher.configureLogger();
-      CLIParser.create(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME);
+   public static void main(final String[] args) throws ParseException {
+      final CLIBasedModelServerLauncher launcher = new CLIBasedModelServerLauncher(
+         createCLIParser(args),
+         new ExampleServerModule());
+      launcher.run();
+   }
 
-      if (!CLIParser.getInstance().optionExists("r")) {
+   protected static CLIParser createCLIParser(final String[] args) throws ParseException {
+      CLIParser parser = new CLIParser(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME, 8081);
+      ensureWorkspaceRoot(parser);
+      return parser;
+   }
+
+   protected static void ensureWorkspaceRoot(final CLIParser parser) throws ParseException {
+      if (!parser.optionExists(CLIParser.OPTION_WORKSPACE_ROOT)) {
          // No workspace root was specified, use test workspace
          final File workspaceRoot = new File(TEMP_DIR + "/" + WORKSPACE_ROOT);
          if (!setupTempTestWorkspace(workspaceRoot)) {
@@ -61,22 +68,17 @@ public final class ExampleServerLauncher {
             System.exit(0);
          }
          Runtime.getRuntime().addShutdownHook(new Thread(() -> cleanupTempTestWorkspace(workspaceRoot)));
-         args = Arrays.copyOf(args, args.length + 1);
-         args[args.length - 1] = "--root=" + workspaceRoot.toURI();
+         parser.setOption(CLIParser.OPTION_WORKSPACE_ROOT, workspaceRoot.toURI());
 
-         // No ui schema folder was specified, use folder in just loaded temp test workspace
-         if (!CLIParser.getInstance().optionExists("u")) {
-            final File uiSchemaFolder = new File(TEMP_DIR + "/" + WORKSPACE_UISCHEMA_FOLDER);
-            args = Arrays.copyOf(args, args.length + 1);
-            args[args.length - 1] = "-u=" + uiSchemaFolder.toURI();
-         }
-
-         CLIParser.create(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME);
+         ensureUISchemaFolder(parser);
       }
+   }
 
-      final ModelServerLauncher launcher = new ModelServerLauncher(args, new DefaultModelServerModule());
-      launcher.addEPackageConfigurations(Lists.newArrayList(CoffeePackageConfiguration.class));
-      launcher.start();
+   protected static void ensureUISchemaFolder(final CLIParser parser) throws ParseException {
+      if (!parser.optionExists(CLIParser.OPTION_UI_SCHEMA_ROOT)) {
+         URI uiSchemaRoot = new File(TEMP_DIR + "/" + WORKSPACE_UISCHEMA_FOLDER).toURI();
+         parser.setOption(CLIParser.OPTION_UI_SCHEMA_ROOT, uiSchemaRoot);
+      }
    }
 
    private static boolean setupTempTestWorkspace(final File workspaceRoot) {
@@ -128,5 +130,4 @@ public final class ExampleServerLauncher {
          }
       }
    }
-
 }

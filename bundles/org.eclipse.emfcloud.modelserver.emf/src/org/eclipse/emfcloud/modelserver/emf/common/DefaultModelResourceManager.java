@@ -44,8 +44,7 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 public class DefaultModelResourceManager implements ModelResourceManager {
-
-   private static Logger LOG = Logger.getLogger(DefaultModelResourceManager.class.getSimpleName());
+   protected static Logger LOG = Logger.getLogger(DefaultModelResourceManager.class.getSimpleName());
 
    @Inject
    protected CommandCodec commandCodec;

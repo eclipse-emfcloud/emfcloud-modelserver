@@ -8,12 +8,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-package org.eclipse.emfcloud.modelserver.jsonschema;
+package org.eclipse.emfcloud.modelserver.emf.common;
 
-import org.eclipse.emf.ecore.EObject;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public interface JsonSchemaConverter {
-   JsonNode from(EObject eObject);
+public interface ModelListener {
+   void modelCreated(String modeluri);
+
+   void modelUpdated(String modeluri);
+
+   void commandExecuted(String modeluri, Map<String, JsonNode> encodings);
+
+   void modelDeleted(String modeluri);
+
+   void modelSaved(String modeluri);
+
+   void allModelsSaved();
 }

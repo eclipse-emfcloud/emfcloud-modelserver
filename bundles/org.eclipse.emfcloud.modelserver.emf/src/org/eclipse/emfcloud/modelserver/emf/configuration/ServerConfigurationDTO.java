@@ -8,19 +8,20 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-package org.eclipse.emfcloud.modelserver.emf.common;
+package org.eclipse.emfcloud.modelserver.emf.configuration;
 
-import io.javalin.websocket.WsContext;
-import io.javalin.websocket.WsMessageContext;
+public class ServerConfigurationDTO {
+   private String workspaceRoot;
+   private String uiSchemaFolder;
 
-public interface SessionController extends ModelListener {
-   long NO_TIMEOUT = -1;
+   public ServerConfigurationDTO() {}
 
-   boolean subscribe(WsContext client, String modeluri);
+   public String getWorkspaceRoot() { return workspaceRoot; }
 
-   boolean unsubscribe(WsContext client);
+   public void setWorkspaceRoot(final String workspaceRoot) { this.workspaceRoot = workspaceRoot; }
 
-   boolean handleMessage(WsMessageContext clientMessage);
+   public String getUiSchemaFolder() { return uiSchemaFolder; }
 
-   boolean hasSession(String modeluri);
+   public void setUiSchemaFolder(final String uiSchemaFolder) { this.uiSchemaFolder = uiSchemaFolder; }
+
 }

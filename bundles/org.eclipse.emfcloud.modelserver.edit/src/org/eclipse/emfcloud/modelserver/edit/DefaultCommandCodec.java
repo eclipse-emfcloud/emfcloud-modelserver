@@ -32,7 +32,6 @@ import org.eclipse.emf.edit.command.AddCommand;
 import org.eclipse.emf.edit.command.CommandParameter;
 import org.eclipse.emf.edit.command.MoveCommand;
 import org.eclipse.emf.edit.command.RemoveCommand;
-import org.eclipse.emf.edit.command.ReplaceCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.EditingDomain;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
@@ -60,73 +59,83 @@ public class DefaultCommandCodec implements CommandCodec {
    @Override
    @SuppressWarnings({ "checkstyle:CyclomaticComplexity", "checkstyle:JavaNCSS" })
    public CCommand encode(final Command command) throws EncodingException {
-      CCommand result;
-
       if (command instanceof CompoundCommand) {
-         // TODO: Various special commands are compounds (e.g., Delete).
-         CCompoundCommand compound = CCommandFactory.eINSTANCE.createCompoundCommand();
-         compound.setType(CommandKind.COMPOUND);
+         return encodeCompoundCommand(command);
+      }
+      if (command instanceof AddCommand) {
+         return encodeAddCommand((AddCommand) command);
+      }
+      if (command instanceof RemoveCommand) {
+         return encodeRemoveCommand((RemoveCommand) command);
+      }
+      if (command instanceof SetCommand) {
+         return encodeSetCommand((SetCommand) command);
+      }
+      throw new EncodingException("unsupported command type: " + command.getClass().getName());
+   }
 
-         EList<CCommand> commands = compound.getCommands();
-         for (Command next : ((CompoundCommand) command).getCommandList()) {
-            commands.add(encode(next));
-         }
-         result = compound;
-      } else if (command instanceof AddCommand) {
-         AddCommand add = (AddCommand) command;
-         result = CCommandFactory.eINSTANCE.createCommand();
-         result.setType(CommandKind.ADD);
-         result.setOwner(add.getOwner());
-         result.setFeature(add.getFeature().getName());
-         result.getIndices().add(add.getIndex());
+   protected CCommand encodeSetCommand(final SetCommand set) {
+      // FIXME: Handle the UNSET value (needs model change)
+      CCommand result = CCommandFactory.eINSTANCE.createCommand();
+      result.setType(CommandKind.SET);
+      result.setOwner(set.getOwner());
+      result.setFeature(set.getFeature().getName());
+      result.getIndices().add(set.getIndex());
 
-         if (add.getFeature() instanceof EAttribute) {
-            EDataType dataType = ((EAttribute) add.getFeature()).getEAttributeType();
-            collectCommandValues(add.getCollection(), dataType, result);
-         } else {
-            collectCommandEObjects(add.getCollection(), result, true);
-         }
-      } else if (command instanceof RemoveCommand) {
-         RemoveCommand remove = (RemoveCommand) command;
-         result = CCommandFactory.eINSTANCE.createCommand();
-         result.setType(CommandKind.REMOVE);
-         result.setOwner(remove.getOwner());
-         result.setFeature(remove.getFeature().getName());
-         int[] indices = getIndices(remove);
-         if (indices != null) {
-            result.getIndices().addAll(Ints.asList(indices));
-         }
-
-         if (remove.getFeature() instanceof EAttribute) {
-            EDataType dataType = ((EAttribute) remove.getFeature()).getEAttributeType();
-            collectCommandValues(remove.getCollection(), dataType, result);
-         } else {
-            collectCommandEObjects(remove.getCollection(), result, false);
-         }
-      } else if (command instanceof SetCommand) {
-         // FIXME: Handle the UNSET value (needs model change)
-         SetCommand set = (SetCommand) command;
-         result = CCommandFactory.eINSTANCE.createCommand();
-         result.setType(CommandKind.SET);
-         result.setOwner(set.getOwner());
-         result.setFeature(set.getFeature().getName());
-         result.getIndices().add(set.getIndex());
-
-         if (set.getFeature() instanceof EAttribute) {
-            EDataType dataType = ((EAttribute) set.getFeature()).getEAttributeType();
-            collectCommandValues(singleton(set.getValue()), dataType, result);
-         } else {
-            collectCommandEObjects(singleton(set.getValue()), result, true);
-         }
-      } else if (command instanceof ReplaceCommand) {
-         throw new EncodingException("todo");
-      } else if (command instanceof MoveCommand) {
-         throw new EncodingException("todo");
+      if (set.getFeature() instanceof EAttribute) {
+         EDataType dataType = ((EAttribute) set.getFeature()).getEAttributeType();
+         collectCommandValues(singleton(set.getValue()), dataType, result);
       } else {
-         throw new EncodingException("unsupported command type: " + command.getClass().getName());
+         collectCommandEObjects(singleton(set.getValue()), result, true);
+      }
+      return result;
+   }
+
+   protected CCommand encodeRemoveCommand(final RemoveCommand remove) {
+      CCommand result = CCommandFactory.eINSTANCE.createCommand();
+      result.setType(CommandKind.REMOVE);
+      result.setOwner(remove.getOwner());
+      result.setFeature(remove.getFeature().getName());
+      int[] indices = getIndices(remove);
+      if (indices != null) {
+         result.getIndices().addAll(Ints.asList(indices));
       }
 
+      if (remove.getFeature() instanceof EAttribute) {
+         EDataType dataType = ((EAttribute) remove.getFeature()).getEAttributeType();
+         collectCommandValues(remove.getCollection(), dataType, result);
+      } else {
+         collectCommandEObjects(remove.getCollection(), result, false);
+      }
       return result;
+   }
+
+   protected CCommand encodeAddCommand(final AddCommand add) {
+      CCommand result = CCommandFactory.eINSTANCE.createCommand();
+      result.setType(CommandKind.ADD);
+      result.setOwner(add.getOwner());
+      result.setFeature(add.getFeature().getName());
+      result.getIndices().add(add.getIndex());
+
+      if (add.getFeature() instanceof EAttribute) {
+         EDataType dataType = ((EAttribute) add.getFeature()).getEAttributeType();
+         collectCommandValues(add.getCollection(), dataType, result);
+      } else {
+         collectCommandEObjects(add.getCollection(), result, true);
+      }
+      return result;
+   }
+
+   protected CCommand encodeCompoundCommand(final Command command) throws EncodingException {
+      // TODO: Various special commands are compounds (e.g., Delete).
+      CCompoundCommand compound = CCommandFactory.eINSTANCE.createCompoundCommand();
+      compound.setType(CommandKind.COMPOUND);
+
+      EList<CCommand> commands = compound.getCommands();
+      for (Command next : ((CompoundCommand) command).getCommandList()) {
+         commands.add(encode(next));
+      }
+      return compound;
    }
 
    /**
@@ -136,7 +145,7 @@ public class DefaultCommandCodec implements CommandCodec {
     * @param command a remove command or a move command
     * @return the indices, or {@code null} if none
     */
-   private int[] getIndices(final Command command) {
+   protected int[] getIndices(final Command command) {
       int[] result = null;
 
       Collection<?> collection = (command instanceof RemoveCommand) //
@@ -162,7 +171,7 @@ public class DefaultCommandCodec implements CommandCodec {
     * @param dataType the data type of the attribute (and thus its {@code values})
     * @param command  the command model to fill
     */
-   private void collectCommandValues(final Collection<?> values, final EDataType dataType, final CCommand command) {
+   protected void collectCommandValues(final Collection<?> values, final EDataType dataType, final CCommand command) {
       values.stream() //
          .map(value -> EcoreUtil.convertToString(dataType, value)) //
          .forEach(command.getDataValues()::add);
@@ -172,14 +181,14 @@ public class DefaultCommandCodec implements CommandCodec {
     * Collect (reference) {@code objects} of a {@link Command} into the
     * {@linkplain CCommand#getObjectValues() object values} of the {@code command} model.
     *
-    * @param object  referenced objects to include in the model
+    * @param objects referenced objects to include in the model
     * @param command the command model to fill
     * @param adding  whether the {@code command} being constructed has add semantics, in which
     *                   case if the objects being referenced are not yet attached to the user model, they need
     *                   to be attached to the {@code command} model via the
     *                   {@linkplain CCommand#getObjectsToAdd() objects to add} list
     */
-   private void collectCommandEObjects(final Collection<?> objects, final CCommand command, final boolean adding) {
+   protected void collectCommandEObjects(final Collection<?> objects, final CCommand command, final boolean adding) {
       Stream<EObject> collected = objects.stream() //
          .filter(EObject.class::isInstance).map(EObject.class::cast);
       if (adding) {
@@ -197,60 +206,17 @@ public class DefaultCommandCodec implements CommandCodec {
    @Override
    @SuppressWarnings({ "checkstyle:CyclomaticComplexity", "checkstyle:JavaNCSS" })
    public Command decode(final EditingDomain domain, final CCommand command) throws DecodingException {
-      Command result;
-
       switch (command.getType()) {
          case COMPOUND:
-            CCompoundCommand ccompound = (CCompoundCommand) command;
-            CompoundCommand compound = new CompoundCommand();
-            for (CCommand next : ccompound.getCommands()) {
-               compound.append(decode(domain, next));
-            }
-            result = compound;
-            break;
+            return decodeCompoundCommand(domain, (CCompoundCommand) command);
          case ADD: {
-            EObject owner = command.getOwner();
-            EStructuralFeature feature = owner.eClass().getEStructuralFeature(command.getFeature());
-            Collection<?> values;
-            if (feature instanceof EAttribute) {
-               EDataType dataType = ((EAttribute) feature).getEAttributeType();
-               values = command.getDataValues().stream() //
-                  .map(v -> EcoreUtil.createFromString(dataType, v)).collect(toList());
-            } else {
-               values = command.getObjectValues();
-            }
-            int index = command.getIndices().isEmpty() ? NO_INDEX : command.getIndices().get(0);
-            result = AddCommand.create(domain, owner, feature, values, getFirst(command.getIndices(), index));
-            break;
+            return decodeAddCommand(domain, command);
          }
          case REMOVE: {
-            EObject owner = command.getOwner();
-            EStructuralFeature feature = owner.eClass().getEStructuralFeature(command.getFeature());
-            if (!command.getIndices().isEmpty()) {
-               result = RemoveCommand.create(domain, owner, feature, Ints.toArray(command.getIndices()));
-            } else if (!command.getObjectValues().isEmpty()) {
-               result = RemoveCommand.create(domain, owner, feature, command.getObjectValues());
-            } else if (!command.getDataValues().isEmpty()) {
-               result = RemoveCommand.create(domain, owner, feature, command.getDataValues());
-            } else {
-               throw new DecodingException("incomplete remove command specification");
-            }
-            break;
+            return decodeRemoveCommand(domain, command);
          }
          case SET: {
-            EObject owner = command.getOwner();
-            EStructuralFeature feature = owner.eClass().getEStructuralFeature(command.getFeature());
-            Object value;
-            if (feature instanceof EAttribute) {
-               EDataType dataType = ((EAttribute) feature).getEAttributeType();
-               value = command.getDataValues().isEmpty() ? null
-                  : EcoreUtil.createFromString(dataType, command.getDataValues().get(0));
-            } else {
-               value = getFirst(command.getObjectValues(), null);
-            }
-            int index = command.getIndices().isEmpty() ? NO_INDEX : command.getIndices().get(0);
-            result = SetCommand.create(domain, owner, feature, value, index);
-            break;
+            return decodeSetCommand(domain, command);
          }
          case MOVE: {
             throw new DecodingException("todo");
@@ -261,8 +227,60 @@ public class DefaultCommandCodec implements CommandCodec {
          default:
             throw new DecodingException("unsupported command type: " + command.getType().getLiteral());
       }
+   }
 
-      return result;
+   protected Command decodeSetCommand(final EditingDomain domain, final CCommand command) {
+      EObject owner = command.getOwner();
+      EStructuralFeature feature = owner.eClass().getEStructuralFeature(command.getFeature());
+      Object value;
+      if (feature instanceof EAttribute) {
+         EDataType dataType = ((EAttribute) feature).getEAttributeType();
+         value = command.getDataValues().isEmpty() ? null
+            : EcoreUtil.createFromString(dataType, command.getDataValues().get(0));
+      } else {
+         value = getFirst(command.getObjectValues(), null);
+      }
+      int index = command.getIndices().isEmpty() ? NO_INDEX : command.getIndices().get(0);
+      return SetCommand.create(domain, owner, feature, value, index);
+   }
+
+   protected Command decodeRemoveCommand(final EditingDomain domain, final CCommand command) throws DecodingException {
+      EObject owner = command.getOwner();
+      EStructuralFeature feature = owner.eClass().getEStructuralFeature(command.getFeature());
+      if (!command.getIndices().isEmpty()) {
+         return RemoveCommand.create(domain, owner, feature, Ints.toArray(command.getIndices()));
+      }
+      if (!command.getObjectValues().isEmpty()) {
+         return RemoveCommand.create(domain, owner, feature, command.getObjectValues());
+      }
+      if (!command.getDataValues().isEmpty()) {
+         return RemoveCommand.create(domain, owner, feature, command.getDataValues());
+      }
+      throw new DecodingException("incomplete remove command specification");
+   }
+
+   protected Command decodeAddCommand(final EditingDomain domain, final CCommand command) {
+      EObject owner = command.getOwner();
+      EStructuralFeature feature = owner.eClass().getEStructuralFeature(command.getFeature());
+      Collection<?> values;
+      if (feature instanceof EAttribute) {
+         EDataType dataType = ((EAttribute) feature).getEAttributeType();
+         values = command.getDataValues().stream() //
+            .map(value -> EcoreUtil.createFromString(dataType, value)).collect(toList());
+      } else {
+         values = command.getObjectValues();
+      }
+      int index = command.getIndices().isEmpty() ? NO_INDEX : command.getIndices().get(0);
+      return AddCommand.create(domain, owner, feature, values, getFirst(command.getIndices(), index));
+   }
+
+   protected Command decodeCompoundCommand(final EditingDomain domain, final CCompoundCommand ccompound)
+      throws DecodingException {
+      CompoundCommand compound = new CompoundCommand();
+      for (CCommand next : ccompound.getCommands()) {
+         compound.append(decode(domain, next));
+      }
+      return compound;
    }
 
 }

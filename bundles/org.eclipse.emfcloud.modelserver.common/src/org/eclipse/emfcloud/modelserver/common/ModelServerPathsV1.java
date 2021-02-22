@@ -10,7 +10,8 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.common;
 
-interface ModelServerPathsV1 {
+public interface ModelServerPathsV1 {
+   String BASE_PATH = "api/v1";
 
    String MODEL_BASE_PATH = "models"; // accepts query parameter "modeluri"
    String MODEL_ELEMENT = "modelelement"; // accepts query parameters "modeluri" and either "elementId" or "elementname"

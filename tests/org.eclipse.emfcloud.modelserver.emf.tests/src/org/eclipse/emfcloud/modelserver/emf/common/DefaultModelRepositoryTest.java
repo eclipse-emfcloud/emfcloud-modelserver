@@ -43,7 +43,7 @@ import com.google.inject.Guice;
  * Unit tests for the {@link ModelRepository} class.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ModelRepositoryTest extends AbstractResourceTest {
+public class DefaultModelRepositoryTest extends AbstractResourceTest {
 
    @Mock
    private ServerConfiguration serverConfig;
@@ -54,9 +54,9 @@ public class ModelRepositoryTest extends AbstractResourceTest {
    @Mock
    private ModelResourceManager modelResourceManager;
 
-   private ModelRepository repository;
+   private DefaultModelRepository repository;
 
-   public ModelRepositoryTest() {
+   public DefaultModelRepositoryTest() {
       super();
    }
 
@@ -80,7 +80,7 @@ public class ModelRepositoryTest extends AbstractResourceTest {
       expectedModelUriSet.add(getModelUri("Test1.ecore").toString());
       expectedModelUriSet.add(getModelUri("Test1.json").toString());
 
-      Set<String> resultSet = repository.getAllModelUris();
+      Set<String> resultSet = repository.getRelativeModelUris();
       resultSet.equals(expectedModelUriSet);
    }
 
@@ -131,7 +131,7 @@ public class ModelRepositoryTest extends AbstractResourceTest {
             bind(ServerConfiguration.class).toInstance(serverConfig);
             bind(ModelResourceManager.class).toInstance(modelResourceManager);
          }
-      }).getInstance(ModelRepository.class);
+      }).getInstance(DefaultModelRepository.class);
    }
 
 }
