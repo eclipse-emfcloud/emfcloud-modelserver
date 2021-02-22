@@ -108,7 +108,7 @@
       <slf4j.log4j12.version>1.7.30</slf4j.log4j12.version>
       <google.guice.version>3.0</google.guice.version>
       <google.guava.version>27.1-jre</google.guava.version>
-      <jackson.databind.version>2.10.3</jackson.databind.version>
+      <jackson.databind.version>2.10.5.1</jackson.databind.version>
       <emf.ecore.version>2.23.0</emf.ecore.version>
       <emf.ecore.xmi.version>2.16.0</emf.ecore.xmi.version>
       <emf.edit.version>2.16.0</emf.edit.version>
