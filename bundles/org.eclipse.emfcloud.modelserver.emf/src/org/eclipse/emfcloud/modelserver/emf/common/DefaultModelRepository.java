@@ -158,18 +158,8 @@ public class DefaultModelRepository implements ModelRepository {
    }
 
    @Override
-   public CCommand getUndoCommand(final String modeluri) {
-      return modelResourceManager.getUndoCommand(modeluri);
-   }
-
-   @Override
    public Optional<CCommandExecutionResult> undo(final String modeluri) {
       return modelResourceManager.undo(modeluri);
-   }
-
-   @Override
-   public CCommand getRedoCommand(final String modeluri) {
-      return modelResourceManager.getRedoCommand(modeluri);
    }
 
    @Override

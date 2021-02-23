@@ -33,11 +33,11 @@ import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
-import org.eclipse.emfcloud.modelserver.command.ExecutionContext;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
+import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
 import org.eclipse.emfcloud.modelserver.edit.ModelServerCommand;
 import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
@@ -253,31 +253,21 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       return resource;
    }
 
-   @Deprecated
-   @Override
-   public CCommand getUndoCommand(final String modeluri) {
-      Command undoCommand = getEditingDomain(getResourceSet(modeluri)).getUndoCommand();
-      if (undoCommand != null) {
-         return encodeCommand(undoCommand);
-      }
-      return null;
-   }
-
    @Override
    public Optional<CCommandExecutionResult> undo(final String modeluri) {
       ResourceSet resourceSet = getResourceSet(modeluri);
       ModelServerEditingDomain domain = getEditingDomain(resourceSet);
-      if (!domain.canUndo()) {
+      Optional<Command> undoCommand = domain.getUndoableCommand();
+      if (undoCommand.isEmpty()) {
          return Optional.empty();
       }
 
-      Command undoCommand = domain.getUndoCommand();
-      Optional<CCommand> clientCommand = ModelServerCommand.getClientCommand(undoCommand);
+      Optional<CCommand> clientCommand = ModelServerCommand.getClientCommand(undoCommand.get());
       if (clientCommand.isEmpty()) {
          return Optional.empty();
       }
 
-      Optional<CommandExecutionContext> context = undoCommand(domain, undoCommand, clientCommand.get());
+      Optional<CommandExecutionContext> context = undoCommand(domain, undoCommand.get(), clientCommand.get());
       if (context.isEmpty()) {
          return Optional.empty();
       }
@@ -293,34 +283,24 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       if (!domain.undo()) {
          return Optional.empty();
       }
-      return Optional.of(new CommandExecutionContext(clientCommand, serverCommand, ExecutionContext.UNDO));
-   }
-
-   @Deprecated
-   @Override
-   public CCommand getRedoCommand(final String modeluri) {
-      Command redoCommand = getEditingDomain(getResourceSet(modeluri)).getRedoCommand();
-      if (redoCommand != null) {
-         return encodeCommand(redoCommand);
-      }
-      return null;
+      return Optional.of(new CommandExecutionContext(CommandExecutionType.UNDO, clientCommand, serverCommand));
    }
 
    @Override
    public Optional<CCommandExecutionResult> redo(final String modeluri) {
       ResourceSet resourceSet = getResourceSet(modeluri);
       ModelServerEditingDomain domain = getEditingDomain(resourceSet);
-      if (!domain.canRedo()) {
+      Optional<Command> redoCommand = domain.getRedoableCommand();
+      if (redoCommand.isEmpty()) {
          return Optional.empty();
       }
 
-      Command redoCommand = domain.getRedoCommand();
-      Optional<CCommand> clientCommand = ModelServerCommand.getClientCommand(redoCommand);
+      Optional<CCommand> clientCommand = ModelServerCommand.getClientCommand(redoCommand.get());
       if (clientCommand.isEmpty()) {
          return Optional.empty();
       }
 
-      Optional<CommandExecutionContext> context = redoCommand(domain, redoCommand, clientCommand.get());
+      Optional<CommandExecutionContext> context = redoCommand(domain, redoCommand.get(), clientCommand.get());
       if (context.isEmpty()) {
          return Optional.empty();
       }
@@ -336,7 +316,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       if (!domain.redo()) {
          return Optional.empty();
       }
-      return Optional.of(new CommandExecutionContext(clientCommand, serverCommand, ExecutionContext.REDO));
+      return Optional.of(new CommandExecutionContext(CommandExecutionType.REDO, clientCommand, serverCommand));
    }
 
    protected CCommand encodeCommand(final Command command) {
@@ -380,12 +360,12 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    protected CommandExecutionContext executeCommand(final ModelServerEditingDomain domain, final Command serverCommand,
       final CCommand clientCommand) {
       domain.execute(serverCommand);
-      return new CommandExecutionContext(clientCommand, serverCommand, ExecutionContext.EXECUTE);
+      return new CommandExecutionContext(CommandExecutionType.EXECUTE, clientCommand, serverCommand);
    }
 
    protected CCommandExecutionResult createExecutionResult(final CommandExecutionContext context) {
       CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
-      result.setContext(context.getExecutionContext());
+      result.setType(context.getType());
       result.setSource(EcoreUtil.copy(context.getClientCommand()));
       context.getServerCommand().getAffectedObjects().stream()
          .filter(EObject.class::isInstance)
@@ -459,22 +439,22 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    }
 
    public static class CommandExecutionContext {
+      private final String type;
       private final CCommand clientCommand;
       private final Command serverCommand;
-      private final ExecutionContext executionContext;
 
-      public CommandExecutionContext(final CCommand clientCommand, final Command serverCommand,
-         final ExecutionContext executionContext) {
+      public CommandExecutionContext(final String type, final CCommand clientCommand, final Command serverCommand) {
          super();
+         this.type = type;
          this.clientCommand = clientCommand;
          this.serverCommand = serverCommand;
-         this.executionContext = executionContext;
       }
+
+      public String getType() { return type; }
 
       public CCommand getClientCommand() { return clientCommand; }
 
       public Command getServerCommand() { return serverCommand; }
 
-      public ExecutionContext getExecutionContext() { return executionContext; }
    }
 }

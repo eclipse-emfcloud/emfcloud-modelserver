@@ -11,7 +11,6 @@
 package org.eclipse.emfcloud.modelserver.command.impl;
 
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.impl.EFactoryImpl;
@@ -21,7 +20,6 @@ import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.command.CCompoundCommand;
-import org.eclipse.emfcloud.modelserver.command.ExecutionContext;
 
 /**
  * <!-- begin-user-doc -->
@@ -89,38 +87,6 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
     * @generated
     */
    @Override
-   public Object createFromString(final EDataType eDataType, final String initialValue) {
-      switch (eDataType.getClassifierID()) {
-         case CCommandPackage.EXECUTION_CONTEXT:
-            return createExecutionContextFromString(eDataType, initialValue);
-         default:
-            throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
-      }
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @generated
-    */
-   @Override
-   public String convertToString(final EDataType eDataType, final Object instanceValue) {
-      switch (eDataType.getClassifierID()) {
-         case CCommandPackage.EXECUTION_CONTEXT:
-            return convertExecutionContextToString(eDataType, instanceValue);
-         default:
-            throw new IllegalArgumentException("The datatype '" + eDataType.getName() + "' is not a valid classifier");
-      }
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @generated
-    */
-   @Override
    public CCommand createCommand() {
       CCommandImpl command = new CCommandImpl();
       return command;
@@ -148,31 +114,6 @@ public class CCommandFactoryImpl extends EFactoryImpl implements CCommandFactory
    public CCommandExecutionResult createCommandExecutionResult() {
       CCommandExecutionResultImpl commandExecutionResult = new CCommandExecutionResultImpl();
       return commandExecutionResult;
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @generated
-    */
-   public ExecutionContext createExecutionContextFromString(final EDataType eDataType, final String initialValue) {
-      ExecutionContext result = ExecutionContext.get(initialValue);
-      if (result == null) {
-         throw new IllegalArgumentException(
-            "The value '" + initialValue + "' is not a valid enumerator of '" + eDataType.getName() + "'");
-      }
-      return result;
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @generated
-    */
-   public String convertExecutionContextToString(final EDataType eDataType, final Object instanceValue) {
-      return instanceValue == null ? null : instanceValue.toString();
    }
 
    /**

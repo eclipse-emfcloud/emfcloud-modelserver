@@ -22,9 +22,6 @@ import org.eclipse.emf.edit.command.CommandParameter;
 import org.eclipse.emf.edit.command.MoveCommand;
 import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
-import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
-import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
-import org.eclipse.emfcloud.modelserver.command.ExecutionContext;
 
 import com.google.common.collect.Iterables;
 
@@ -96,17 +93,4 @@ public final class CommandUtil {
       }
       return result;
    }
-
-   public static CCommandExecutionResult executionResult(final CCommand clientCommand,
-      final Command modelServerCommand) {
-      CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
-      result.setContext(ExecutionContext.EXECUTE);
-      result.setSource(EcoreUtil.copy(clientCommand));
-      modelServerCommand.getAffectedObjects().stream()
-         .filter(EObject.class::isInstance)
-         .map(EObject.class::cast)
-         .forEach(result.getAffectedObjects()::add);
-      return result;
-   }
-
 }

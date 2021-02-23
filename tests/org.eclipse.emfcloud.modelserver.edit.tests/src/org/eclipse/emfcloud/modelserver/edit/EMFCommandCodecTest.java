@@ -14,9 +14,12 @@ import static org.eclipse.emf.common.notify.Notification.NO_INDEX;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.emf.common.command.BasicCommandStack;
 import org.eclipse.emf.common.command.Command;
+import org.eclipse.emf.common.command.CompoundCommand;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
@@ -43,6 +46,8 @@ import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.tests.util.EMFMatchers;
 import org.emfjson.jackson.resource.JsonResourceFactory;
+import org.hamcrest.CustomTypeSafeMatcher;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -52,7 +57,7 @@ import org.junit.runners.Parameterized.Parameters;
  * Test cases for the {@link DICommandCodec} class.
  */
 @RunWith(Parameterized.class)
-public class DefaultCommandCodecTest {
+public class EMFCommandCodecTest {
 
    private static final String N_A = "n/a";
    private static final String ATTRIBUTE = "attribute";
@@ -68,24 +73,26 @@ public class DefaultCommandCodecTest {
    private final Command editCommand;
    private final CCommand commandModel;
 
-   public DefaultCommandCodecTest(final String type, final String featureKind, final Command editCommand,
+   public EMFCommandCodecTest(final String type, final String featureKind, final Command editCommand,
       final CCommand commandModel) {
       super();
 
-      this.editCommand = editCommand;
       this.commandModel = commandModel;
+      this.editCommand = editCommand;
    }
 
    @Test
    public void encode() throws EncodingException {
-      CCommand encoded = new EMFCommandCodec().serverToClient(editCommand);
+      Command modelServerCommand = ModelServerCommand.wrap(editCommand, commandModel);
+      CCommand encoded = new EMFCommandCodec().serverToClient(modelServerCommand);
       assertThat(encoded, EMFMatchers.eEqualTo(commandModel));
    }
 
    @Test
    public void decode() throws DecodingException {
       Command decoded = new EMFCommandCodec().clientToServer(null, domain, commandModel);
-      assertThat(decoded, EMFMatchers.commandEqualTo(editCommand));
+      Command serverCommand = ModelServerCommand.unwrap(decoded);
+      assertThat(serverCommand, commandEqualTo(editCommand));
    }
 
    //
@@ -301,7 +308,9 @@ public class DefaultCommandCodecTest {
    }
 
    static Command createCompoundCommand() {
-      return createAttributeSetCommand().chain(createReferenceAddCommand());
+      return new CompoundCommand(List.of(
+         ModelServerCommand.wrap(createAttributeSetCommand(), createAttributeSetModel()),
+         ModelServerCommand.wrap(createReferenceAddCommand(), createReferenceAddModel())));
    }
 
    static CCommand createCompoundModel() {
@@ -312,4 +321,38 @@ public class DefaultCommandCodecTest {
       return result;
    }
 
+   @SuppressWarnings("checkstyle:CyclomaticComplexity")
+   public static Matcher<Command> commandEqualTo(final Command expected) {
+      Matcher<Command> emfCommandMatcher = EMFMatchers.commandEqualTo(expected);
+      return new CustomTypeSafeMatcher<>("equivalent to " + expected.getClass().getSimpleName()) {
+         @Override
+         protected boolean matchesSafely(final Command item) {
+            if (expected instanceof CompoundCommand) {
+               if (!(item instanceof CompoundCommand)) {
+                  return false;
+               }
+            } else if (item.getClass() != expected.getClass()) {
+               return false;
+            }
+            if (item instanceof ModelServerCommand) {
+               return commandEqualTo(ModelServerCommand.unwrap(expected)).matches(ModelServerCommand.unwrap(item));
+            } else if (item instanceof CompoundCommand) {
+               CompoundCommand compound = (CompoundCommand) item;
+               CompoundCommand expectedCompound = (CompoundCommand) expected;
+               if (compound.getCommandList().size() != expectedCompound.getCommandList().size()) {
+                  return false;
+               }
+               Iterator<Command> commands = compound.getCommandList().iterator();
+               Iterator<Command> expecteds = expectedCompound.getCommandList().iterator();
+               while (commands.hasNext()) {
+                  if (!commandEqualTo(expecteds.next()).matches(commands.next())) {
+                     return false;
+                  }
+               }
+               return true;
+            }
+            return emfCommandMatcher.matches(item);
+         }
+      };
+   }
 }

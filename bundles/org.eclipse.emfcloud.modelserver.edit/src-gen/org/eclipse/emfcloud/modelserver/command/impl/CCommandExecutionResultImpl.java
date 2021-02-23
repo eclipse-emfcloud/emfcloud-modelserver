@@ -30,7 +30,6 @@ import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
-import org.eclipse.emfcloud.modelserver.command.ExecutionContext;
 
 /**
  * <!-- begin-user-doc -->
@@ -40,21 +39,42 @@ import org.eclipse.emfcloud.modelserver.command.ExecutionContext;
  * The following features are implemented:
  * </p>
  * <ul>
+ * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandExecutionResultImpl#getType <em>Type</em>}</li>
  * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandExecutionResultImpl#getSource <em>Source</em>}</li>
  * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandExecutionResultImpl#getAffectedObjects <em>Affected
  * Objects</em>}</li>
- * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandExecutionResultImpl#getContext
- * <em>Context</em>}</li>
- * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandExecutionResultImpl#getProperties
- * <em>Properties</em>}</li>
- * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandExecutionResultImpl#getChanges
- * <em>Changes</em>}</li>
+ * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandExecutionResultImpl#getChangeDescription <em>Change
+ * Description</em>}</li>
+ * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandExecutionResultImpl#getDetails
+ * <em>Details</em>}</li>
  * </ul>
  *
  * @generated
  */
 @SuppressWarnings("all")
 public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container implements CCommandExecutionResult {
+   /**
+    * The default value of the '{@link #getType() <em>Type</em>}' attribute.
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @see #getType()
+    * @generated
+    * @ordered
+    */
+   protected static final String TYPE_EDEFAULT = null;
+
+   /**
+    * The cached value of the '{@link #getType() <em>Type</em>}' attribute.
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @see #getType()
+    * @generated
+    * @ordered
+    */
+   protected String type = TYPE_EDEFAULT;
+
    /**
     * The cached value of the '{@link #getSource() <em>Source</em>}' containment reference.
     * <!-- begin-user-doc -->
@@ -78,48 +98,26 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
    protected EList<EObject> affectedObjects;
 
    /**
-    * The default value of the '{@link #getContext() <em>Context</em>}' attribute.
+    * The cached value of the '{@link #getChangeDescription() <em>Change Description</em>}' containment reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
-    * @see #getContext()
+    * @see #getChangeDescription()
     * @generated
     * @ordered
     */
-   protected static final ExecutionContext CONTEXT_EDEFAULT = ExecutionContext.EXECUTE;
+   protected EObject changeDescription;
 
    /**
-    * The cached value of the '{@link #getContext() <em>Context</em>}' attribute.
+    * The cached value of the '{@link #getDetails() <em>Details</em>}' map.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
-    * @see #getContext()
+    * @see #getDetails()
     * @generated
     * @ordered
     */
-   protected ExecutionContext context = CONTEXT_EDEFAULT;
-
-   /**
-    * The cached value of the '{@link #getProperties() <em>Properties</em>}' map.
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @see #getProperties()
-    * @generated
-    * @ordered
-    */
-   protected EMap<String, String> properties;
-
-   /**
-    * The cached value of the '{@link #getChanges() <em>Changes</em>}' containment reference.
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @see #getChanges()
-    * @generated
-    * @ordered
-    */
-   protected EObject changes;
+   protected EMap<String, String> details;
 
    /**
     * <!-- begin-user-doc -->
@@ -140,6 +138,31 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
    @Override
    protected EClass eStaticClass() {
       return CCommandPackage.Literals.COMMAND_EXECUTION_RESULT;
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public String getType() { return type; }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public void setType(final String newType) {
+      String oldType = type;
+      type = newType;
+      if (eNotificationRequired()) {
+         eNotify(new ENotificationImpl(this, Notification.SET, CCommandPackage.COMMAND_EXECUTION_RESULT__TYPE, oldType,
+            type));
+      }
    }
 
    /**
@@ -222,7 +245,7 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
     * @generated
     */
    @Override
-   public ExecutionContext getContext() { return context; }
+   public EObject getChangeDescription() { return changeDescription; }
 
    /**
     * <!-- begin-user-doc -->
@@ -230,52 +253,12 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
     *
     * @generated
     */
-   @Override
-   public void setContext(final ExecutionContext newContext) {
-      ExecutionContext oldContext = context;
-      context = newContext == null ? CONTEXT_EDEFAULT : newContext;
-      if (eNotificationRequired()) {
-         eNotify(new ENotificationImpl(this, Notification.SET, CCommandPackage.COMMAND_EXECUTION_RESULT__CONTEXT,
-            oldContext, context));
-      }
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @generated
-    */
-   @Override
-   public EMap<String, String> getProperties() {
-      if (properties == null) {
-         properties = new EcoreEMap<>(EcorePackage.Literals.ESTRING_TO_STRING_MAP_ENTRY,
-            EStringToStringMapEntryImpl.class, this, CCommandPackage.COMMAND_EXECUTION_RESULT__PROPERTIES);
-      }
-      return properties;
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @generated
-    */
-   @Override
-   public EObject getChanges() { return changes; }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @generated
-    */
-   public NotificationChain basicSetChanges(final EObject newChanges, NotificationChain msgs) {
-      EObject oldChanges = changes;
-      changes = newChanges;
+   public NotificationChain basicSetChangeDescription(final EObject newChangeDescription, NotificationChain msgs) {
+      EObject oldChangeDescription = changeDescription;
+      changeDescription = newChangeDescription;
       if (eNotificationRequired()) {
          ENotificationImpl notification = new ENotificationImpl(this, Notification.SET,
-            CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGES, oldChanges, newChanges);
+            CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION, oldChangeDescription, newChangeDescription);
          if (msgs == null) {
             msgs = notification;
          } else {
@@ -292,25 +275,40 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
     * @generated
     */
    @Override
-   public void setChanges(final EObject newChanges) {
-      if (newChanges != changes) {
+   public void setChangeDescription(final EObject newChangeDescription) {
+      if (newChangeDescription != changeDescription) {
          NotificationChain msgs = null;
-         if (changes != null) {
-            msgs = ((InternalEObject) changes).eInverseRemove(this,
-               EOPPOSITE_FEATURE_BASE - CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGES, null, msgs);
+         if (changeDescription != null) {
+            msgs = ((InternalEObject) changeDescription).eInverseRemove(this,
+               EOPPOSITE_FEATURE_BASE - CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION, null, msgs);
          }
-         if (newChanges != null) {
-            msgs = ((InternalEObject) newChanges).eInverseAdd(this,
-               EOPPOSITE_FEATURE_BASE - CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGES, null, msgs);
+         if (newChangeDescription != null) {
+            msgs = ((InternalEObject) newChangeDescription).eInverseAdd(this,
+               EOPPOSITE_FEATURE_BASE - CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION, null, msgs);
          }
-         msgs = basicSetChanges(newChanges, msgs);
+         msgs = basicSetChangeDescription(newChangeDescription, msgs);
          if (msgs != null) {
             msgs.dispatch();
          }
       } else if (eNotificationRequired()) {
-         eNotify(new ENotificationImpl(this, Notification.SET, CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGES,
-            newChanges, newChanges));
+         eNotify(new ENotificationImpl(this, Notification.SET,
+            CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION, newChangeDescription, newChangeDescription));
       }
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public EMap<String, String> getDetails() {
+      if (details == null) {
+         details = new EcoreEMap<>(EcorePackage.Literals.ESTRING_TO_STRING_MAP_ENTRY,
+            EStringToStringMapEntryImpl.class, this, CCommandPackage.COMMAND_EXECUTION_RESULT__DETAILS);
+      }
+      return details;
    }
 
    /**
@@ -325,10 +323,10 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
       switch (featureID) {
          case CCommandPackage.COMMAND_EXECUTION_RESULT__SOURCE:
             return basicSetSource(null, msgs);
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__PROPERTIES:
-            return ((InternalEList<?>) getProperties()).basicRemove(otherEnd, msgs);
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGES:
-            return basicSetChanges(null, msgs);
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION:
+            return basicSetChangeDescription(null, msgs);
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__DETAILS:
+            return ((InternalEList<?>) getDetails()).basicRemove(otherEnd, msgs);
       }
       return super.eInverseRemove(otherEnd, featureID, msgs);
    }
@@ -342,20 +340,20 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
    @Override
    public Object eGet(final int featureID, final boolean resolve, final boolean coreType) {
       switch (featureID) {
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__TYPE:
+            return getType();
          case CCommandPackage.COMMAND_EXECUTION_RESULT__SOURCE:
             return getSource();
          case CCommandPackage.COMMAND_EXECUTION_RESULT__AFFECTED_OBJECTS:
             return getAffectedObjects();
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__CONTEXT:
-            return getContext();
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__PROPERTIES:
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION:
+            return getChangeDescription();
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__DETAILS:
             if (coreType) {
-               return getProperties();
+               return getDetails();
             } else {
-               return getProperties().map();
+               return getDetails().map();
             }
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGES:
-            return getChanges();
       }
       return super.eGet(featureID, resolve, coreType);
    }
@@ -370,6 +368,9 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
    @Override
    public void eSet(final int featureID, final Object newValue) {
       switch (featureID) {
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__TYPE:
+            setType((String) newValue);
+            return;
          case CCommandPackage.COMMAND_EXECUTION_RESULT__SOURCE:
             setSource((CCommand) newValue);
             return;
@@ -377,14 +378,11 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
             getAffectedObjects().clear();
             getAffectedObjects().addAll((Collection<? extends EObject>) newValue);
             return;
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__CONTEXT:
-            setContext((ExecutionContext) newValue);
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION:
+            setChangeDescription((EObject) newValue);
             return;
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__PROPERTIES:
-            ((EStructuralFeature.Setting) getProperties()).set(newValue);
-            return;
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGES:
-            setChanges((EObject) newValue);
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__DETAILS:
+            ((EStructuralFeature.Setting) getDetails()).set(newValue);
             return;
       }
       super.eSet(featureID, newValue);
@@ -399,20 +397,20 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
    @Override
    public void eUnset(final int featureID) {
       switch (featureID) {
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__TYPE:
+            setType(TYPE_EDEFAULT);
+            return;
          case CCommandPackage.COMMAND_EXECUTION_RESULT__SOURCE:
             setSource((CCommand) null);
             return;
          case CCommandPackage.COMMAND_EXECUTION_RESULT__AFFECTED_OBJECTS:
             getAffectedObjects().clear();
             return;
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__CONTEXT:
-            setContext(CONTEXT_EDEFAULT);
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION:
+            setChangeDescription((EObject) null);
             return;
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__PROPERTIES:
-            getProperties().clear();
-            return;
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGES:
-            setChanges((EObject) null);
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__DETAILS:
+            getDetails().clear();
             return;
       }
       super.eUnset(featureID);
@@ -427,16 +425,16 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
    @Override
    public boolean eIsSet(final int featureID) {
       switch (featureID) {
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__TYPE:
+            return TYPE_EDEFAULT == null ? type != null : !TYPE_EDEFAULT.equals(type);
          case CCommandPackage.COMMAND_EXECUTION_RESULT__SOURCE:
             return source != null;
          case CCommandPackage.COMMAND_EXECUTION_RESULT__AFFECTED_OBJECTS:
             return affectedObjects != null && !affectedObjects.isEmpty();
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__CONTEXT:
-            return context != CONTEXT_EDEFAULT;
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__PROPERTIES:
-            return properties != null && !properties.isEmpty();
-         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGES:
-            return changes != null;
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION:
+            return changeDescription != null;
+         case CCommandPackage.COMMAND_EXECUTION_RESULT__DETAILS:
+            return details != null && !details.isEmpty();
       }
       return super.eIsSet(featureID);
    }
@@ -454,8 +452,8 @@ public class CCommandExecutionResultImpl extends MinimalEObjectImpl.Container im
       }
 
       StringBuilder result = new StringBuilder(super.toString());
-      result.append(" (context: ");
-      result.append(context);
+      result.append(" (type: ");
+      result.append(type);
       result.append(')');
       return result.toString();
    }

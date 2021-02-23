@@ -63,11 +63,7 @@ public interface ModelRepository {
 
    CCommandExecutionResult executeCommand(String modeluri, CCommand command) throws DecodingException;
 
-   CCommand getUndoCommand(String modeluri);
-
    Optional<CCommandExecutionResult> undo(String modeluri);
-
-   CCommand getRedoCommand(String modeluri);
 
    Optional<CCommandExecutionResult> redo(String modeluri);
 }

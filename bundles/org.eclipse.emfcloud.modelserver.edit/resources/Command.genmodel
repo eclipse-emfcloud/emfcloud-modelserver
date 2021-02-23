@@ -11,11 +11,6 @@
   <foreignModel>Command.ecore</foreignModel>
   <genPackages prefix="Command" basePackage="org.eclipse.emfcloud.modelserver" disposableProviderFactory="true"
       ecorePackage="Command.ecore#/">
-    <genEnums typeSafeEnumCompatible="false" ecoreEnum="Command.ecore#//ExecutionContext">
-      <genEnumLiterals ecoreEnumLiteral="Command.ecore#//ExecutionContext/EXECUTE"/>
-      <genEnumLiterals ecoreEnumLiteral="Command.ecore#//ExecutionContext/UNDO"/>
-      <genEnumLiterals ecoreEnumLiteral="Command.ecore#//ExecutionContext/REDO"/>
-    </genEnums>
     <genClasses ecoreClass="Command.ecore#//Command">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Command.ecore#//Command/type"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Command.ecore#//Command/owner"/>
@@ -30,11 +25,11 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Command.ecore#//CompoundCommand/commands"/>
     </genClasses>
     <genClasses ecoreClass="Command.ecore#//CommandExecutionResult">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Command.ecore#//CommandExecutionResult/type"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Command.ecore#//CommandExecutionResult/source"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Command.ecore#//CommandExecutionResult/affectedObjects"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Command.ecore#//CommandExecutionResult/context"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Command.ecore#//CommandExecutionResult/properties"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Command.ecore#//CommandExecutionResult/changes"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Command.ecore#//CommandExecutionResult/changeDescription"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Command.ecore#//CommandExecutionResult/details"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

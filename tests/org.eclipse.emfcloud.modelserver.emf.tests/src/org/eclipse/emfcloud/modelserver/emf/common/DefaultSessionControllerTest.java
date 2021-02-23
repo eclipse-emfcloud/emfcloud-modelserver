@@ -25,12 +25,17 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
+import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
+import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
 import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.eclipse.jetty.websocket.api.Session;
@@ -141,7 +146,7 @@ public class DefaultSessionControllerTest {
 
    @Test
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
-   public void testCommandSubscription() throws NoSuchFieldException, SecurityException {
+   public void testCommandSubscription() throws NoSuchFieldException, SecurityException, EncodingException {
       String sessionId = UUID.randomUUID().toString();
       String modelUri = "fancytesturi";
 
@@ -160,24 +165,36 @@ public class DefaultSessionControllerTest {
 
       Map<String, JsonNode> encodings = new HashMap<>();
       JsonNode expectedCommand = Json.object(
-         prop("eClass", Json.text("http://www.eclipsesource.com/schema/2019/modelserver/command#//Command")),
-         prop("type", Json.text(command.getType().toString())),
-         prop("owner", Json.object(
-            prop("eClass", Json.text("")),
-            prop("$ref", Json.text("")))),
-         prop("feature", Json.text("")),
-         prop("dataValues", Json.array(Json.text(""))));
+         prop("type", Json.text("execute")),
+         prop("source", Json.object(
+            prop("eClass", Json.text("http://www.eclipsesource.com/schema/2019/modelserver/command#//Command")),
+            prop("type", Json.text(command.getType().toString())),
+            prop("owner", Json.object(
+               prop("eClass", Json.text("")),
+               prop("$ref", Json.text("")))),
+            prop("feature", Json.text("")),
+            prop("dataValues", Json.array(Json.text(""))))),
+         prop("details", Json.array(
+            Json.object(Json.prop("myCustomDetail", Json.text("test"))),
+            Json.object(Json.prop("fancyInfo", Json.text("more testing"))))));
       encodings.put(ModelServerPathParametersV1.FORMAT_JSON, expectedCommand);
 
       when(repository.getDirtyState(modelUri)).thenReturn(true);
 
-      sessionController.commandExecuted(modelUri, encodings);
+      CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
+      result.setSource(EcoreUtil.copy(command));
+      result.setType(CommandExecutionType.EXECUTE);
+      result.getDetails().put("myCustomDetail", "test");
+      result.getDetails().put("fancyInfo", "more testing");
+      System.out.println(new JsonCodec().encode(result));
+
+      when(codecs.encode(result)).thenReturn(encodings);
+      sessionController.commandExecuted(modelUri, result);
 
       verify(validClientCtx).send(argThat(jsonNodeThat(
-         containsRegex(".\"type\":\"incrementalUpdate\",\"data\":.*\"type\":\"set\".*"))));
+         containsRegex(".\"type\":\"incrementalUpdate\",\"data\":.*\"type\":\"execute\".*"))));
       verify(validClientCtx).send(argThat(jsonNodeThat(
          containsRegex(".\"type\":\"dirtyState\",\"data\":true."))));
-
    }
 
    @Test

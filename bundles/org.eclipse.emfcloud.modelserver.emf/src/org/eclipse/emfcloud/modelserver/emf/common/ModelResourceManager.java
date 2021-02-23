@@ -45,17 +45,11 @@ public interface ModelResourceManager {
 
    Optional<Resource> updateResource(String modeluri, EObject updatedModel);
 
-   CCommandExecutionResult execute(String modeluri, CCommand command) throws DecodingException;
-
    void removeResource(String modeluri) throws IOException;
 
-   @Deprecated
-   CCommand getUndoCommand(String modeluri);
+   CCommandExecutionResult execute(String modeluri, CCommand command) throws DecodingException;
 
    Optional<CCommandExecutionResult> undo(String modeluri);
-
-   @Deprecated
-   CCommand getRedoCommand(String modeluri);
 
    Optional<CCommandExecutionResult> redo(String modeluri);
 

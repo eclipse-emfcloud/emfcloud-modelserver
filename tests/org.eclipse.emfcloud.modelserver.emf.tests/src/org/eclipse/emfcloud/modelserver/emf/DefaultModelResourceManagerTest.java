@@ -14,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -22,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
@@ -54,14 +52,13 @@ import com.google.inject.multibindings.Multibinder;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultModelResourceManagerTest extends AbstractResourceTest {
 
+   private static ModelResourceManager modelResourceManager;
+
    @Mock
    private CommandCodec commandCodec;
-   @Mock
-   private Command command;
+
    @Mock
    private ServerConfiguration serverConfig;
-
-   private static ModelResourceManager modelResourceManager;
 
    public DefaultModelResourceManagerTest() {
       super();
@@ -69,8 +66,6 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
 
    @Before
    public void beforeTests() throws DecodingException {
-      when(command.canExecute()).thenReturn(true);
-      when(commandCodec.clientToServer(any(), any(), any())).thenReturn(command);
       when(serverConfig.getWorkspaceRootURI())
          .thenReturn(URI.createFileURI(getCWD().getAbsolutePath() + "/" + RESOURCE_PATH));
       modelResourceManager = Guice.createInjector(new AbstractModule() {

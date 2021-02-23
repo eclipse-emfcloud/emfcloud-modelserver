@@ -21,7 +21,6 @@ import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.r
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.success;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -218,8 +217,7 @@ public class DefaultModelController implements ModelController {
       Optional<CCommandExecutionResult> undoExecution = modelRepository.undo(modeluri);
       if (undoExecution.isPresent()) {
          success(ctx, "Successful undo.");
-         Map<String, JsonNode> encodings = getCommandEncodings(modeluri, undoExecution.get());
-         sessionController.commandExecuted(modeluri, encodings);
+         sessionController.commandExecuted(modeluri, undoExecution.get());
          return;
       }
       accepted(ctx, "Cannot undo");
@@ -230,23 +228,10 @@ public class DefaultModelController implements ModelController {
       Optional<CCommandExecutionResult> redoExecution = modelRepository.redo(modeluri);
       if (redoExecution.isPresent()) {
          success(ctx, "Successful redo.");
-         Map<String, JsonNode> encodings = getCommandEncodings(modeluri, redoExecution.get());
-         sessionController.commandExecuted(modeluri, encodings);
+         sessionController.commandExecuted(modeluri, redoExecution.get());
          return;
       }
       accepted(ctx, "Cannot redo");
-   }
-
-   protected Map<String, JsonNode> getCommandEncodings(final String modeluri, final EObject execution) {
-      Map<String, JsonNode> encodings = new HashMap<>();
-      if (sessionController.hasSession(modeluri)) {
-         try {
-            encodings = codecs.encode(execution);
-         } catch (EncodingException exception) {
-            LOG.error("Pre encoding of undo/redo command for " + modeluri + " failed", exception);
-         }
-      }
-      return encodings;
    }
 
    @Override
@@ -286,8 +271,7 @@ public class DefaultModelController implements ModelController {
       }
       try {
          CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, command.get());
-         Map<String, JsonNode> encodings = getCommandEncodings(modelURI, execution);
-         sessionController.commandExecuted(modelURI, encodings);
+         sessionController.commandExecuted(modelURI, execution);
          success(ctx, "Model '%s' successfully updated", modelURI);
       } catch (DecodingException exception) {
          decodingError(ctx, exception);

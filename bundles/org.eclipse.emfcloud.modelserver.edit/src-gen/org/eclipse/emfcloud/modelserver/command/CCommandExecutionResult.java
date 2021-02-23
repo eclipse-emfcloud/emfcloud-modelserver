@@ -23,12 +23,13 @@ import org.eclipse.emf.ecore.EObject;
  * The following features are supported:
  * </p>
  * <ul>
+ * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getType <em>Type</em>}</li>
  * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getSource <em>Source</em>}</li>
  * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getAffectedObjects <em>Affected
  * Objects</em>}</li>
- * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getContext <em>Context</em>}</li>
- * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getProperties <em>Properties</em>}</li>
- * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getChanges <em>Changes</em>}</li>
+ * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getChangeDescription <em>Change
+ * Description</em>}</li>
+ * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getDetails <em>Details</em>}</li>
  * </ul>
  *
  * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommandExecutionResult()
@@ -37,6 +38,31 @@ import org.eclipse.emf.ecore.EObject;
  */
 public interface CCommandExecutionResult extends EObject {
    /**
+    * Returns the value of the '<em><b>Type</b></em>' attribute.
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @return the value of the '<em>Type</em>' attribute.
+    * @see #setType(String)
+    * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommandExecutionResult_Type()
+    * @model required="true"
+    * @generated
+    */
+   String getType();
+
+   /**
+    * Sets the value of the '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getType
+    * <em>Type</em>}' attribute.
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @param value the new value of the '<em>Type</em>' attribute.
+    * @see #getType()
+    * @generated
+    */
+   void setType(String value);
+
+   /**
     * Returns the value of the '<em><b>Source</b></em>' containment reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
@@ -44,7 +70,7 @@ public interface CCommandExecutionResult extends EObject {
     * @return the value of the '<em>Source</em>' containment reference.
     * @see #setSource(CCommand)
     * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommandExecutionResult_Source()
-    * @model containment="true"
+    * @model containment="true" required="true"
     * @generated
     */
    CCommand getSource();
@@ -75,71 +101,44 @@ public interface CCommandExecutionResult extends EObject {
    EList<EObject> getAffectedObjects();
 
    /**
-    * Returns the value of the '<em><b>Context</b></em>' attribute.
-    * The literals are from the enumeration {@link org.eclipse.emfcloud.modelserver.command.ExecutionContext}.
+    * Returns the value of the '<em><b>Change Description</b></em>' containment reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
-    * @return the value of the '<em>Context</em>' attribute.
-    * @see org.eclipse.emfcloud.modelserver.command.ExecutionContext
-    * @see #setContext(ExecutionContext)
-    * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommandExecutionResult_Context()
-    * @model
+    * @return the value of the '<em>Change Description</em>' containment reference.
+    * @see #setChangeDescription(EObject)
+    * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommandExecutionResult_ChangeDescription()
+    * @model containment="true"
     * @generated
     */
-   ExecutionContext getContext();
+   EObject getChangeDescription();
 
    /**
-    * Sets the value of the '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getContext
-    * <em>Context</em>}' attribute.
+    * Sets the value of the
+    * '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getChangeDescription <em>Change
+    * Description</em>}' containment reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
-    * @param value the new value of the '<em>Context</em>' attribute.
-    * @see org.eclipse.emfcloud.modelserver.command.ExecutionContext
-    * @see #getContext()
+    * @param value the new value of the '<em>Change Description</em>' containment reference.
+    * @see #getChangeDescription()
     * @generated
     */
-   void setContext(ExecutionContext value);
+   void setChangeDescription(EObject value);
 
    /**
-    * Returns the value of the '<em><b>Properties</b></em>' map.
+    * Returns the value of the '<em><b>Details</b></em>' map.
     * The key is of type {@link java.lang.String},
     * and the value is of type {@link java.lang.String},
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
-    * @return the value of the '<em>Properties</em>' map.
-    * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommandExecutionResult_Properties()
+    * @return the value of the '<em>Details</em>' map.
+    * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommandExecutionResult_Details()
     * @model mapType="org.eclipse.emf.ecore.EStringToStringMapEntry&lt;org.eclipse.emf.ecore.EString,
     *        org.eclipse.emf.ecore.EString&gt;"
     * @generated
     */
-   EMap<String, String> getProperties();
-
-   /**
-    * Returns the value of the '<em><b>Changes</b></em>' containment reference.
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @return the value of the '<em>Changes</em>' containment reference.
-    * @see #setChanges(EObject)
-    * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommandExecutionResult_Changes()
-    * @model containment="true"
-    * @generated
-    */
-   EObject getChanges();
-
-   /**
-    * Sets the value of the '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getChanges
-    * <em>Changes</em>}' containment reference.
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @param value the new value of the '<em>Changes</em>' containment reference.
-    * @see #getChanges()
-    * @generated
-    */
-   void setChanges(EObject value);
+   EMap<String, String> getDetails();
 
 } // CCommandExecutionResult

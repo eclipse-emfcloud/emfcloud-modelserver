@@ -19,7 +19,6 @@ import org.eclipse.emf.ecore.change.ChangeDescription;
 import org.eclipse.emf.ecore.change.util.ChangeRecorder;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
-import org.eclipse.emfcloud.modelserver.command.ExecutionContext;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
@@ -71,28 +70,27 @@ public class RecordingModelResourceManager extends DefaultModelResourceManager {
    protected CCommandExecutionResult createExecutionResult(final CommandExecutionContext context) {
       CCommandExecutionResult result = super.createExecutionResult(context);
       if (context instanceof RecordingCommandExecutionContext) {
-         ChangeDescription recording = ((RecordingCommandExecutionContext) context).getRecording();
-         result.setChanges(recording);
+         ChangeDescription recording = ((RecordingCommandExecutionContext) context).getChangeDescription();
+         result.setChangeDescription(recording);
       }
       return result;
    }
 
    public static class RecordingCommandExecutionContext extends CommandExecutionContext {
 
-      private final ChangeDescription recording;
+      private final ChangeDescription changeDescription;
 
       public RecordingCommandExecutionContext(final CommandExecutionContext context,
          final ChangeDescription recording) {
-         this(context.getClientCommand(), context.getServerCommand(), context.getExecutionContext(), recording);
+         this(context.getType(), context.getClientCommand(), context.getServerCommand(), recording);
       }
 
-      public RecordingCommandExecutionContext(final CCommand clientCommand, final Command serverCommand,
-         final ExecutionContext context,
-         final ChangeDescription recording) {
-         super(clientCommand, serverCommand, context);
-         this.recording = recording;
+      public RecordingCommandExecutionContext(final String type, final CCommand clientCommand,
+         final Command serverCommand, final ChangeDescription changeDescription) {
+         super(type, clientCommand, serverCommand);
+         this.changeDescription = changeDescription;
       }
 
-      public ChangeDescription getRecording() { return recording; }
+      public ChangeDescription getChangeDescription() { return changeDescription; }
    }
 }

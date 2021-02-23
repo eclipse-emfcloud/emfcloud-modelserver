@@ -12,7 +12,6 @@ package org.eclipse.emfcloud.modelserver.command;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 
@@ -317,6 +316,16 @@ public interface CCommandPackage extends EPackage {
    int COMMAND_EXECUTION_RESULT = 2;
 
    /**
+    * The feature id for the '<em><b>Type</b></em>' attribute.
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    * @ordered
+    */
+   int COMMAND_EXECUTION_RESULT__TYPE = 0;
+
+   /**
     * The feature id for the '<em><b>Source</b></em>' containment reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
@@ -324,7 +333,7 @@ public interface CCommandPackage extends EPackage {
     * @generated
     * @ordered
     */
-   int COMMAND_EXECUTION_RESULT__SOURCE = 0;
+   int COMMAND_EXECUTION_RESULT__SOURCE = 1;
 
    /**
     * The feature id for the '<em><b>Affected Objects</b></em>' reference list.
@@ -334,37 +343,27 @@ public interface CCommandPackage extends EPackage {
     * @generated
     * @ordered
     */
-   int COMMAND_EXECUTION_RESULT__AFFECTED_OBJECTS = 1;
+   int COMMAND_EXECUTION_RESULT__AFFECTED_OBJECTS = 2;
 
    /**
-    * The feature id for the '<em><b>Context</b></em>' attribute.
+    * The feature id for the '<em><b>Change Description</b></em>' containment reference.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
     * @generated
     * @ordered
     */
-   int COMMAND_EXECUTION_RESULT__CONTEXT = 2;
+   int COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION = 3;
 
    /**
-    * The feature id for the '<em><b>Properties</b></em>' map.
+    * The feature id for the '<em><b>Details</b></em>' map.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
     * @generated
     * @ordered
     */
-   int COMMAND_EXECUTION_RESULT__PROPERTIES = 3;
-
-   /**
-    * The feature id for the '<em><b>Changes</b></em>' containment reference.
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @generated
-    * @ordered
-    */
-   int COMMAND_EXECUTION_RESULT__CHANGES = 4;
+   int COMMAND_EXECUTION_RESULT__DETAILS = 4;
 
    /**
     * The number of structural features of the '<em>Execution Result</em>' class.
@@ -385,18 +384,6 @@ public interface CCommandPackage extends EPackage {
     * @ordered
     */
    int COMMAND_EXECUTION_RESULT_OPERATION_COUNT = 0;
-
-   /**
-    * The meta object id for the '{@link org.eclipse.emfcloud.modelserver.command.ExecutionContext <em>Execution
-    * Context</em>}' enum.
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @see org.eclipse.emfcloud.modelserver.command.ExecutionContext
-    * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandPackageImpl#getExecutionContext()
-    * @generated
-    */
-   int EXECUTION_CONTEXT = 3;
 
    /**
     * Returns the meta object for class '{@link org.eclipse.emfcloud.modelserver.command.CCommand <em>Command</em>}'.
@@ -551,6 +538,19 @@ public interface CCommandPackage extends EPackage {
    EClass getCommandExecutionResult();
 
    /**
+    * Returns the meta object for the attribute
+    * '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getType <em>Type</em>}'.
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @return the meta object for the attribute '<em>Type</em>'.
+    * @see org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getType()
+    * @see #getCommandExecutionResult()
+    * @generated
+    */
+   EAttribute getCommandExecutionResult_Type();
+
+   /**
     * Returns the meta object for the containment reference
     * '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getSource <em>Source</em>}'.
     * <!-- begin-user-doc -->
@@ -578,55 +578,31 @@ public interface CCommandPackage extends EPackage {
    EReference getCommandExecutionResult_AffectedObjects();
 
    /**
-    * Returns the meta object for the attribute
-    * '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getContext <em>Context</em>}'.
+    * Returns the meta object for the containment reference
+    * '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getChangeDescription <em>Change
+    * Description</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
-    * @return the meta object for the attribute '<em>Context</em>'.
-    * @see org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getContext()
+    * @return the meta object for the containment reference '<em>Change Description</em>'.
+    * @see org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getChangeDescription()
     * @see #getCommandExecutionResult()
     * @generated
     */
-   EAttribute getCommandExecutionResult_Context();
+   EReference getCommandExecutionResult_ChangeDescription();
 
    /**
     * Returns the meta object for the map
-    * '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getProperties <em>Properties</em>}'.
+    * '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getDetails <em>Details</em>}'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
-    * @return the meta object for the map '<em>Properties</em>'.
-    * @see org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getProperties()
+    * @return the meta object for the map '<em>Details</em>'.
+    * @see org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getDetails()
     * @see #getCommandExecutionResult()
     * @generated
     */
-   EReference getCommandExecutionResult_Properties();
-
-   /**
-    * Returns the meta object for the containment reference
-    * '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getChanges <em>Changes</em>}'.
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @return the meta object for the containment reference '<em>Changes</em>'.
-    * @see org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult#getChanges()
-    * @see #getCommandExecutionResult()
-    * @generated
-    */
-   EReference getCommandExecutionResult_Changes();
-
-   /**
-    * Returns the meta object for enum '{@link org.eclipse.emfcloud.modelserver.command.ExecutionContext <em>Execution
-    * Context</em>}'.
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    *
-    * @return the meta object for enum '<em>Execution Context</em>'.
-    * @see org.eclipse.emfcloud.modelserver.command.ExecutionContext
-    * @generated
-    */
-   EEnum getExecutionContext();
+   EReference getCommandExecutionResult_Details();
 
    /**
     * Returns the factory that creates the instances of the model.
@@ -772,6 +748,15 @@ public interface CCommandPackage extends EPackage {
       EClass COMMAND_EXECUTION_RESULT = eINSTANCE.getCommandExecutionResult();
 
       /**
+       * The meta object literal for the '<em><b>Type</b></em>' attribute feature.
+       * <!-- begin-user-doc -->
+       * <!-- end-user-doc -->
+       *
+       * @generated
+       */
+      EAttribute COMMAND_EXECUTION_RESULT__TYPE = eINSTANCE.getCommandExecutionResult_Type();
+
+      /**
        * The meta object literal for the '<em><b>Source</b></em>' containment reference feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
@@ -790,43 +775,22 @@ public interface CCommandPackage extends EPackage {
       EReference COMMAND_EXECUTION_RESULT__AFFECTED_OBJECTS = eINSTANCE.getCommandExecutionResult_AffectedObjects();
 
       /**
-       * The meta object literal for the '<em><b>Context</b></em>' attribute feature.
+       * The meta object literal for the '<em><b>Change Description</b></em>' containment reference feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
        *
        * @generated
        */
-      EAttribute COMMAND_EXECUTION_RESULT__CONTEXT = eINSTANCE.getCommandExecutionResult_Context();
+      EReference COMMAND_EXECUTION_RESULT__CHANGE_DESCRIPTION = eINSTANCE.getCommandExecutionResult_ChangeDescription();
 
       /**
-       * The meta object literal for the '<em><b>Properties</b></em>' map feature.
+       * The meta object literal for the '<em><b>Details</b></em>' map feature.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
        *
        * @generated
        */
-      EReference COMMAND_EXECUTION_RESULT__PROPERTIES = eINSTANCE.getCommandExecutionResult_Properties();
-
-      /**
-       * The meta object literal for the '<em><b>Changes</b></em>' containment reference feature.
-       * <!-- begin-user-doc -->
-       * <!-- end-user-doc -->
-       *
-       * @generated
-       */
-      EReference COMMAND_EXECUTION_RESULT__CHANGES = eINSTANCE.getCommandExecutionResult_Changes();
-
-      /**
-       * The meta object literal for the '{@link org.eclipse.emfcloud.modelserver.command.ExecutionContext <em>Execution
-       * Context</em>}' enum.
-       * <!-- begin-user-doc -->
-       * <!-- end-user-doc -->
-       *
-       * @see org.eclipse.emfcloud.modelserver.command.ExecutionContext
-       * @see org.eclipse.emfcloud.modelserver.command.impl.CCommandPackageImpl#getExecutionContext()
-       * @generated
-       */
-      EEnum EXECUTION_CONTEXT = eINSTANCE.getExecutionContext();
+      EReference COMMAND_EXECUTION_RESULT__DETAILS = eINSTANCE.getCommandExecutionResult_Details();
 
    }
 

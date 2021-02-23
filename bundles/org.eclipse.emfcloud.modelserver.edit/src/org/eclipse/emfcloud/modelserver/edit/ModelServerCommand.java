@@ -47,4 +47,5 @@ public class ModelServerCommand extends CommandWrapper {
          ? Optional.of(((ModelServerCommand) command).getClientCommand())
          : Optional.empty();
    }
+
 }

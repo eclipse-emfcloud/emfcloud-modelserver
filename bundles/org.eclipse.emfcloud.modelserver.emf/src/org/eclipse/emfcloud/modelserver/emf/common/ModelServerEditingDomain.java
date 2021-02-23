@@ -11,6 +11,7 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.notify.AdapterFactory;
@@ -37,29 +38,11 @@ public class ModelServerEditingDomain extends TransactionalEditingDomainImpl {
    }
 
    protected boolean canUndo() {
-      if (commandStack == null) {
-         return false;
-      }
-      return commandStack.canUndo();
+      return commandStack != null && commandStack.canUndo();
    }
 
-   protected boolean canRedo() {
-      if (commandStack == null) {
-         return false;
-      }
-      return commandStack.canRedo();
-   }
-
-   public Command getUndoCommand() {
-      /*
-       * As we manage the command stack locally, and our clients will most likely not make use of any concept similar to
-       * a command stack, it is necessary to provide an update which holds the command to undo the previous changes as
-       * an incrementalUpdate.
-       */
-      if (canUndo()) {
-         return commandStack.getUndoCommand();
-      }
-      return null;
+   public Optional<Command> getUndoableCommand() {
+      return canUndo() ? Optional.of(commandStack.getUndoCommand()) : Optional.empty();
    }
 
    public boolean undo() {
@@ -70,16 +53,12 @@ public class ModelServerEditingDomain extends TransactionalEditingDomainImpl {
       return false;
    }
 
-   public Command getRedoCommand() {
-      /*
-       * As we manage the command stack locally, and our clients will most likely not make use of any concept similar to
-       * a command stack, it is necessary to provide an update which holds the command to redo the previous changes as
-       * an incrementalUpdate.
-       */
-      if (canRedo()) {
-         return commandStack.getRedoCommand();
-      }
-      return null;
+   protected boolean canRedo() {
+      return commandStack != null && commandStack.canRedo();
+   }
+
+   public Optional<Command> getRedoableCommand() {
+      return canRedo() ? Optional.of(commandStack.getRedoCommand()) : Optional.empty();
    }
 
    public boolean redo() {

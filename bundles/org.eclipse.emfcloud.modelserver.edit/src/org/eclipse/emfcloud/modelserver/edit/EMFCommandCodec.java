@@ -18,8 +18,6 @@ import static org.eclipse.emf.common.notify.Notification.NO_INDEX;
 import java.util.Collection;
 import java.util.Map;
 
-import org.eclipse.emf.common.command.Command;
-import org.eclipse.emf.common.command.CompoundCommand;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EDataType;
@@ -148,30 +146,5 @@ public class EMFCommandCodec extends DICommandCodec {
          CommandUtil.collectCommandEObjects(command.getCollection(), result, false);
       }
       return result;
-   }
-
-   @SuppressWarnings("checkstyle:CyclomaticComplexity")
-   public static Command invert(final Command command) {
-      if (command instanceof CompoundCommand) {
-         CompoundCommand undoCompoundCommand = (CompoundCommand) command;
-         CompoundCommand inverseCompoundCommand = new CompoundCommand();
-         for (Command next : undoCompoundCommand.getCommandList()) {
-            inverseCompoundCommand.append(invert(next));
-         }
-         return inverseCompoundCommand;
-      } else if (command instanceof AddCommand) {
-         AddCommand undoAddCommand = (AddCommand) command;
-         return RemoveCommand.create(undoAddCommand.getDomain(), undoAddCommand.getOwner(),
-            undoAddCommand.getFeature(), undoAddCommand.getResult());
-      } else if (command instanceof RemoveCommand) {
-         RemoveCommand undoRemoveCommand = (RemoveCommand) command;
-         return AddCommand.create(undoRemoveCommand.getDomain(), undoRemoveCommand.getOwner(),
-            undoRemoveCommand.getFeature(), undoRemoveCommand.getResult(), undoRemoveCommand.getIndices()[0]);
-      } else if (command instanceof SetCommand) {
-         SetCommand undoSetCommand = (SetCommand) command;
-         return SetCommand.create(undoSetCommand.getDomain(), undoSetCommand.getOwner(),
-            undoSetCommand.getFeature(), undoSetCommand.getOldValue(), undoSetCommand.getIndex());
-      }
-      return command;
    }
 }

@@ -24,20 +24,15 @@
         eType="#//Command" containment="true" resolveProxies="false"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="CommandExecutionResult">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//Command"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" lowerBound="1" eType="ecore:EDataType ../../org.eclipse.emf.ecore/model/Ecore.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
+        eType="#//Command" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="affectedObjects" upperBound="-1"
         eType="ecore:EClass ../../org.eclipse.emf.ecore/model/Ecore.ecore#//EObject"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="context" eType="#//ExecutionContext"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="properties" upperBound="-1"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="changeDescription" eType="ecore:EClass ../../org.eclipse.emf.ecore/model/Ecore.ecore#//EObject"
+        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="details" upperBound="-1"
         eType="ecore:EClass ../../org.eclipse.emf.ecore/model/Ecore.ecore#//EStringToStringMapEntry"
         containment="true" resolveProxies="false"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="changes" eType="ecore:EClass ../../org.eclipse.emf.ecore/model/Ecore.ecore#//EObject"
-        containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EEnum" name="ExecutionContext">
-    <eLiterals name="EXECUTE"/>
-    <eLiterals name="UNDO" value="1"/>
-    <eLiterals name="REDO" value="2"/>
   </eClassifiers>
 </ecore:EPackage>
