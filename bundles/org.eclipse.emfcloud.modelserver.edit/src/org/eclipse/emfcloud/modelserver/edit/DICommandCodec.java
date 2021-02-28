@@ -29,7 +29,7 @@ import com.google.inject.Inject;
  */
 public class DICommandCodec implements CommandCodec {
 
-   private final Map<String, CommandCodecContribution> typeToCodec = new LinkedHashMap<>();
+   private final Map<String, CommandContribution> typeToCodec = new LinkedHashMap<>();
 
    /**
     * Initializes me.
@@ -44,7 +44,7 @@ public class DICommandCodec implements CommandCodec {
     * @param codecs the command codecs per command type
     */
    @Inject(optional = true)
-   public void setCommandCodecs(final Map<String, CommandCodecContribution> codecs) {
+   public void setCommandCodecs(final Map<String, CommandContribution> codecs) {
       typeToCodec.putAll(codecs);
    }
 
@@ -53,7 +53,7 @@ public class DICommandCodec implements CommandCodec {
    public Command clientToServer(final URI modelUri, final EditingDomain domain, final CCommand clientCommand)
       throws DecodingException {
       String commandType = clientCommand.getType();
-      CommandCodecContribution codecContribution = typeToCodec.get(commandType);
+      CommandContribution codecContribution = typeToCodec.get(commandType);
       if (codecContribution == null) {
          throw new DecodingException("Unknown command type: " + commandType);
       }
@@ -71,7 +71,7 @@ public class DICommandCodec implements CommandCodec {
       }
 
       String commandType = userCommand.get().getType();
-      CommandCodecContribution codecContribution = typeToCodec.get(commandType);
+      CommandContribution codecContribution = typeToCodec.get(commandType);
       if (codecContribution == null) {
          throw new EncodingException("Unknown command type: " + commandType);
       }

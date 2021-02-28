@@ -25,12 +25,12 @@ import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
 
 import com.google.inject.Inject;
 
-public class CompoundCommandCodecContribution extends BasicCommandCodecContribution<CompoundCommand> {
+public class CompoundCommandContribution extends BasicCommandContribution<CompoundCommand> {
 
    private CommandCodec commandCodec;
 
    @Inject
-   public CompoundCommandCodecContribution(final CommandCodec commandCodec) {
+   public CompoundCommandContribution(final CommandCodec commandCodec) {
       this.commandCodec = commandCodec;
    }
 

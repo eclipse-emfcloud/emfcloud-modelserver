@@ -125,13 +125,13 @@ public class DefaultSessionController implements SessionController {
    }
 
    @Override
-   public void commandExecuted(final String modeluri, final CCommandExecutionResult exeuction) {
+   public void commandExecuted(final String modeluri, final CCommandExecutionResult execution) {
       Optional<EObject> root = modelRepository.getModel(modeluri);
       if (root.isEmpty()) {
          broadcastError(modeluri, "Could not load changed object");
          return;
       }
-      broadcastIncrementalUpdates(modeluri, exeuction);
+      broadcastIncrementalUpdates(modeluri, execution);
       broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
       broadcastValidation(modeluri);
    }

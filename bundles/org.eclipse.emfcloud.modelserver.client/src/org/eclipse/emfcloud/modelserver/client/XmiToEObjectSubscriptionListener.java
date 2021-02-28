@@ -13,8 +13,7 @@ package org.eclipse.emfcloud.modelserver.client;
 import java.util.Optional;
 
 import org.eclipse.emf.ecore.EObject;
-
-import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 
@@ -25,13 +24,13 @@ public class XmiToEObjectSubscriptionListener extends TypedSubscriptionListener<
 
    @Override
    public void onIncrementalUpdate(final EObject command) {
-      if (!(command instanceof CCommand)) {
-         throw new IllegalArgumentException("Expected CCommand but received: " + command);
+      if (!(command instanceof CCommandExecutionResult)) {
+         throw new IllegalArgumentException("Expected CCommandExecutionResult but received: " + command);
       }
-      onIncrementalUpdate((CCommand) command);
+      onIncrementalUpdate((CCommandExecutionResult) command);
    }
 
-   public void onIncrementalUpdate(final CCommand command) {}
+   public void onIncrementalUpdate(final CCommandExecutionResult command) {}
 
    public static Optional<EObject> decode(final String xmiString) {
       try {

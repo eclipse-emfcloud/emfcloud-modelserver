@@ -13,7 +13,7 @@ package org.eclipse.emfcloud.modelserver.example;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
 import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
-import org.eclipse.emfcloud.modelserver.edit.CommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.CommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.di.DefaultModelServerModule;
 
@@ -32,7 +32,7 @@ public class ExampleServerModule extends DefaultModelServerModule {
    }
 
    @Override
-   protected void configureCommandCodecs(final MapBinding<String, CommandCodecContribution> binding) {
+   protected void configureCommandCodecs(final MapBinding<String, CommandContribution> binding) {
       super.configureCommandCodecs(binding);
       binding.put(UpdateTaskNameCommandContribution.TYPE, UpdateTaskNameCommandContribution.class);
    }

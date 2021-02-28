@@ -20,16 +20,10 @@ import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
-import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution.UpdateModelCommand;
 
-public class UpdateModelCommandContribution extends BasicCommandCodecContribution<UpdateModelCommand> {
+public class UpdateModelCommandContribution extends BasicCommandContribution<UpdateModelCommand> {
    public static final String TYPE = "updateModel";
-
-   @Override
-   protected CCommand toClient(final UpdateModelCommand command, final CCommand origin) throws EncodingException {
-      return origin;
-   }
 
    @Override
    protected UpdateModelCommand toServer(final URI modelUri, final EditingDomain domain, final CCommand command)

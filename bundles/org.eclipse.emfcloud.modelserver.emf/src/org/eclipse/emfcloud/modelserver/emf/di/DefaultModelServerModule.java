@@ -18,7 +18,7 @@ import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
 import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
-import org.eclipse.emfcloud.modelserver.edit.CommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.CommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.DICommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultFacetConfig;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelController;
@@ -167,7 +167,7 @@ public class DefaultModelServerModule extends ModelServerModule {
       binding.putAll(MultiBindingDefaults.DEFAULT_CODECS);
    }
 
-   protected void configureCommandCodecs(final MapBinding<String, CommandCodecContribution> binding) {
+   protected void configureCommandCodecs(final MapBinding<String, CommandContribution> binding) {
       binding.putAll(MultiBindingDefaults.DEFAULT_COMMAND_CODECS);
    }
 
@@ -180,7 +180,7 @@ public class DefaultModelServerModule extends ModelServerModule {
       configure(MultiBinding.create(Routing.class), this::configureRoutings);
       configure(MapBinding.create(EntryPointType.class, AppEntryPoint.class), this::configureAppEntryPoints);
       configure(MapBinding.create(String.class, Codec.class), this::configureCodecs);
-      configure(MapBinding.create(String.class, CommandCodecContribution.class), this::configureCommandCodecs);
+      configure(MapBinding.create(String.class, CommandContribution.class), this::configureCommandCodecs);
    }
 
    protected void configureRoutings(final MultiBinding<Routing> binding) {

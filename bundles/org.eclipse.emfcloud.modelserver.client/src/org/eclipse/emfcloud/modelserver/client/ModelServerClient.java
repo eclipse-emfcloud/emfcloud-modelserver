@@ -57,7 +57,7 @@ import okhttp3.RequestBody;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
-public class ModelServerClient implements ModelServerClientApi<EObject>, ModelServerPaths {
+public class ModelServerClient implements ModelServerClientApi<EObject>, ModelServerPaths, AutoCloseable {
 
    private static final Set<String> DEFAULT_SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
       ModelServerPathParameters.FORMAT_XMI);
@@ -80,7 +80,10 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       this.baseUrl = new URL(baseUrl).toString();
    }
 
+   @Override
    public void close() {
+      openSockets.keySet().forEach(this::unsubscribe);
+      openEditingSockets.keySet().forEach(this::close);
       client.dispatcher().executorService().shutdown();
       client.connectionPool().evictAll();
    }

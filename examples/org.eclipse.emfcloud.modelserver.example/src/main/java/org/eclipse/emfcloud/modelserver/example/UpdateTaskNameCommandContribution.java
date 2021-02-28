@@ -26,19 +26,13 @@ import org.eclipse.emfcloud.modelserver.coffee.model.coffee.Node;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.Task;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.Workflow;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
-import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
-import org.eclipse.emfcloud.modelserver.edit.command.BasicCommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.command.BasicCommandContribution;
 
-public class UpdateTaskNameCommandContribution extends BasicCommandCodecContribution<Command> {
+public class UpdateTaskNameCommandContribution extends BasicCommandContribution<Command> {
    public static final String TYPE = "updateTaskName";
-
-   private static final String PROPERTY_TEXT = "text";
-
-   @Override
-   protected CCommand toClient(final Command command, final CCommand origin) throws EncodingException {
-      return origin;
-   }
+   public static final String PROPERTY_TEXT = "text";
 
    @Override
    protected Command toServer(final URI modelUri, final EditingDomain domain, final CCommand command)
@@ -78,6 +72,13 @@ public class UpdateTaskNameCommandContribution extends BasicCommandCodecContribu
          @Override
          public Collection<?> getAffectedObjects() { return Collections.singletonList(task); }
       };
+   }
+
+   public static CCommand clientCommand(final String textToAdd) {
+      CCommand updateTaskCommand = CCommandFactory.eINSTANCE.createCommand();
+      updateTaskCommand.setType(TYPE);
+      updateTaskCommand.getProperties().put(PROPERTY_TEXT, textToAdd);
+      return updateTaskCommand;
    }
 
 }

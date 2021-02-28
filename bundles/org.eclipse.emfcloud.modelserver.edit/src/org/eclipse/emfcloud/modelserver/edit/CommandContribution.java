@@ -17,7 +17,7 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 
-public interface CommandCodecContribution {
+public interface CommandContribution {
    /**
     * Encode a {@code command} for serialization.
     *

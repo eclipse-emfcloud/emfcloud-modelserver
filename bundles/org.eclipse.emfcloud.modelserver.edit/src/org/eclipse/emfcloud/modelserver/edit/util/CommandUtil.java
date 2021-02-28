@@ -15,8 +15,11 @@ import java.util.Collections;
 import java.util.stream.Stream;
 
 import org.eclipse.emf.common.command.Command;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.edit.command.CommandParameter;
 import org.eclipse.emf.edit.command.MoveCommand;
@@ -92,5 +95,11 @@ public final class CommandUtil {
          }
       }
       return result;
+   }
+
+   public static EObject createProxy(final EClass eClass, final String uri) {
+      EObject eObject = EcoreUtil.create(eClass);
+      ((InternalEObject) eObject).eSetProxyURI(URI.createURI(uri));
+      return eObject;
    }
 }

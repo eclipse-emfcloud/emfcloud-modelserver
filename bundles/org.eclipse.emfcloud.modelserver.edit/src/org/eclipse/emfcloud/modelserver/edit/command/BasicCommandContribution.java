@@ -17,19 +17,19 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.utils.GenericsUtil;
-import org.eclipse.emfcloud.modelserver.edit.CommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.CommandContribution;
 
-public abstract class BasicCommandCodecContribution<T extends Command> implements CommandCodecContribution {
+public abstract class BasicCommandContribution<T extends Command> implements CommandContribution {
 
    protected final Class<T> commandClass;
 
-   public BasicCommandCodecContribution() {
+   public BasicCommandContribution() {
       this.commandClass = deriveCommandClass();
    }
 
    @SuppressWarnings("unchecked")
    protected Class<T> deriveCommandClass() {
-      return (Class<T>) GenericsUtil.getGenericTypeParameterClass(getClass(), BasicCommandCodecContribution.class);
+      return (Class<T>) GenericsUtil.getGenericTypeParameterClass(getClass(), BasicCommandContribution.class);
    }
 
    @Override
@@ -40,7 +40,9 @@ public abstract class BasicCommandCodecContribution<T extends Command> implement
       throw new EncodingException("Unexpected command of type " + command.getClass().getSimpleName());
    }
 
-   protected abstract CCommand toClient(T command, CCommand origin) throws EncodingException;
+   protected CCommand toClient(final T command, final CCommand origin) throws EncodingException {
+      return origin;
+   }
 
    @Override
    public T clientToServer(final URI modelUri, final EditingDomain domain, final CCommand command)

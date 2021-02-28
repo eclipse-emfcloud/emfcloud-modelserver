@@ -44,8 +44,8 @@ import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
-import org.eclipse.emfcloud.modelserver.edit.EMFCommandCodec;
 import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
+import org.eclipse.emfcloud.modelserver.edit.command.AddCommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponse;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
@@ -576,7 +576,7 @@ public class ModelServerClientTest {
       ModelServerClient client = createClient();
 
       final CompletableFuture<Response<Boolean>> f = client.edit("SuperBrewer3000.json",
-         EMFCommandCodec.clientCommand((AddCommand) add),
+         AddCommandContribution.clientCommand((AddCommand) add),
          ModelServerPathParametersV1.FORMAT_JSON);
 
       assertThat(f.get().body(), is(true));

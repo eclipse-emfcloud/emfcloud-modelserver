@@ -160,10 +160,6 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<Boolean>> ping();
 
-   CompletableFuture<Response<Boolean>> edit(String modelUri, Command command);
-
-   CompletableFuture<Response<Boolean>> edit(String modelUri, Command command, String format);
-
    CompletableFuture<Response<Boolean>> edit(String modelUri, CCommand command, String format);
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener);
@@ -292,7 +288,7 @@ of the `AddCommand`, the object to be added does not yet exist in the model, so 
 be included in the payload of the command, itself.  Thus it is contained in the
 `objectsToAdd` property and indicate via an in-document reference in the `objectValues`
 property.  Other commands, such as the `RemoveCommand`, would indicate objects in the
-`objectValues` property that already exist in thee model (to be removed in that case),
+`objectValues` property that already exist in the model (to be removed in that case),
 and so those would be cross-document references and the `objectsToAdd` is unused.
 
 To execute this command, issue a `PATCH` request to the `edit` endpoint like:
@@ -302,6 +298,10 @@ To execute this command, issue a `PATCH` request to the `edit` endpoint like:
     Content-type: application/json
     { "data" : <payload> }
 ```
+
+The model server project already provides a default set of commands but it is also possible to plug in your custom metamodel-specific commands by providing `CommandContributions` specified with your model server module.
+
+All commands are executed on a transactional command stack within an **EMF transactional editing domain**. The use of an EMF transactional editing domain on the server side provides a more reliable way of executing commands through transactions and therefore making a clear separation between the end user's operations. In addition, it enables us to make use of `RecordingCommands` which record the changes made to objects via the custom metamodel's API and therefore provide automatic undo/redo support for custom commands.
 
 ### WebSocket Subscriptions Example
 
@@ -353,37 +353,7 @@ client.subscribe(subscriptionId, new SubscriptionListener() {
 client.unsubscribe(subscriptionId);
 ```
 
-The kind of message received depends on the operation.  For an `update` call
-(`PUT` request on the model), the message is the new content of the model.  For
-an incremental update applied by a `PATCH` request with an edit command (see above),
-the message is the command that was executed.  This command can then be executed in
-the client application to effect the same change as occurred in the server:
-
-```Java
-ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v1/");
-String subscriptionId = "SuperBrewer3000.json&format=json";
-client.subscribe(subscriptionId, new JsonToEObjectSubscriptionListener() {
-    private final CommandCodec codec = new DefaultCommandCodec();
-    
-    public void onIncrementalUpdate(EObject message) {
-        CCommand payload = (CCommand) message;
-        EditingDomain editingDomain = new EditingDomain() { ... };
-        
-        try {
-            Command command = codec.decode(editingDomain, payload);
-            CommandStack stack = editingDomain.getCommandStack();
-            if (command.canExecute()) {
-                stack.execute(command);
-            } else {
-                System.err.println("Cannot execute command: " + command);
-            }
-        } catch (DecodingException e) {
-            System.err.println("Cannot decode incremental update: " + e.getMessage());
-        }
-    }
-}, "json");
-
-```
+The kind of message received depends on the operation.  For an `update` call (`PUT` request on the model), the message is the new content of the model.  For an incremental update applied by a `PATCH` request with an edit command (see above), the message is the result of the command that was executed. The command execution result consists of the original client command, an execution type (e.g., 'execute', 'undo', 'redo'), the affected objects from the executed command and any recorded changes.
 
 ## Contributing
 All involved code must adhere to the provided codestyle and checkstyle settings.

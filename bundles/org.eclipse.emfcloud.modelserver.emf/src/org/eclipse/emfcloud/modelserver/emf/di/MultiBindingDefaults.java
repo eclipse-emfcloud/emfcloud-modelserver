@@ -19,12 +19,12 @@ import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
-import org.eclipse.emfcloud.modelserver.edit.CommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.CommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
-import org.eclipse.emfcloud.modelserver.edit.command.AddCommandCodecContribution;
-import org.eclipse.emfcloud.modelserver.edit.command.CompoundCommandCodecContribution;
-import org.eclipse.emfcloud.modelserver.edit.command.RemoveCommandCodecContribution;
-import org.eclipse.emfcloud.modelserver.edit.command.SetCommandCodecContribution;
+import org.eclipse.emfcloud.modelserver.edit.command.AddCommandContribution;
+import org.eclipse.emfcloud.modelserver.edit.command.CompoundCommandContribution;
+import org.eclipse.emfcloud.modelserver.edit.command.RemoveCommandContribution;
+import org.eclipse.emfcloud.modelserver.edit.command.SetCommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRoutingV1;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
@@ -50,10 +50,10 @@ public final class MultiBindingDefaults {
       ModelServerPathParameters.FORMAT_XMI, XmiCodec.class,
       ModelServerPathParameters.FORMAT_JSON, JsonCodec.class);
 
-   public static final Map<String, Class<? extends CommandCodecContribution>> DEFAULT_COMMAND_CODECS = Map.of(
-      EMFCommandType.ADD, AddCommandCodecContribution.class,
-      EMFCommandType.SET, SetCommandCodecContribution.class,
-      EMFCommandType.REMOVE, RemoveCommandCodecContribution.class,
-      EMFCommandType.COMPOUND, CompoundCommandCodecContribution.class,
+   public static final Map<String, Class<? extends CommandContribution>> DEFAULT_COMMAND_CODECS = Map.of(
+      EMFCommandType.ADD, AddCommandContribution.class,
+      EMFCommandType.SET, SetCommandContribution.class,
+      EMFCommandType.REMOVE, RemoveCommandContribution.class,
+      EMFCommandType.COMPOUND, CompoundCommandContribution.class,
       UpdateModelCommandContribution.TYPE, UpdateModelCommandContribution.class);
 }
