@@ -26,7 +26,6 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,14 +42,17 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
-import org.eclipse.emfcloud.modelserver.command.CommandKind;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
+import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
+import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
@@ -199,7 +201,7 @@ public class DefaultModelControllerTest {
       final EClass task = EcoreFactory.eINSTANCE.createEClass();
       res.getContents().add(task);
       CCommand setCommand = CCommandFactory.eINSTANCE.createCommand();
-      setCommand.setType(CommandKind.SET);
+      setCommand.setType(EMFCommandType.SET);
       setCommand.setOwner(task);
       setCommand.setFeature("name");
       setCommand.getDataValues().add("Foo");
@@ -212,6 +214,13 @@ public class DefaultModelControllerTest {
       when(context.body())
          .thenReturn(Json.object(Json.prop(JsonResponseMember.DATA, new JsonCodec().encode(setCommand))).toString());
       when(modelRepository.getModel(modeluri)).thenReturn(Optional.of(task));
+
+      CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
+      result.setSource(EcoreUtil.copy(setCommand));
+      result.setType(CommandExecutionType.EXECUTE);
+
+      when(modelRepository.executeCommand(eq(modeluri), any())).thenReturn(result);
+
       modelController.executeCommand(context, modeluri);
 
       // unload to proxify
@@ -220,8 +229,7 @@ public class DefaultModelControllerTest {
 
       // No subscribers registered for this incrementalUpdate, therefore no pre-encoded commands are created and the map
       // can remain empty for this test
-      Map<String, JsonNode> encodings = new HashMap<>();
-      verify(sessionController).commandExecuted(eq(modeluri), eq(encodings));
+      verify(sessionController).commandExecuted(eq(modeluri), eq(result));
    }
 
    @Test
@@ -236,7 +244,7 @@ public class DefaultModelControllerTest {
 
       final EAttribute attribute = EcoreFactory.eINSTANCE.createEAttribute();
       CCommand addCommand = CCommandFactory.eINSTANCE.createCommand();
-      addCommand.setType(CommandKind.ADD);
+      addCommand.setType(EMFCommandType.ADD);
       addCommand.setOwner(eClass);
       addCommand.setFeature("eAttributes");
       addCommand.getObjectsToAdd().add(attribute);
@@ -252,6 +260,12 @@ public class DefaultModelControllerTest {
       when(context.queryParamMap()).thenReturn(queryParams);
       when(context.body()).thenReturn(commandAsString);
       when(modelRepository.getModel(modeluri)).thenReturn(Optional.of(attribute));
+
+      CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
+      result.setSource(EcoreUtil.copy(addCommand));
+      result.setType(CommandExecutionType.EXECUTE);
+      when(modelRepository.executeCommand(eq(modeluri), any())).thenReturn(result);
+
       modelController.executeCommand(context, modeluri);
 
       // unload to proxify
@@ -260,8 +274,8 @@ public class DefaultModelControllerTest {
 
       // No subscribers registered for this incrementalUpdate, therefore no pre-encoded commands are created and the map
       // can be remain for this test
-      Map<String, JsonNode> encodings = new HashMap<>();
-      verify(sessionController).commandExecuted(eq(modeluri), eq(encodings));
+
+      verify(sessionController).commandExecuted(eq(modeluri), eq(result));
    }
 
    @Test

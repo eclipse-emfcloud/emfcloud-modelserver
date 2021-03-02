@@ -14,7 +14,6 @@ import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1.TIMEOUT;
 import static org.eclipse.emfcloud.modelserver.emf.common.JsonResponse.dirtyState;
 import static org.eclipse.emfcloud.modelserver.emf.common.JsonResponse.fullUpdate;
-import static org.eclipse.emfcloud.modelserver.emf.common.JsonResponse.incrementalUpdate;
 import static org.eclipse.emfcloud.modelserver.emf.common.JsonResponse.validationResult;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest.getBooleanParam;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest.getLongParam;
@@ -24,6 +23,7 @@ import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.k
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.success;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.jetbrains.annotations.Nullable;
@@ -124,13 +125,13 @@ public class DefaultSessionController implements SessionController {
    }
 
    @Override
-   public void commandExecuted(final String modeluri, final Map<String, JsonNode> encodings) {
+   public void commandExecuted(final String modeluri, final CCommandExecutionResult execution) {
       Optional<EObject> root = modelRepository.getModel(modeluri);
       if (root.isEmpty()) {
          broadcastError(modeluri, "Could not load changed object");
          return;
       }
-      broadcastIncrementalUpdates(modeluri, encodings);
+      broadcastIncrementalUpdates(modeluri, execution);
       broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
       broadcastValidation(modeluri);
    }
@@ -180,9 +181,15 @@ public class DefaultSessionController implements SessionController {
       }
    }
 
-   protected void broadcastIncrementalUpdates(final String modeluri, final Map<String, JsonNode> updates) {
-      getOpenSessions(modeluri)
-         .forEach(session -> session.send(incrementalUpdate(updates.get(encoder.findFormat(session)))));
+   protected void broadcastIncrementalUpdates(final String modeluri, final CCommandExecutionResult execution) {
+      Map<String, JsonNode> updates = encodeIfPresent(modeluri, execution);
+      getOpenSessions(modeluri).forEach(session -> broadcastIncrementalUpdate(session, updates));
+   }
+
+   private void broadcastIncrementalUpdate(final WsContext session, final Map<String, JsonNode> updates) {
+      String sessionFormat = encoder.findFormat(session);
+      JsonNode update = updates.get(sessionFormat);
+      session.send(JsonResponse.incrementalUpdate(update));
    }
 
    protected void broadcastDirtyState(final String modeluri, final Boolean isDirty) {
@@ -212,6 +219,18 @@ public class DefaultSessionController implements SessionController {
 
    protected boolean isClientSubscribed(final WsContext ctx) {
       return modelUrisToClients.entrySet().stream().anyMatch(entry -> entry.getValue().contains(ctx));
+   }
+
+   protected Map<String, JsonNode> encodeIfPresent(final String modeluri, final EObject execution) {
+      Map<String, JsonNode> encodings = new HashMap<>();
+      if (hasSession(modeluri)) {
+         try {
+            encodings = encoder.encode(execution);
+         } catch (EncodingException exception) {
+            LOG.error("Pre encoding of undo/redo command for " + modeluri + " failed", exception);
+         }
+      }
+      return encodings;
    }
 
 }

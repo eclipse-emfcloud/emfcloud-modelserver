@@ -14,9 +14,12 @@ import static org.eclipse.emf.common.notify.Notification.NO_INDEX;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.emf.common.command.BasicCommandStack;
 import org.eclipse.emf.common.command.Command;
+import org.eclipse.emf.common.command.CompoundCommand;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
@@ -38,22 +41,23 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.command.CCompoundCommand;
-import org.eclipse.emfcloud.modelserver.command.CommandKind;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.tests.util.EMFMatchers;
 import org.emfjson.jackson.resource.JsonResourceFactory;
+import org.hamcrest.CustomTypeSafeMatcher;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Test cases for the {@link DefaultCommandCodec} class.
+ * Test cases for the {@link DICommandCodec} class.
  */
 @RunWith(Parameterized.class)
-public class DefaultCommandCodecTest {
+public class EMFCommandCodecTest {
 
    private static final String N_A = "n/a";
    private static final String ATTRIBUTE = "attribute";
@@ -69,24 +73,26 @@ public class DefaultCommandCodecTest {
    private final Command editCommand;
    private final CCommand commandModel;
 
-   public DefaultCommandCodecTest(final CommandKind type, final String featureKind, final Command editCommand,
+   public EMFCommandCodecTest(final String type, final String featureKind, final Command editCommand,
       final CCommand commandModel) {
       super();
 
-      this.editCommand = editCommand;
       this.commandModel = commandModel;
+      this.editCommand = editCommand;
    }
 
    @Test
    public void encode() throws EncodingException {
-      CCommand encoded = new DefaultCommandCodec().encode(editCommand);
+      Command modelServerCommand = ModelServerCommand.wrap(editCommand, commandModel);
+      CCommand encoded = new EMFCommandCodec().serverToClient(modelServerCommand);
       assertThat(encoded, EMFMatchers.eEqualTo(commandModel));
    }
 
    @Test
    public void decode() throws DecodingException {
-      Command decoded = new DefaultCommandCodec().decode(domain, commandModel);
-      assertThat(decoded, EMFMatchers.commandEqualTo(editCommand));
+      Command decoded = new EMFCommandCodec().clientToServer(null, domain, commandModel);
+      Command serverCommand = ModelServerCommand.unwrap(decoded);
+      assertThat(serverCommand, commandEqualTo(editCommand));
    }
 
    //
@@ -98,21 +104,22 @@ public class DefaultCommandCodecTest {
       initializeResourceSet();
 
       return Arrays.asList(new Object[][] { //
-         new Object[] { CommandKind.SET, ATTRIBUTE, createAttributeSetCommand(), createAttributeSetModel() }, //
-         new Object[] { CommandKind.SET, REFERENCE, createReferenceSetCommand(), createReferenceSetModel() }, //
-         new Object[] { CommandKind.ADD, ATTRIBUTE, createAttributeAddCommand(), createAttributeAddModel() }, //
-         new Object[] { CommandKind.ADD, REFERENCE, createReferenceAddCommand(), createReferenceAddModel() }, //
-         new Object[] { CommandKind.ADD, REFERENCE_MANY, createReferenceAddMultipleCommand(),
+         new Object[] { EMFCommandType.SET, ATTRIBUTE, createAttributeSetCommand(),
+            createAttributeSetModel() }, //
+         new Object[] { EMFCommandType.SET, REFERENCE, createReferenceSetCommand(), createReferenceSetModel() }, //
+         new Object[] { EMFCommandType.ADD, ATTRIBUTE, createAttributeAddCommand(), createAttributeAddModel() }, //
+         new Object[] { EMFCommandType.ADD, REFERENCE, createReferenceAddCommand(), createReferenceAddModel() }, //
+         new Object[] { EMFCommandType.ADD, REFERENCE_MANY, createReferenceAddMultipleCommand(),
             createReferenceAddMultipleModel() }, //
-         new Object[] { CommandKind.REMOVE, ATTRIBUTE, createAttributeRemoveCommand(),
+         new Object[] { EMFCommandType.REMOVE, ATTRIBUTE, createAttributeRemoveCommand(),
             createAttributeRemoveModel() }, //
-         new Object[] { CommandKind.REMOVE, REFERENCE, createReferenceRemoveCommand(),
+         new Object[] { EMFCommandType.REMOVE, REFERENCE, createReferenceRemoveCommand(),
             createReferenceRemoveModel() }, //
-         new Object[] { CommandKind.REMOVE, REFERENCE_MANY, createReferenceRemoveMultipleCommand(),
+         new Object[] { EMFCommandType.REMOVE, REFERENCE_MANY, createReferenceRemoveMultipleCommand(),
             createReferenceRemoveMultipleModel() }, //
-         new Object[] { CommandKind.REMOVE, REFERENCE_BY_INDEX, createReferenceRemoveByIndexCommand(),
+         new Object[] { EMFCommandType.REMOVE, REFERENCE_BY_INDEX, createReferenceRemoveByIndexCommand(),
             createReferenceRemoveByIndexModel() }, //
-         new Object[] { CommandKind.COMPOUND, N_A, createCompoundCommand(), createCompoundModel() }, //
+         new Object[] { EMFCommandType.COMPOUND, N_A, createCompoundCommand(), createCompoundModel() }, //
       });
    }
 
@@ -139,7 +146,7 @@ public class DefaultCommandCodecTest {
 
    static CCommand createAttributeSetModel() {
       CCommand result = CCommandFactory.eINSTANCE.createCommand();
-      result.setType(CommandKind.SET);
+      result.setType(EMFCommandType.SET);
       result.setOwner(ePackage);
       result.setFeature("name");
       result.getDataValues().add("Foo");
@@ -159,7 +166,7 @@ public class DefaultCommandCodecTest {
       newClass.setName("Foo");
 
       CCommand result = CCommandFactory.eINSTANCE.createCommand();
-      result.setType(CommandKind.SET);
+      result.setType(EMFCommandType.SET);
       result.setOwner(ePackage);
       result.setFeature("eClassifiers");
       result.getObjectValues().add(newClass);
@@ -174,7 +181,7 @@ public class DefaultCommandCodecTest {
 
    static CCommand createAttributeAddModel() {
       CCommand result = CCommandFactory.eINSTANCE.createCommand();
-      result.setType(CommandKind.ADD);
+      result.setType(EMFCommandType.ADD);
       result.setOwner(commandFixture);
       result.setFeature("dataValues");
       result.getDataValues().add("Foo");
@@ -194,7 +201,7 @@ public class DefaultCommandCodecTest {
       newClass.setName("Foo");
 
       CCommand result = CCommandFactory.eINSTANCE.createCommand();
-      result.setType(CommandKind.ADD);
+      result.setType(EMFCommandType.ADD);
       result.setOwner(ePackage);
       result.setFeature("eClassifiers");
       result.getObjectValues().add(newClass);
@@ -220,7 +227,7 @@ public class DefaultCommandCodecTest {
       bar.setName("Bar");
 
       CCommand result = CCommandFactory.eINSTANCE.createCommand();
-      result.setType(CommandKind.ADD);
+      result.setType(EMFCommandType.ADD);
       result.setOwner(ePackage);
       result.setFeature("eClassifiers");
       result.getObjectValues().addAll(Arrays.asList(foo, bar));
@@ -235,7 +242,7 @@ public class DefaultCommandCodecTest {
 
    static CCommand createAttributeRemoveModel() {
       CCommand result = CCommandFactory.eINSTANCE.createCommand();
-      result.setType(CommandKind.REMOVE);
+      result.setType(EMFCommandType.REMOVE);
       result.setOwner(commandFixture);
       result.setFeature("dataValues");
       result.getDataValues().add("Foo");
@@ -252,7 +259,7 @@ public class DefaultCommandCodecTest {
       EClassifier removeMe = EcorePackage.Literals.ESTRING;
 
       CCommand result = CCommandFactory.eINSTANCE.createCommand();
-      result.setType(CommandKind.REMOVE);
+      result.setType(EMFCommandType.REMOVE);
       result.setOwner(ePackage);
       result.setFeature("eClassifiers");
       result.getObjectValues().add(removeMe);
@@ -272,7 +279,7 @@ public class DefaultCommandCodecTest {
       EClassifier remove2 = EcorePackage.Literals.ESTRING;
 
       CCommand result = CCommandFactory.eINSTANCE.createCommand();
-      result.setType(CommandKind.REMOVE);
+      result.setType(EMFCommandType.REMOVE);
       result.setOwner(ePackage);
       result.setFeature("eClassifiers");
       result.getObjectValues().addAll(Arrays.asList(remove1, remove2));
@@ -292,7 +299,7 @@ public class DefaultCommandCodecTest {
       EClassifier remove2 = EcorePackage.Literals.ESTRING;
 
       CCommand result = CCommandFactory.eINSTANCE.createCommand();
-      result.setType(CommandKind.REMOVE);
+      result.setType(EMFCommandType.REMOVE);
       result.setOwner(ePackage);
       result.setFeature("eClassifiers");
       result.getIndices().add(remove1.getClassifierID());
@@ -301,15 +308,51 @@ public class DefaultCommandCodecTest {
    }
 
    static Command createCompoundCommand() {
-      return createAttributeSetCommand().chain(createReferenceAddCommand());
+      return new CompoundCommand(List.of(
+         ModelServerCommand.wrap(createAttributeSetCommand(), createAttributeSetModel()),
+         ModelServerCommand.wrap(createReferenceAddCommand(), createReferenceAddModel())));
    }
 
    static CCommand createCompoundModel() {
       CCompoundCommand result = CCommandFactory.eINSTANCE.createCompoundCommand();
-      result.setType(CommandKind.COMPOUND);
+      result.setType(EMFCommandType.COMPOUND);
       result.getCommands().add(createAttributeSetModel());
       result.getCommands().add(createReferenceAddModel());
       return result;
    }
 
+   @SuppressWarnings("checkstyle:CyclomaticComplexity")
+   public static Matcher<Command> commandEqualTo(final Command expected) {
+      Matcher<Command> emfCommandMatcher = EMFMatchers.commandEqualTo(expected);
+      return new CustomTypeSafeMatcher<>("equivalent to " + expected.getClass().getSimpleName()) {
+         @Override
+         protected boolean matchesSafely(final Command item) {
+            if (expected instanceof CompoundCommand) {
+               if (!(item instanceof CompoundCommand)) {
+                  return false;
+               }
+            } else if (item.getClass() != expected.getClass()) {
+               return false;
+            }
+            if (item instanceof ModelServerCommand) {
+               return commandEqualTo(ModelServerCommand.unwrap(expected)).matches(ModelServerCommand.unwrap(item));
+            } else if (item instanceof CompoundCommand) {
+               CompoundCommand compound = (CompoundCommand) item;
+               CompoundCommand expectedCompound = (CompoundCommand) expected;
+               if (compound.getCommandList().size() != expectedCompound.getCommandList().size()) {
+                  return false;
+               }
+               Iterator<Command> commands = compound.getCommandList().iterator();
+               Iterator<Command> expecteds = expectedCompound.getCommandList().iterator();
+               while (commands.hasNext()) {
+                  if (!commandEqualTo(expecteds.next()).matches(commands.next())) {
+                     return false;
+                  }
+               }
+               return true;
+            }
+            return emfCommandMatcher.matches(item);
+         }
+      };
+   }
 }

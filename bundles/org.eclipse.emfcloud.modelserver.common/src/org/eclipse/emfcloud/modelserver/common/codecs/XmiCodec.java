@@ -13,6 +13,7 @@ package org.eclipse.emfcloud.modelserver.common.codecs;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
@@ -23,6 +24,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMIResource;
+import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
@@ -38,7 +40,8 @@ public class XmiCodec implements Codec {
       resource.getContents().add(EcoreUtil.copy(eObject));
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       try {
-         resource.save(outputStream, null);
+         resource.save(outputStream,
+            Map.of(XMLResource.OPTION_PROCESS_DANGLING_HREF, XMLResource.OPTION_PROCESS_DANGLING_HREF_DISCARD));
       } catch (IOException e) {
          throw new EncodingException(e);
       }

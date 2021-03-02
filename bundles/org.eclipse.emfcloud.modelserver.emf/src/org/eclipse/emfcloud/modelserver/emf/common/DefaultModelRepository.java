@@ -25,6 +25,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
@@ -131,8 +132,9 @@ public class DefaultModelRepository implements ModelRepository {
    }
 
    @Override
-   public void executeCommand(final String modeluri, final CCommand command) throws DecodingException {
-      modelResourceManager.updateResource(modeluri, command);
+   public CCommandExecutionResult executeCommand(final String modeluri, final CCommand command)
+      throws DecodingException {
+      return modelResourceManager.execute(modeluri, command);
    }
 
    @Override
@@ -156,22 +158,12 @@ public class DefaultModelRepository implements ModelRepository {
    }
 
    @Override
-   public CCommand getUndoCommand(final String modeluri) {
-      return modelResourceManager.getUndoCommand(modeluri);
-   }
-
-   @Override
-   public boolean undo(final String modeluri) {
+   public Optional<CCommandExecutionResult> undo(final String modeluri) {
       return modelResourceManager.undo(modeluri);
    }
 
    @Override
-   public CCommand getRedoCommand(final String modeluri) {
-      return modelResourceManager.getRedoCommand(modeluri);
-   }
-
-   @Override
-   public boolean redo(final String modeluri) {
+   public Optional<CCommandExecutionResult> redo(final String modeluri) {
       return modelResourceManager.redo(modeluri);
    }
 
@@ -191,16 +183,5 @@ public class DefaultModelRepository implements ModelRepository {
          modeluris.add(uri.toString());
       }
       return modeluris;
-   }
-
-   @Override
-   public void addTemporaryCommandResource(final String modeluri, final Resource resource, final CCommand command) {
-      modelResourceManager.getResourceSet(modeluri).getResources().add(resource);
-      resource.getContents().add(command);
-   }
-
-   @Override
-   public void removeTemporaryCommandResource(final String modeluri, final Resource resource) {
-      modelResourceManager.getResourceSet(modeluri).getResources().remove(resource);
    }
 }

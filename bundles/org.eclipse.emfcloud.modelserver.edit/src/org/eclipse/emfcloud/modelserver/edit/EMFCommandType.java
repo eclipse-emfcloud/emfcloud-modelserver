@@ -8,20 +8,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-package org.eclipse.emfcloud.modelserver.emf.common;
+package org.eclipse.emfcloud.modelserver.edit;
 
-import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
+public final class EMFCommandType {
+   public static final String ADD = "add";
+   public static final String COMPOUND = "compound";
+   public static final String MOVE = "move";
+   public static final String REMOVE = "remove";
+   public static final String REPLACE = "replace";
+   public static final String SET = "set";
 
-public interface ModelListener {
-   void modelCreated(String modeluri);
-
-   void modelUpdated(String modeluri);
-
-   void commandExecuted(String modeluri, CCommandExecutionResult execution);
-
-   void modelDeleted(String modeluri);
-
-   void modelSaved(String modeluri);
-
-   void allModelsSaved();
+   private EMFCommandType() {}
 }

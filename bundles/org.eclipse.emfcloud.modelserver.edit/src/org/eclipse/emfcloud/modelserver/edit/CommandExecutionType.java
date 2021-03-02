@@ -8,20 +8,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-package org.eclipse.emfcloud.modelserver.emf.common;
+package org.eclipse.emfcloud.modelserver.edit;
 
-import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
+public final class CommandExecutionType {
+   public static final String EXECUTE = "execute";
+   public static final String UNDO = "undo";
+   public static final String REDO = "redo";
 
-public interface ModelListener {
-   void modelCreated(String modeluri);
-
-   void modelUpdated(String modeluri);
-
-   void commandExecuted(String modeluri, CCommandExecutionResult execution);
-
-   void modelDeleted(String modeluri);
-
-   void modelSaved(String modeluri);
-
-   void allModelsSaved();
+   private CommandExecutionType() {}
 }

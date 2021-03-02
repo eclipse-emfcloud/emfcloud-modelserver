@@ -19,6 +19,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 
 public interface ModelRepository {
@@ -60,17 +61,9 @@ public interface ModelRepository {
     */
    Optional<Resource> updateModel(String modeluri, EObject model);
 
-   void executeCommand(String modeluri, CCommand command) throws DecodingException;
+   CCommandExecutionResult executeCommand(String modeluri, CCommand command) throws DecodingException;
 
-   CCommand getUndoCommand(String modeluri);
+   Optional<CCommandExecutionResult> undo(String modeluri);
 
-   boolean undo(String modeluri);
-
-   CCommand getRedoCommand(String modeluri);
-
-   boolean redo(String modeluri);
-
-   void addTemporaryCommandResource(String modeluri, Resource resource, CCommand command);
-
-   void removeTemporaryCommandResource(String modeluri, Resource resource);
+   Optional<CCommandExecutionResult> redo(String modeluri);
 }

@@ -11,14 +11,17 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import org.apache.log4j.Logger;
-import org.eclipse.emf.common.command.BasicCommandStack;
+import org.eclipse.emf.transaction.impl.TransactionalCommandStackImpl;
 
-public class ModelServerCommandStack extends BasicCommandStack {
+public class ModelServerCommandStack extends TransactionalCommandStackImpl {
 
-   private static Logger LOG = Logger.getLogger(ModelServerCommandStack.class.getSimpleName());
+   protected static Logger LOG = Logger.getLogger(ModelServerCommandStack.class.getSimpleName());
 
-   @Override
-   protected void handleError(final Exception exception) {
+   public ModelServerCommandStack() {
+      setExceptionHandler(this::handleException);
+   }
+
+   protected void handleException(final Exception exception) {
       LOG.error("Error while executing command", exception);
    }
 

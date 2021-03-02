@@ -7,6 +7,7 @@ location "http://download.eclipse.org/releases/2020-09" {
 	org.eclipse.jdt.feature.group
 	org.eclipse.equinox.p2.discovery.feature.feature.group
 	org.eclipse.equinox.executable.feature.group
+	org.eclipse.emf.transaction.feature.group
 	org.eclipse.emf.sdk.feature.group
 }
 

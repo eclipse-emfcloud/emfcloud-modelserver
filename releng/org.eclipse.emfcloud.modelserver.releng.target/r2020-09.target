@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde?>
 <!-- generated with https://github.com/eclipse-cbi/targetplatform-dsl -->
-<target name="2020-09 - Release" sequenceNumber="1611494591">
+<target name="2020-09 - Release" sequenceNumber="1613923886">
   <locations>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.eclipse.platform.feature.group" version="4.17.0.v20200902-1800"/>
@@ -10,6 +10,7 @@
       <unit id="org.eclipse.jdt.feature.group" version="3.18.500.v20200902-1800"/>
       <unit id="org.eclipse.equinox.p2.discovery.feature.feature.group" version="1.2.700.v20200705-1016"/>
       <unit id="org.eclipse.equinox.executable.feature.group" version="3.8.900.v20200819-0940"/>
+      <unit id="org.eclipse.emf.transaction.feature.group" version="1.12.0.201805140824"/>
       <unit id="org.eclipse.emf.sdk.feature.group" version="2.23.0.v20200822-0801"/>
       <repository location="http://download.eclipse.org/releases/2020-09"/>
     </location>

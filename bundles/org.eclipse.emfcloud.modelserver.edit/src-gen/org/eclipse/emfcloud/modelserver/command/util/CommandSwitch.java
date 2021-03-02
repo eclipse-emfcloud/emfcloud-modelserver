@@ -1,5 +1,5 @@
-/********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+/**
+ * Copyright (c) 2021 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -7,13 +7,14 @@
  * available at https://opensource.org/licenses/MIT.
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- ********************************************************************************/
+ */
 package org.eclipse.emfcloud.modelserver.command.util;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.util.Switch;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.command.CCompoundCommand;
 
@@ -98,6 +99,14 @@ public class CommandSwitch<T> extends Switch<T> {
             }
             return result;
          }
+         case CCommandPackage.COMMAND_EXECUTION_RESULT: {
+            CCommandExecutionResult commandExecutionResult = (CCommandExecutionResult) theEObject;
+            T result = caseCommandExecutionResult(commandExecutionResult);
+            if (result == null) {
+               result = defaultCase(theEObject);
+            }
+            return result;
+         }
          default:
             return defaultCase(theEObject);
       }
@@ -132,6 +141,22 @@ public class CommandSwitch<T> extends Switch<T> {
     * @generated
     */
    public T caseCompoundCommand(final CCompoundCommand object) {
+      return null;
+   }
+
+   /**
+    * Returns the result of interpreting the object as an instance of '<em>Execution Result</em>'.
+    * <!-- begin-user-doc -->
+    * This implementation returns null;
+    * returning a non-null result will terminate the switch.
+    * <!-- end-user-doc -->
+    *
+    * @param object the target of the switch.
+    * @return the result of interpreting the object as an instance of '<em>Execution Result</em>'.
+    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+    * @generated
+    */
+   public T caseCommandExecutionResult(final CCommandExecutionResult object) {
       return null;
    }
 

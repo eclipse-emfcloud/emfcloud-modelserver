@@ -1,5 +1,5 @@
-/********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+/**
+ * Copyright (c) 2021 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -7,7 +7,7 @@
  * available at https://opensource.org/licenses/MIT.
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- ********************************************************************************/
+ */
 package org.eclipse.emfcloud.modelserver.command.impl;
 
 import java.util.Collection;
@@ -15,18 +15,22 @@ import java.util.Collection;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.EMap;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
+import org.eclipse.emf.ecore.impl.EStringToStringMapEntryImpl;
 import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 import org.eclipse.emf.ecore.util.EDataTypeUniqueEList;
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.EObjectResolvingEList;
+import org.eclipse.emf.ecore.util.EcoreEMap;
 import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
-import org.eclipse.emfcloud.modelserver.command.CommandKind;
 
 /**
  * <!-- begin-user-doc -->
@@ -43,10 +47,12 @@ import org.eclipse.emfcloud.modelserver.command.CommandKind;
  * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandImpl#getDataValues <em>Data Values</em>}</li>
  * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandImpl#getObjectValues <em>Object Values</em>}</li>
  * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandImpl#getObjectsToAdd <em>Objects To Add</em>}</li>
+ * <li>{@link org.eclipse.emfcloud.modelserver.command.impl.CCommandImpl#getProperties <em>Properties</em>}</li>
  * </ul>
  *
  * @generated
  */
+@SuppressWarnings("all")
 public class CCommandImpl extends MinimalEObjectImpl.Container implements CCommand {
    /**
     * The default value of the '{@link #getType() <em>Type</em>}' attribute.
@@ -57,7 +63,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * @generated
     * @ordered
     */
-   protected static final CommandKind TYPE_EDEFAULT = CommandKind.COMPOUND;
+   protected static final String TYPE_EDEFAULT = null;
 
    /**
     * The cached value of the '{@link #getType() <em>Type</em>}' attribute.
@@ -68,7 +74,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * @generated
     * @ordered
     */
-   protected CommandKind type = TYPE_EDEFAULT;
+   protected String type = TYPE_EDEFAULT;
 
    /**
     * The cached value of the '{@link #getOwner() <em>Owner</em>}' reference.
@@ -148,6 +154,17 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    protected EList<EObject> objectsToAdd;
 
    /**
+    * The cached value of the '{@link #getProperties() <em>Properties</em>}' map.
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @see #getProperties()
+    * @generated
+    * @ordered
+    */
+   protected EMap<String, String> properties;
+
+   /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
@@ -175,7 +192,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * @generated
     */
    @Override
-   public CommandKind getType() { return type; }
+   public String getType() { return type; }
 
    /**
     * <!-- begin-user-doc -->
@@ -184,9 +201,9 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * @generated
     */
    @Override
-   public void setType(final CommandKind newType) {
-      CommandKind oldType = type;
-      type = newType == null ? TYPE_EDEFAULT : newType;
+   public void setType(final String newType) {
+      String oldType = type;
+      type = newType;
       if (eNotificationRequired()) {
          eNotify(new ENotificationImpl(this, Notification.SET, CCommandPackage.COMMAND__TYPE, oldType, type));
       }
@@ -326,11 +343,28 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
     * @generated
     */
    @Override
+   public EMap<String, String> getProperties() {
+      if (properties == null) {
+         properties = new EcoreEMap<>(EcorePackage.Literals.ESTRING_TO_STRING_MAP_ENTRY,
+            EStringToStringMapEntryImpl.class, this, CCommandPackage.COMMAND__PROPERTIES);
+      }
+      return properties;
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
    public NotificationChain eInverseRemove(final InternalEObject otherEnd, final int featureID,
       final NotificationChain msgs) {
       switch (featureID) {
          case CCommandPackage.COMMAND__OBJECTS_TO_ADD:
             return ((InternalEList<?>) getObjectsToAdd()).basicRemove(otherEnd, msgs);
+         case CCommandPackage.COMMAND__PROPERTIES:
+            return ((InternalEList<?>) getProperties()).basicRemove(otherEnd, msgs);
       }
       return super.eInverseRemove(otherEnd, featureID, msgs);
    }
@@ -361,6 +395,12 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
             return getObjectValues();
          case CCommandPackage.COMMAND__OBJECTS_TO_ADD:
             return getObjectsToAdd();
+         case CCommandPackage.COMMAND__PROPERTIES:
+            if (coreType) {
+               return getProperties();
+            } else {
+               return getProperties().map();
+            }
       }
       return super.eGet(featureID, resolve, coreType);
    }
@@ -376,7 +416,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    public void eSet(final int featureID, final Object newValue) {
       switch (featureID) {
          case CCommandPackage.COMMAND__TYPE:
-            setType((CommandKind) newValue);
+            setType((String) newValue);
             return;
          case CCommandPackage.COMMAND__OWNER:
             setOwner((EObject) newValue);
@@ -399,6 +439,9 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
          case CCommandPackage.COMMAND__OBJECTS_TO_ADD:
             getObjectsToAdd().clear();
             getObjectsToAdd().addAll((Collection<? extends EObject>) newValue);
+            return;
+         case CCommandPackage.COMMAND__PROPERTIES:
+            ((EStructuralFeature.Setting) getProperties()).set(newValue);
             return;
       }
       super.eSet(featureID, newValue);
@@ -434,6 +477,9 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
          case CCommandPackage.COMMAND__OBJECTS_TO_ADD:
             getObjectsToAdd().clear();
             return;
+         case CCommandPackage.COMMAND__PROPERTIES:
+            getProperties().clear();
+            return;
       }
       super.eUnset(featureID);
    }
@@ -448,7 +494,7 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
    public boolean eIsSet(final int featureID) {
       switch (featureID) {
          case CCommandPackage.COMMAND__TYPE:
-            return type != TYPE_EDEFAULT;
+            return TYPE_EDEFAULT == null ? type != null : !TYPE_EDEFAULT.equals(type);
          case CCommandPackage.COMMAND__OWNER:
             return owner != null;
          case CCommandPackage.COMMAND__FEATURE:
@@ -461,6 +507,8 @@ public class CCommandImpl extends MinimalEObjectImpl.Container implements CComma
             return objectValues != null && !objectValues.isEmpty();
          case CCommandPackage.COMMAND__OBJECTS_TO_ADD:
             return objectsToAdd != null && !objectsToAdd.isEmpty();
+         case CCommandPackage.COMMAND__PROPERTIES:
+            return properties != null && !properties.isEmpty();
       }
       return super.eIsSet(featureID);
    }

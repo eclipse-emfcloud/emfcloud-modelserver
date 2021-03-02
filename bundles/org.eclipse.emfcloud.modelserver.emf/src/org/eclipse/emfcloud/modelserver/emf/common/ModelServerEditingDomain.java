@@ -10,21 +10,21 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import java.util.Map;
+import java.util.Optional;
+
 import org.eclipse.emf.common.command.Command;
-import org.eclipse.emf.common.command.CompoundCommand;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.edit.command.AddCommand;
-import org.eclipse.emf.edit.command.MoveCommand;
-import org.eclipse.emf.edit.command.RemoveCommand;
-import org.eclipse.emf.edit.command.ReplaceCommand;
-import org.eclipse.emf.edit.command.SetCommand;
-import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
+import org.eclipse.emf.transaction.Transaction;
+import org.eclipse.emf.transaction.impl.TransactionalEditingDomainImpl;
 
-public class ModelServerEditingDomain extends AdapterFactoryEditingDomain {
+public class ModelServerEditingDomain extends TransactionalEditingDomainImpl {
 
    public ModelServerEditingDomain(final AdapterFactory adapterFactory, final ResourceSet resourceSet) {
       super(adapterFactory, new ModelServerCommandStack(), resourceSet);
+      // turn off validation since we have our own validation mechanism
+      setDefaultTransactionOptions(Map.of(Transaction.OPTION_NO_VALIDATION, true));
    }
 
    @Override
@@ -34,35 +34,15 @@ public class ModelServerEditingDomain extends AdapterFactoryEditingDomain {
       if (commandStack == null) {
          return;
       }
-      commandStack.execute(command);
+      getCommandStack().execute(command);
    }
 
    protected boolean canUndo() {
-      if (commandStack == null) {
-         return false;
-      }
-      return commandStack.canUndo();
+      return commandStack != null && commandStack.canUndo();
    }
 
-   protected boolean canRedo() {
-      if (commandStack == null) {
-         return false;
-      }
-      return commandStack.canRedo();
-   }
-
-   public Command getUndoCommand() {
-      /*
-       * As we manage the command stack locally, and our clients will most likely not make use of any concept similar to
-       * a command stack, it is necessary to provide an update which holds the command to undo the previous changes as
-       * an incrementalUpdate.
-       * In the case of an Undo we need to invert this command, which is currently based on the already implemented
-       * commands in the DefaultCommandCodec.
-       */
-      if (canUndo()) {
-         return createInverseCommand(commandStack.getUndoCommand());
-      }
-      return null;
+   public Optional<Command> getUndoableCommand() {
+      return canUndo() ? Optional.of(commandStack.getUndoCommand()) : Optional.empty();
    }
 
    public boolean undo() {
@@ -73,16 +53,12 @@ public class ModelServerEditingDomain extends AdapterFactoryEditingDomain {
       return false;
    }
 
-   public Command getRedoCommand() {
-      /*
-       * As we manage the command stack locally, and our clients will most likely not make use of any concept similar to
-       * a command stack, it is necessary to provide an update which holds the command to redo the previous changes as
-       * an incrementalUpdate.
-       */
-      if (canRedo()) {
-         return commandStack.getRedoCommand();
-      }
-      return null;
+   protected boolean canRedo() {
+      return commandStack != null && commandStack.canRedo();
+   }
+
+   public Optional<Command> getRedoableCommand() {
+      return canRedo() ? Optional.of(commandStack.getRedoCommand()) : Optional.empty();
    }
 
    public boolean redo() {
@@ -97,39 +73,6 @@ public class ModelServerEditingDomain extends AdapterFactoryEditingDomain {
 
    public void saveIsDone() {
       ((ModelServerCommandStack) commandStack).saveIsDone();
-   }
-
-   @SuppressWarnings("checkstyle:CyclomaticComplexity")
-   protected Command createInverseCommand(final Command undoCommand) {
-      if (undoCommand instanceof CompoundCommand) {
-         CompoundCommand undoCompoundCommand = (CompoundCommand) undoCommand;
-
-         CompoundCommand inverseCompoundCommand = new CompoundCommand();
-         for (Command next : undoCompoundCommand.getCommandList()) {
-            inverseCompoundCommand.append(createInverseCommand(next));
-         }
-         return inverseCompoundCommand;
-
-      } else if (undoCommand instanceof AddCommand) {
-         AddCommand undoAddCommand = (AddCommand) undoCommand;
-         return RemoveCommand.create(undoAddCommand.getDomain(), undoAddCommand.getOwner(),
-            undoAddCommand.getFeature(), undoAddCommand.getResult());
-
-      } else if (undoCommand instanceof RemoveCommand) {
-         RemoveCommand undoRemoveCommand = (RemoveCommand) undoCommand;
-         return AddCommand.create(undoRemoveCommand.getDomain(), undoRemoveCommand.getOwner(),
-            undoRemoveCommand.getFeature(), undoRemoveCommand.getResult(), undoRemoveCommand.getIndices()[0]);
-      } else if (undoCommand instanceof SetCommand) {
-         // FIXME: Handle the UNSET value, see also DefaultCommandCodec where it is also not yet implemented
-         SetCommand undoSetCommand = (SetCommand) undoCommand;
-         return SetCommand.create(undoSetCommand.getDomain(), undoSetCommand.getOwner(),
-            undoSetCommand.getFeature(), undoSetCommand.getOldValue(), undoSetCommand.getIndex());
-      } else if (undoCommand instanceof ReplaceCommand) {
-         // TODO see also DefaultCommandCodec
-      } else if (undoCommand instanceof MoveCommand) {
-         // TODO see also DefaultCommandCodec
-      }
-      return undoCommand;
    }
 
 }

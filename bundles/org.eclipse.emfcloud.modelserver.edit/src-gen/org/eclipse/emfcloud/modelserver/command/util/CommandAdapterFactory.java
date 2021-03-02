@@ -1,5 +1,5 @@
-/********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+/**
+ * Copyright (c) 2021 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -7,7 +7,7 @@
  * available at https://opensource.org/licenses/MIT.
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- ********************************************************************************/
+ */
 package org.eclipse.emfcloud.modelserver.command.util;
 
 import org.eclipse.emf.common.notify.Adapter;
@@ -15,6 +15,7 @@ import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.command.CCompoundCommand;
 
@@ -90,6 +91,11 @@ public class CommandAdapterFactory extends AdapterFactoryImpl {
       }
 
       @Override
+      public Adapter caseCommandExecutionResult(final CCommandExecutionResult object) {
+         return createCommandExecutionResultAdapter();
+      }
+
+      @Override
       public Adapter defaultCase(final EObject object) {
          return createEObjectAdapter();
       }
@@ -138,6 +144,22 @@ public class CommandAdapterFactory extends AdapterFactoryImpl {
     * @generated
     */
    public Adapter createCompoundCommandAdapter() {
+      return null;
+   }
+
+   /**
+    * Creates a new adapter for an object of class
+    * '{@link org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult <em>Execution Result</em>}'.
+    * <!-- begin-user-doc -->
+    * This default implementation returns null so that we can easily ignore cases;
+    * it's useful to ignore a case when inheritance will catch all the cases anyway.
+    * <!-- end-user-doc -->
+    *
+    * @return the new adapter.
+    * @see org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult
+    * @generated
+    */
+   public Adapter createCommandExecutionResultAdapter() {
       return null;
    }
 

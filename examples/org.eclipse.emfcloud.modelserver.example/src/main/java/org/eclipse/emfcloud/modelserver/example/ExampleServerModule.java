@@ -11,7 +11,9 @@
 package org.eclipse.emfcloud.modelserver.example;
 
 import org.eclipse.emfcloud.modelserver.common.Routing;
+import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
 import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
+import org.eclipse.emfcloud.modelserver.edit.CommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.di.DefaultModelServerModule;
 
@@ -27,5 +29,11 @@ public class ExampleServerModule extends DefaultModelServerModule {
    protected void configureRoutings(final MultiBinding<Routing> binding) {
       super.configureRoutings(binding);
       binding.add(CoffeeRouting.class);
+   }
+
+   @Override
+   protected void configureCommandCodecs(final MapBinding<String, CommandContribution> binding) {
+      super.configureCommandCodecs(binding);
+      binding.put(UpdateTaskNameCommandContribution.TYPE, UpdateTaskNameCommandContribution.class);
    }
 }

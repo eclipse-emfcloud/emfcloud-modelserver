@@ -1,5 +1,5 @@
-/********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+/**
+ * Copyright (c) 2021 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -7,10 +7,11 @@
  * available at https://opensource.org/licenses/MIT.
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
- ********************************************************************************/
+ */
 package org.eclipse.emfcloud.modelserver.command;
 
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.EMap;
 import org.eclipse.emf.ecore.EObject;
 
 /**
@@ -29,6 +30,7 @@ import org.eclipse.emf.ecore.EObject;
  * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommand#getDataValues <em>Data Values</em>}</li>
  * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommand#getObjectValues <em>Object Values</em>}</li>
  * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommand#getObjectsToAdd <em>Objects To Add</em>}</li>
+ * <li>{@link org.eclipse.emfcloud.modelserver.command.CCommand#getProperties <em>Properties</em>}</li>
  * </ul>
  *
  * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommand()
@@ -38,18 +40,16 @@ import org.eclipse.emf.ecore.EObject;
 public interface CCommand extends EObject {
    /**
     * Returns the value of the '<em><b>Type</b></em>' attribute.
-    * The literals are from the enumeration {@link org.eclipse.emfcloud.modelserver.command.CommandKind}.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
     * @return the value of the '<em>Type</em>' attribute.
-    * @see org.eclipse.emfcloud.modelserver.command.CommandKind
-    * @see #setType(CommandKind)
+    * @see #setType(String)
     * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommand_Type()
     * @model required="true"
     * @generated
     */
-   CommandKind getType();
+   String getType();
 
    /**
     * Sets the value of the '{@link org.eclipse.emfcloud.modelserver.command.CCommand#getType <em>Type</em>}' attribute.
@@ -57,11 +57,10 @@ public interface CCommand extends EObject {
     * <!-- end-user-doc -->
     *
     * @param value the new value of the '<em>Type</em>' attribute.
-    * @see org.eclipse.emfcloud.modelserver.command.CommandKind
     * @see #getType()
     * @generated
     */
-   void setType(CommandKind value);
+   void setType(String value);
 
    /**
     * Returns the value of the '<em><b>Owner</b></em>' reference.
@@ -164,5 +163,20 @@ public interface CCommand extends EObject {
     * @generated
     */
    EList<EObject> getObjectsToAdd();
+
+   /**
+    * Returns the value of the '<em><b>Properties</b></em>' map.
+    * The key is of type {@link java.lang.String},
+    * and the value is of type {@link java.lang.String},
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @return the value of the '<em>Properties</em>' map.
+    * @see org.eclipse.emfcloud.modelserver.command.CCommandPackage#getCommand_Properties()
+    * @model mapType="org.eclipse.emf.ecore.EStringToStringMapEntry&lt;org.eclipse.emf.ecore.EString,
+    *        org.eclipse.emf.ecore.EString&gt;"
+    * @generated
+    */
+   EMap<String, String> getProperties();
 
 } // CCommand
