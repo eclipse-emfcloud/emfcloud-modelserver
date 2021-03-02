@@ -16,9 +16,9 @@ mvn clean install
 
 ### Code Coverage
 
-The latest code coverage can be found here: `org.eclipse.emfcloud.modelserver.codecoverage/jacoco/index.html`.
+The latest code coverage can be found here: [`org.eclipse.emfcloud.modelserver.codecoverage/jacoco/index.html`](./releng/org.eclipse.emfcloud.modelserver.codecoverage/jacoco/index.html).
 
-The code coverage report is generated with [JaCoCo](https://www.eclemma.org/jacoco/) and is integrated in the Maven build. In the package `com.eclispesource.modelserver.codecoverage` all code coverages are aggregated into one report.
+The code coverage report is generated with [JaCoCo](https://www.eclemma.org/jacoco/) and is integrated in the Maven build. In the package `com.eclipsesource.modelserver.codecoverage` all code coverages are aggregated into one report.
 
 When executing the Maven build locally, the detailed results are computed and can be investigated in more detail.
 
@@ -49,10 +49,13 @@ options:
 
 ## Model Server API
 
+### Parameters
 - The query parameter `?modeluri=` accepts files in the loaded workspace as well as absolute file paths.
 - Parameters in brackets `[]` are optional.
   - If no format is specified, the default format is JSON.
-  - The livevalidation parameter defaults to false. If set to true the ws will recieve validation results automatically.
+  - [WebSocket] The parameter `livevalidation` defaults to false. If set to true the websocket will recieve validation results automatically on model changes.
+
+<br/>
 
 ### HTTP Endpoints
 If the model server is up and running, you can access the model server API via `http://localhost:8081/api/v1/*`.
@@ -83,6 +86,7 @@ The following table shows the current HTTP endpoints:
 
 <br/>
 
+#### Server Configuration
 Per default, updating the server configuration (`/server/configure`) with a new workspaceRoot, enables queueing of further incoming requests until configuration is completed.
 Please see `ModelServerRouting` for details.
 
@@ -145,9 +149,9 @@ public interface ModelServerClientApiV1<A> {
    CompletableFuture<Response<A>> update(String modelUri, A updatedModel, String format);
 
    CompletableFuture<Response<Boolean>> save(String modelUri);
-   
+
    CompletableFuture<Response<Boolean>> saveAll();
-   
+
    CompletableFuture<Response<String>> validate(String modelUri);
 
    CompletableFuture<Response<String>> getValidationConstraints(String modelUri);
@@ -165,11 +169,11 @@ public interface ModelServerClientApiV1<A> {
    void subscribe(String modelUri, SubscriptionListener subscriptionListener);
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format);
-   
+
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, long timeout);
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format, long timeout);
-   
+
    void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener);
 
    void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format);
@@ -306,54 +310,75 @@ All commands are executed on a transactional command stack within an **EMF trans
 ### WebSocket Subscriptions Example
 
 If you want to be notified about any changes happening on a certain model, 
-you can subscribe with a `SubscriptionListener` and define a format for the responses, which is `"xmi"` in this example.
+you can subscribe with a `SubscriptionListener` and define a format for the responses, which is TypedSubscriptionListener for `xmi` in this example.
 
 Please also see a basic running example in `org.eclipse.emfcloud.modelserver.example.client`.
 
 ```Java
 ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v1/");
 String subscriptionId = "SuperBrewer3000.json";
-client.subscribe(subscriptionId, new SubscriptionListener() {
+client.subscribe(subscriptionId, new XmiToEObjectSubscriptionListener() {
   @Override
-  public void onOpen(Response<String> response) {
+  public void onOpen(final Response<String> response) {
     System.out.println("Connected: " + response.getMessage());
   }
 
   @Override
-  public void onMessage(String response) {
-    System.out.println("Message received: " + response);
+  public void onSuccess(final Optional<String> message) {
+    System.out.println("Success: " + message.get());
   }
 
   @Override
-  public void onClosing(int code, @NotNull String reason) {
-    System.out.println("Closing: Code " + code);
+  public void onIncrementalUpdate(final CCommandExecutionResult incrementalUpdate) {
+    System.out.println("Incremental update from model server received: " + incrementalUpdate.toString());
   }
 
   @Override
-  public void onFailure(Throwable t) {
-    System.out.println("Failed: ");
+  public void onDirtyChange(final boolean isDirty) {
+    System.out.println("Dirty State: " + isDirty);
+  }
+
+  @Override
+  public void onUnknown(final ModelServerNotification notification) {
+    System.out.println("Unknown notification of type " + notification.getType() + ": " + notification.getData());
+  }
+
+  @Override
+  public void onFullUpdate(final EObject fullUpdate) {
+    System.out.println("Full <XmiEObject> update from model server received: " + fullUpdate.toString());
+  }
+
+  @Override
+  public void onError(final Optional<String> message) {
+    System.out.println("Error from model server received: " + message.get());
+  }
+
+  @Override
+  public void onFailure(final Throwable t, final Response<String> response) {
+    System.out.println("Failure: " + response.getMessage());
     t.printStackTrace();
   }
 
   @Override
-  public void onClosed(int code, @NotNull String reason) {
-    System.out.println("Connection closed: Reason " + reason);
+  public void onFailure(final Throwable t) {
+    System.out.println("Failure: ");
+    t.printStackTrace();
   }
 
   @Override
-  public void onFailure(Throwable t, Response<String> response) {
-    System.out.println("Failed: " + response);
+  public void onClosing(final int code, final String reason) {
+    System.out.println("Closing connection to model server, reason: " + reason);
   }
 
   @Override
-  public void onNotification(ModelServerNotification notification) {
-    System.out.println("Notification: " + notification);
+  public void onClosed(final int code, final String reason) {
+    System.out.println("Closed connection to model server, reason: " + reason);
   }
-}, "xmi");
+});
 client.unsubscribe(subscriptionId);
 ```
 
-The kind of message received depends on the operation.  For an `update` call (`PUT` request on the model), the message is the new content of the model.  For an incremental update applied by a `PATCH` request with an edit command (see above), the message is the result of the command that was executed. The command execution result consists of the original client command, an execution type (e.g., 'execute', 'undo', 'redo'), the affected objects from the executed command and any recorded changes.
+The kind of message received depends on the operation. For an `update` call (`PUT` request on the model), the message is the new content of the model (`onFullUpdate`).  For an incremental update applied by a `PATCH` request with an edit command (see above), the message is the result of the command that was executed (`onIncrementalUpdate`). The command execution result consists of the original client command, an execution type (e.g., 'execute', 'undo', 'redo'), the affected objects from the executed command and any recorded changes.
 
 ## Contributing
 All involved code must adhere to the provided codestyle and checkstyle settings.

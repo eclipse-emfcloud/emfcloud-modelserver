@@ -179,7 +179,7 @@ public final class ExampleModelServerClient {
       System.out.println("- " + CMD_GET + " <modelUri>");
       System.out.println("- " + CMD_UPDATE_TASKS + " <name> // adapts all task names in SuperBrewer3000.json (custom)");
       System.out.println("- " + CMD_UNDO + " <modelUri>");
-      System.out.println("- " + CMD_REDO + " redo <modelUri>");
+      System.out.println("- " + CMD_REDO + " <modelUri>");
       System.out.println("- " + CMD_HELP);
       System.out.println("- " + CMD_QUIT);
       System.out.println();
