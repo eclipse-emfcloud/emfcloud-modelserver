@@ -59,12 +59,12 @@ import okhttp3.WebSocketListener;
 
 public class ModelServerClient implements ModelServerClientApi<EObject>, ModelServerPaths, AutoCloseable {
 
-   protected static final Set<String> DEFAULT_SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
+   public static final Set<String> DEFAULT_SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
       ModelServerPathParameters.FORMAT_XMI);
-   protected static final String PATCH = "PATCH";
-   protected static final String POST = "POST";
+   public static final String PATCH = "PATCH";
+   public static final String POST = "POST";
 
-   protected static Logger LOG = Logger.getLogger(ModelServerClient.class.getSimpleName());
+   private static Logger LOG = Logger.getLogger(ModelServerClient.class.getSimpleName());
 
    protected final OkHttpClient client;
    protected final String baseUrl;
