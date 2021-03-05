@@ -41,6 +41,7 @@ public class DefaultServerController implements ServerController {
       try {
          if (updateServerConfiguration(newConfiguration)) {
             modelRepository.initialize();
+            // ContextResponse.success(ctx);
          }
       } catch (IllegalArgumentException exception) {
          ContextResponse.badRequest(ctx, exception);

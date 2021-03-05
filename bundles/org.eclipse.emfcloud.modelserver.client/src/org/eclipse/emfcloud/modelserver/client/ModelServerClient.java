@@ -59,17 +59,17 @@ import okhttp3.WebSocketListener;
 
 public class ModelServerClient implements ModelServerClientApi<EObject>, ModelServerPaths, AutoCloseable {
 
-   private static final Set<String> DEFAULT_SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
+   protected static final Set<String> DEFAULT_SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
       ModelServerPathParameters.FORMAT_XMI);
-   private static final String PATCH = "PATCH";
-   private static final String POST = "POST";
+   protected static final String PATCH = "PATCH";
+   protected static final String POST = "POST";
 
-   private static Logger LOG = Logger.getLogger(ModelServerClient.class.getSimpleName());
+   protected static Logger LOG = Logger.getLogger(ModelServerClient.class.getSimpleName());
 
-   private final OkHttpClient client;
-   private final String baseUrl;
-   private final Map<String, WebSocket> openSockets = new LinkedHashMap<>();
-   private final Map<EditingContextImpl, WebSocket> openEditingSockets = new LinkedHashMap<>();
+   protected final OkHttpClient client;
+   protected final String baseUrl;
+   protected final Map<String, WebSocket> openSockets = new LinkedHashMap<>();
+   protected final Map<EditingContextImpl, WebSocket> openEditingSockets = new LinkedHashMap<>();
 
    public ModelServerClient(final String baseUrl) throws MalformedURLException {
       this(new OkHttpClient(), baseUrl);
@@ -287,7 +287,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return createOrUpdateModel(modelUri, createdModel, format, POST);
    }
 
-   private CompletableFuture<Response<EObject>> createOrUpdateModel(final String modelUri, final EObject model,
+   protected CompletableFuture<Response<EObject>> createOrUpdateModel(final String modelUri, final EObject model,
       final String format,
       final String httpMethod) {
       String checkedFormat = checkedFormat(format);
@@ -300,7 +300,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @NotNull
-   private Request buildCreateOrUpdateRequest(final String modelUri, final String httpMethod,
+   protected Request buildCreateOrUpdateRequest(final String modelUri, final String httpMethod,
       final String checkedFormat,
       final TextNode dataNode) {
       return new Request.Builder()
@@ -332,7 +332,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return createOrUpdateModel(modelUri, updatedModel, format, PATCH);
    }
 
-   private String checkedFormat(final String format) {
+   protected String checkedFormat(final String format) {
       if (Strings.isNullOrEmpty(format)) {
          return getDefaultFormat();
       }
@@ -599,7 +599,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       doSubscribe(modelUri, subscriptionListener, request);
    }
 
-   private void doSubscribe(final String modelUri, final SubscriptionListener subscriptionListener,
+   protected void doSubscribe(final String modelUri, final SubscriptionListener subscriptionListener,
       final Request request) {
       @SuppressWarnings({ "checkstyle:AnonInnerLength" })
       final WebSocket socket = client.newWebSocket(request, new WebSocketListener() {
@@ -657,19 +657,19 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return false;
    }
 
-   private String makeWsUrl(final String path) {
+   protected String makeWsUrl(final String path) {
       return path.replaceFirst("http:", "ws:");
    }
 
-   private String makeUrl(final String path) {
+   protected String makeUrl(final String path) {
       return baseUrl + path;
    }
 
-   private HttpUrl.Builder createHttpUrlBuilder(final String path) {
+   protected HttpUrl.Builder createHttpUrlBuilder(final String path) {
       return Objects.requireNonNull(HttpUrl.parse(path)).newBuilder();
    }
 
-   private CompletableFuture<Response<String>> makeCall(final Request request) {
+   protected CompletableFuture<Response<String>> makeCall(final Request request) {
       CompletableFuture<Response<String>> future = new CompletableFuture<>();
       this.client.newCall(request).enqueue(new Callback() {
          @Override
@@ -686,11 +686,11 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return future;
    }
 
-   private Response<Optional<String>> parseField(final Response<String> response, final String field) {
+   protected Response<Optional<String>> parseField(final Response<String> response, final String field) {
       return response.mapBody(body -> parseJsonField(body, field));
    }
 
-   private Optional<String> parseJsonField(final String jsonAsString, final String field) {
+   protected Optional<String> parseJsonField(final String jsonAsString, final String field) {
       try {
          final JsonNode node = Json.parse(jsonAsString);
          return getJsonField(node, field);
@@ -700,7 +700,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       }
    }
 
-   private Optional<String> getJsonField(final JsonNode node, final String field) {
+   protected Optional<String> getJsonField(final JsonNode node, final String field) {
       JsonNode data = node.get(field);
       if (data == null) {
          return Optional.empty();
@@ -711,11 +711,11 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
       return Optional.of(data.toString());
    }
 
-   private <A> Response<A> getBodyOrThrow(final Response<Optional<A>> response) {
+   protected <A> Response<A> getBodyOrThrow(final Response<Optional<A>> response) {
       return response.mapBody(this::require);
    }
 
-   private <A> A require(final Optional<A> value) {
+   protected <A> A require(final Optional<A> value) {
       return value.orElseThrow(() -> new RuntimeException("Could not parse 'data' field"));
    }
 
@@ -819,19 +819,19 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
 
    }
 
-   private CompletableFuture<Response<Boolean>> makeCallAndExpectSuccess(final Request request) {
+   protected CompletableFuture<Response<Boolean>> makeCallAndExpectSuccess(final Request request) {
       return makeCall(request)
          .thenApply(response -> parseField(response, JsonResponseMember.TYPE))
          .thenApply(this::getBodyOrThrow)
          .thenApply(response -> response.mapBody(body -> body.equals(JsonResponseType.SUCCESS)));
    }
 
-   private CompletableFuture<Response<Optional<String>>> makeCallAndParseDataField(final Request request) {
+   protected CompletableFuture<Response<Optional<String>>> makeCallAndParseDataField(final Request request) {
       return makeCall(request)
          .thenApply(response -> parseField(response, JsonResponseMember.DATA));
    }
 
-   private CompletableFuture<Response<String>> makeCallAndGetDataBody(final Request request) {
+   protected CompletableFuture<Response<String>> makeCallAndGetDataBody(final Request request) {
       return makeCallAndParseDataField(request)
          .thenApply(this::getBodyOrThrow);
    }
