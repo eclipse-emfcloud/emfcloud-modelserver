@@ -10,6 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf;
 
+import static org.eclipse.emfcloud.modelserver.tests.util.OSUtil.osLineSeparator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -28,11 +29,10 @@ import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 
 public class EMFJsonConverterTest extends AbstractResourceTest {
 
@@ -51,8 +51,10 @@ public class EMFJsonConverterTest extends AbstractResourceTest {
    @Before
    public void before() throws IOException {
       this.emfJsonConverter = new EMFJsonConverter();
-      simpleTestJson = "{\n" + "  \"eClass\" : \"http://www.eclipse.org/emf/2002/Ecore#//EClass\",\n"
-         + "  \"name\" : \"SimpleTest\"\n" + "}";
+      simpleTestJson = osLineSeparator("{\n"
+         + "  \"eClass\" : \"http://www.eclipse.org/emf/2002/Ecore#//EClass\",\n"
+         + "  \"name\" : \"SimpleTest\"\n"
+         + "}");
 
       simpleTestEClass = EcoreFactory.eINSTANCE.createEClass();
       simpleTestEClass.setName("SimpleTest");

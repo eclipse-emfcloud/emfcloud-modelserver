@@ -67,20 +67,22 @@ public class DefaultUriHelper implements UriHelper {
    @Override
    public Optional<URI> toFileUri(final String fileUrl) {
       try {
-         String decodedUrl = URLDecoder.decode(fileUrl, "UTF-8");
-         URI uri = URI.createURI(decodedUrl, true);
-         if (uri.scheme() == null) {
-            uri = withTrailingSeparator(URI.createFileURI(decodedUrl));
-         }
-         if (uri.isRelative()) {
-            URI cwd = URI.createFileURI(System.getProperty("user.dir"));
-            uri = uri.resolve(withTrailingSeparator(cwd));
-         }
+         File file = getAbsoluteFile(fileUrl);
+         URI uri = withTrailingSeparator(URI.createFileURI(file.toURI().normalize().getPath()));
          return Optional.ofNullable(uri).filter(URI::isFile);
       } catch (NullPointerException | IllegalArgumentException | UnsupportedEncodingException e) {
          LOG.warn(String.format("Could not convert to filePath! ’%s’ is not a valid URL", fileUrl));
          return Optional.empty();
       }
+   }
+
+   protected File getAbsoluteFile(final String fileUrl) throws UnsupportedEncodingException {
+      String decodedUrl = URLDecoder.decode(withoutFileScheme(fileUrl), "UTF-8");
+      File file = new File(decodedUrl);
+      if (!file.isAbsolute()) {
+         file = new File(System.getProperty("user.dir"), decodedUrl);
+      }
+      return file;
    }
 
    @Override
@@ -103,6 +105,17 @@ public class DefaultUriHelper implements UriHelper {
       return uri.isFile() && uri.authority() == null
          ? URI.createHierarchicalURI(uri.scheme(), "", uri.device(), uri.segments(), uri.query(), uri.fragment())
          : uri;
+   }
+
+   public static URI withoutFileScheme(final URI uri) {
+      return uri.scheme() == "file"
+         ? URI.createHierarchicalURI(null, "", uri.device(), uri.segments(), uri.query(), uri.fragment())
+         : uri;
+   }
+
+   public static String withoutFileScheme(final String uriString) {
+      URI uri = uriString.startsWith("file:") ? URI.createURI(uriString) : URI.createFileURI(uriString);
+      return withoutFileScheme(uri).toString();
    }
 
 }

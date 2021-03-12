@@ -10,6 +10,8 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.configuration;
 
+import static org.eclipse.emfcloud.modelserver.tests.util.OSUtil.osEndsWith;
+import static org.eclipse.emfcloud.modelserver.tests.util.OSUtil.osIs;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
@@ -31,19 +33,19 @@ public class DefaultServerConfigurationTest {
    @Test
    public void normalizeWorkspaceRoot() {
       serverConfiguration.setWorkspaceRoot("foo");
-      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), endsWith("foo/"));
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), osEndsWith("foo" + File.separator));
    }
 
    @Test
    public void normalizeWorkspaceRootEncoded() throws UnsupportedEncodingException {
       serverConfiguration.setWorkspaceRoot("file:/c%3A/foo%20bar/");
-      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), endsWith("c:/foo bar/"));
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), osEndsWith("c:/foo bar/"));
    }
 
    @Test
    public void normalizeWorkspaceRootSlashAlreadyPresent() {
       serverConfiguration.setWorkspaceRoot("foo/");
-      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), endsWith("foo/"));
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), osEndsWith("foo/"));
    }
 
    @Test
@@ -61,7 +63,8 @@ public class DefaultServerConfigurationTest {
       serverConfiguration.setWorkspaceRoot(".");
       URI expected = URI.createFileURI(cwd.getAbsolutePath()).appendSegment(""); // trailing slash
       assertThat(serverConfiguration.getWorkspaceRootURI(), is(expected));
-      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), is(cwd.getAbsolutePath() + "/"));
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(),
+         is(cwd.getAbsolutePath() + File.separator));
    }
 
    @Test
@@ -72,7 +75,7 @@ public class DefaultServerConfigurationTest {
       URI expected = URI.createFileURI(cwd.getAbsolutePath() + "/ui-schema-folder").appendSegment(""); // trailing slash
       assertThat(serverConfiguration.getUiSchemaFolderURI(), is(expected));
       assertThat(serverConfiguration.getUiSchemaFolderURI().toFileString(),
-         is(cwd.getAbsolutePath() + "/ui-schema-folder/"));
+         osIs(cwd.getAbsolutePath() + "/ui-schema-folder/"));
    }
 
    @Test
@@ -80,15 +83,15 @@ public class DefaultServerConfigurationTest {
       File cwd = getCWD();
 
       serverConfiguration.setUiSchemaFolder("./ui-schema-folder");
-      String expected = cwd.getAbsolutePath() + "/ui-schema-folder";
+      String expected = cwd.getAbsolutePath() + File.separator + "ui-schema-folder";
 
       // true with or without trailing slash
       assertThat(serverConfiguration.isUiSchemaFolder(expected), is(true));
-      assertThat(serverConfiguration.isUiSchemaFolder(expected + "/"), is(true));
+      assertThat(serverConfiguration.isUiSchemaFolder(expected + File.separator), is(true));
 
       // false for: parent, child
       assertThat(serverConfiguration.isUiSchemaFolder(cwd.getAbsolutePath()), is(false));
-      assertThat(serverConfiguration.isUiSchemaFolder(expected + "test/"), is(false));
+      assertThat(serverConfiguration.isUiSchemaFolder(expected + "test" + File.separator), is(false));
    }
 
    @Test
@@ -106,7 +109,8 @@ public class DefaultServerConfigurationTest {
    public void getWorkspaceEntries() {
       assumeThat(getCWD().getName(), is("org.eclipse.emfcloud.modelserver.emf.tests"));
       serverConfiguration.setWorkspaceRoot(".");
-      assertThat(serverConfiguration.getWorkspaceEntries(), hasItem(endsWith("/DefaultServerConfigurationTest.class")));
+      assertThat(serverConfiguration.getWorkspaceEntries(),
+         hasItem(endsWith(File.separator + "DefaultServerConfigurationTest.class")));
    }
 
    //
