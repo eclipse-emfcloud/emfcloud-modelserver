@@ -12,6 +12,7 @@ package org.eclipse.emfcloud.modelserver.emf.common;
 
 import static org.eclipse.emfcloud.modelserver.jsonschema.Json.prop;
 import static org.eclipse.emfcloud.modelserver.tests.util.EMFMatchers.eEqualTo;
+import static org.eclipse.emfcloud.modelserver.tests.util.OSUtil.osLineSeparator;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -106,7 +107,7 @@ public class DefaultModelControllerTest {
       URI uri = URI.createFileURI("resources/Test1.ecore");
       Optional<Resource> resource = Optional.of(set.getResource(uri, true));
 
-      when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI("/home/modelserver/workspace/"));
+      when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI(System.getProperty("user.home")));
       codecs = new DICodecsManager(Map.of(ModelServerPathParametersV1.FORMAT_XMI, new XmiCodec()));
       when(modelRepository.getModel(getModelUri("Test1.ecore").toString()))
          .thenReturn(Optional.of(resource.get().getContents().get(0)));
@@ -195,8 +196,7 @@ public class DefaultModelControllerTest {
    public void executeCommand() throws EncodingException, DecodingException {
       ResourceSet rset = new ResourceSetImpl();
       String modeluri = "SuperBrewer3000.json";
-      JsonResource res = new JsonResource(
-         URI.createURI(modeluri).resolve(serverConfiguration.getWorkspaceRootURI()));
+      JsonResource res = createJsonResource(modeluri);
       rset.getResources().add(res);
       final EClass task = EcoreFactory.eINSTANCE.createEClass();
       res.getContents().add(task);
@@ -236,8 +236,7 @@ public class DefaultModelControllerTest {
    public void addCommandNotification() throws EncodingException, DecodingException {
       ResourceSet rset = new ResourceSetImpl();
       String modeluri = "SuperBrewer3000.json";
-      JsonResource res = new JsonResource(
-         URI.createURI(modeluri).resolve(serverConfiguration.getWorkspaceRootURI()));
+      JsonResource res = createJsonResource(modeluri);
       rset.getResources().add(res);
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
       res.getContents().add(eClass);
@@ -307,7 +306,8 @@ public class DefaultModelControllerTest {
 
       modelController.getModelElementById(context, "test", "//@workflows.0");
 
-      String expectedXmiSnippet = "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n<ecore:EClass xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:ecore=\"http://www.eclipse.org/emf/2002/Ecore\" name=\"SimpleWorkflow\"/>\n";
+      String expectedXmiSnippet = osLineSeparator(
+         "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n<ecore:EClass xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:ecore=\"http://www.eclipse.org/emf/2002/Ecore\" name=\"SimpleWorkflow\"/>\n");
       JsonNode expectedResponse = Json.object(
          prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
          prop(JsonResponseMember.DATA, Json.text(expectedXmiSnippet)));
@@ -344,7 +344,8 @@ public class DefaultModelControllerTest {
 
       modelController.getModelElementById(context, "test", "PreHeat");
 
-      String expectedXmiSnippet = "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n<ecore:EClass xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:ecore=\"http://www.eclipse.org/emf/2002/Ecore\" name=\"PreHeat\"/>\n";
+      String expectedXmiSnippet = osLineSeparator(
+         "<?xml version=\"1.0\" encoding=\"ASCII\"?>\n<ecore:EClass xmi:version=\"2.0\" xmlns:xmi=\"http://www.omg.org/XMI\" xmlns:ecore=\"http://www.eclipse.org/emf/2002/Ecore\" name=\"PreHeat\"/>\n");
       JsonNode expectedResponse = Json.object(
          prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)),
          prop(JsonResponseMember.DATA, Json.text(expectedXmiSnippet)));
@@ -410,4 +411,9 @@ public class DefaultModelControllerTest {
       };
    }
 
+   private JsonResource createJsonResource(final String modeluri) {
+      return new JsonResource(
+         URI.createHierarchicalURI(new String[] { modeluri }, null, null)
+            .resolve(serverConfiguration.getWorkspaceRootURI()));
+   }
 }
