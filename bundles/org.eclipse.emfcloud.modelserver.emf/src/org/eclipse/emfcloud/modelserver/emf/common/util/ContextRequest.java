@@ -100,6 +100,10 @@ public final class ContextRequest {
 
    public static Optional<String> readData(final Context ctx) {
       try {
+         if (ctx.body() == null) {
+            badRequest(ctx, "Empty Body");
+            return Optional.empty();
+         }
          JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.body());
          if (!json.has(JsonResponseMember.DATA)) {
             badRequest(ctx, "Empty JSON");
