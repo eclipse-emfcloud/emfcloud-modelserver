@@ -23,16 +23,21 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static org.mockito.hamcrest.MockitoHamcrest.intThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
@@ -74,6 +79,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.javalin.http.Context;
 
@@ -359,16 +365,49 @@ public class DefaultModelControllerTest {
 
       verify(context)
          .json(
-            argThat(jsonNodeThat(
+            argThat(jsonNodeStringThat(
                containsRegex(".\"type\":\"validationResult\",\"data\":.*\"id\".*\"severity\".*\"children\".*"))));
    }
 
    @Test
    public void getValidationConstraints() throws EncodingException, IOException {
       modelController.getValidationConstraints(context, getModelUri("Test1.ecore").toString());
-
       verify(context)
-         .json(argThat(jsonNodeThat(containsRegex(".\"type\":\"success\",\"data\":.*"))));
+         .json(argThat(jsonNodeStringThat(containsRegex(".\"type\":\"success\",\"data\":.*"))));
+   }
+
+   @Test
+   public void createNewModelWithoutPayload() throws EncodingException, IOException {
+      modelController.create(context, getModelUri("NewModel.ecore").toString());
+      verify(context).status(intThat(equalTo((HttpURLConnection.HTTP_BAD_REQUEST))));
+      verify(context).json(argThat(hasProperties(prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.ERROR)))));
+   }
+
+   @Test
+   public void createNewModel() throws EncodingException, IOException {
+      final EClass root = EcoreFactory.eINSTANCE.createEClass();
+      String requestBody = Json
+         .object(Json.prop(JsonResponseMember.DATA, Json.text(new JsonCodec().encode(root).toString())))
+         .toString();
+      when(context.body()).thenReturn(requestBody);
+      modelController.create(context, getModelUri("NewModel.ecore").toString());
+      verify(context).json(argThat(hasProperties(prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)))));
+   }
+
+   @Test
+   public void createExistingModel() throws EncodingException, IOException {
+      String modelUri = getModelUri("NewModel.ecore").toString();
+
+      final EClass root = EcoreFactory.eINSTANCE.createEClass();
+      when(modelRepository.hasModel(modelUri)).thenReturn(true);
+
+      String requestBody = Json
+         .object(Json.prop(JsonResponseMember.DATA, Json.text(new JsonCodec().encode(root).toString())))
+         .toString();
+      when(context.body()).thenReturn(requestBody);
+      modelController.create(context, modelUri);
+      verify(context).status(intThat(equalTo((HttpURLConnection.HTTP_CONFLICT))));
+      verify(context).json(argThat(hasProperties(prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.ERROR)))));
    }
 
    static File getCWD() { return new File(System.getProperty("user.dir")); }
@@ -377,11 +416,11 @@ public class DefaultModelControllerTest {
       return URI.createFileURI(getCWD() + "/resources/" + modelFileName);
    }
 
-   Matcher<Object> jsonNodeThat(final Matcher<String> data) {
+   Matcher<Object> jsonNodeStringThat(final Matcher<String> data) {
       return new TypeSafeDiagnosingMatcher<>() {
          @Override
          public void describeTo(final Description description) {
-            description.appendText("JsonNode that ");
+            description.appendText("JsonNodeString that ");
             description.appendDescriptionOf(data);
          }
 
@@ -395,6 +434,48 @@ public class DefaultModelControllerTest {
             if (!data.matches(text)) {
                data.describeMismatch(text, mismatchDescription);
                return false;
+            }
+            return true;
+         }
+      };
+   }
+
+   Matcher<Object> jsonNodeThat(final Matcher<JsonNode> data) {
+      return new TypeSafeDiagnosingMatcher<>() {
+         @Override
+         public void describeTo(final Description description) {
+            description.appendText("JsonNode that ");
+            description.appendDescriptionOf(data);
+         }
+
+         @Override
+         protected boolean matchesSafely(final Object item, final Description mismatchDescription) {
+            if (!(item instanceof JsonNode)) {
+               return false;
+            }
+            JsonNode node = (JsonNode) item;
+            if (!data.matches(node)) {
+               data.describeMismatch(node, mismatchDescription);
+               return false;
+            }
+            return true;
+         }
+      };
+   }
+
+   @SafeVarargs
+   final Matcher<ObjectNode> hasProperties(final Map.Entry<String, JsonNode>... properties) {
+      String description = Arrays.stream(properties)
+         .map(property -> "\"" + property.getKey() + "\":" + property.getValue().toString())
+         .collect(Collectors.joining(",", "{", "}"));
+
+      return new CustomTypeSafeMatcher<>(description) {
+         @Override
+         protected boolean matchesSafely(final ObjectNode item) {
+            for (Entry<String, JsonNode> property : properties) {
+               if (!item.get(property.getKey()).equals(property.getValue())) {
+                  return false;
+               }
             }
             return true;
          }

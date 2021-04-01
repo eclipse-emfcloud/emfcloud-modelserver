@@ -129,6 +129,10 @@ public final class ContextResponse {
       error(context, HttpURLConnection.HTTP_BAD_REQUEST, errorMessage);
    }
 
+   public static void conflict(final Context context, final String errorMessage) {
+      error(context, HttpURLConnection.HTTP_CONFLICT, errorMessage);
+   }
+
    public static void missingParameter(final Context context, final String parameter) {
       error(context, HttpURLConnection.HTTP_BAD_REQUEST, "Missing parameter '%s'!", parameter);
    }

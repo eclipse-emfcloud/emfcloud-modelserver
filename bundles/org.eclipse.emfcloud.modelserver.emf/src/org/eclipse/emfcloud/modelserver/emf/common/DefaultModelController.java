@@ -11,7 +11,7 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.accepted;
-import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.badRequest;
+import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.conflict;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.decodingError;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.encodingError;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.internalError;
@@ -72,7 +72,10 @@ public class DefaultModelController implements ModelController {
    public void create(final Context ctx, final String modeluri) {
       Optional<EObject> root = readPayload(ctx);
       if (root.isEmpty()) {
-         badRequest(ctx, "Create new model failed.");
+         return;
+      }
+      if (this.modelRepository.hasModel(modeluri)) {
+         conflict(ctx, "Model already exists.");
          return;
       }
 
@@ -166,7 +169,6 @@ public class DefaultModelController implements ModelController {
    public void update(final Context ctx, final String modeluri) {
       Optional<EObject> newRoot = readPayload(ctx);
       if (newRoot.isEmpty()) {
-         notFound(ctx, "Update has no content");
          return;
       }
       Optional<Resource> resource = modelRepository.updateModel(modeluri, newRoot.get());
@@ -266,7 +268,6 @@ public class DefaultModelController implements ModelController {
       }
       Optional<CCommand> command = readPayload(ctx).filter(CCommand.class::isInstance).map(CCommand.class::cast);
       if (command.isEmpty()) {
-         badRequest(ctx, "Could not read command.");
          return;
       }
       try {
