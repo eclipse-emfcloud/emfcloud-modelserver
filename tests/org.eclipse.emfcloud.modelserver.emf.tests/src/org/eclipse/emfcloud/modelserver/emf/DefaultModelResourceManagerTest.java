@@ -156,7 +156,17 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
       assertTrue(modelResourceManager.isResourceLoaded(adaptModelUri("Test1.json").toString()));
    }
 
-   @Test(expected = NullPointerException.class)
+   @Test
+   public void saveResource() {
+      assertTrue(modelResourceManager.save(adaptModelUri("Coffee.ecore").toString()));
+   }
+
+   @Test
+   public void saveNonExistingResource() {
+      assertFalse(modelResourceManager.save(adaptModelUri("NotExisting.ecore").toString()));
+   }
+
+   @Test
    public void hasResourceNot() {
       assertFalse(modelResourceManager.isResourceLoaded("SuperBrewer3000.json"));
    }

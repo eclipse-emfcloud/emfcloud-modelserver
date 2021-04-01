@@ -218,7 +218,8 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Override
    public boolean isResourceLoaded(final String modeluri) {
-      return getResourceSet(modeluri).getResource(createURI(modeluri), false) != null;
+      ResourceSet resourceSet = getResourceSet(modeluri);
+      return resourceSet != null && resourceSet.getResource(createURI(modeluri), false) != null;
    }
 
    @Override
@@ -376,10 +377,14 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Override
    public boolean save(final String modeluri) {
-      Resource resource = getResourceSet(modeluri).getResource(createURI(modeluri), true);
+      ResourceSet resourceSet = getResourceSet(modeluri);
+      if (resourceSet == null) {
+         return false;
+      }
+      Resource resource = resourceSet.getResource(createURI(modeluri), true);
       boolean result = saveResource(resource);
       if (result) {
-         getEditingDomain(getResourceSet(modeluri)).saveIsDone();
+         getEditingDomain(resourceSet).saveIsDone();
       }
       return result;
    }

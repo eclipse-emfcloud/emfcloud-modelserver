@@ -410,6 +410,26 @@ public class DefaultModelControllerTest {
       verify(context).json(argThat(hasProperties(prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.ERROR)))));
    }
 
+   @Test
+   public void saveModel() throws EncodingException, IOException {
+      String modelUri = getModelUri("NewModel.ecore").toString();
+      when(modelRepository.hasModel(modelUri)).thenReturn(true);
+      when(modelRepository.saveModel(modelUri)).thenReturn(true);
+
+      modelController.save(context, modelUri);
+      verify(context).json(argThat(hasProperties(prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS)))));
+   }
+
+   @Test
+   public void saveNonExistingModel() throws EncodingException, IOException {
+      String modelUri = getModelUri("NewModel.ecore").toString();
+      when(modelRepository.hasModel(modelUri)).thenReturn(false);
+
+      modelController.save(context, modelUri);
+      verify(context).status(intThat(equalTo((HttpURLConnection.HTTP_NOT_FOUND))));
+      verify(context).json(argThat(hasProperties(prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.ERROR)))));
+   }
+
    static File getCWD() { return new File(System.getProperty("user.dir")); }
 
    private URI getModelUri(final String modelFileName) {
