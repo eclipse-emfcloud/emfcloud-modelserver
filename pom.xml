@@ -130,7 +130,7 @@
       <squareup.okio.version>2.10.0</squareup.okio.version>
       <jetty.websocket.api.version>9.4.36.v20210114</jetty.websocket.api.version>
       <jetty.websocket.servlet.version>9.4.36.v20210114</jetty.websocket.servlet.version>
-      <javalin.version>3.1.0</javalin.version> <!-- we can only upgrade to the latest version after some mocking issue is fixed, see https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/63 -->
+      <javalin.version>4.0.0.ALPHA0</javalin.version> <!-- similar to latest 3.x version but with mockito fixes: https://javalin.io/news/2021/02/17/javalin-4.0.0-alpha.html -->
       <mockito.inline.version>2.23.0</mockito.inline.version>
       <gmazzo.okhttp.mock.version>1.3.2</gmazzo.okhttp.mock.version>
       
