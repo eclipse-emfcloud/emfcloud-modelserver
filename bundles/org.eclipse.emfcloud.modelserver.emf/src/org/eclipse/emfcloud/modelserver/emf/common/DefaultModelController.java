@@ -186,6 +186,10 @@ public class DefaultModelController implements ModelController {
 
    @Override
    public void save(final Context ctx, final String modeluri) {
+      if (!this.modelRepository.hasModel(modeluri)) {
+         notFound(ctx, "Model '%s' not found.", modeluri);
+         return;
+      }
       if (this.modelRepository.saveModel(modeluri)) {
          success(ctx, "Model '%s' successfully saved", modeluri);
          sessionController.modelSaved(modeluri);

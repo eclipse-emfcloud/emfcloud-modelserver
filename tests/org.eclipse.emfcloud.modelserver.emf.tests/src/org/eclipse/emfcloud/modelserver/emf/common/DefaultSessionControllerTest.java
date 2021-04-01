@@ -35,7 +35,6 @@ import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
 import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
-import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.eclipse.jetty.websocket.api.Session;
@@ -186,7 +185,6 @@ public class DefaultSessionControllerTest {
       result.setType(CommandExecutionType.EXECUTE);
       result.getDetails().put("myCustomDetail", "test");
       result.getDetails().put("fancyInfo", "more testing");
-      System.out.println(new JsonCodec().encode(result));
 
       when(codecs.encode(result)).thenReturn(encodings);
       sessionController.commandExecuted(modelUri, result);
