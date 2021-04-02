@@ -17,6 +17,5 @@ Export-Package: org.eclipse.emfcloud.modelserver.command,
  org.eclipse.emfcloud.modelserver.command.util,
  org.eclipse.emfcloud.modelserver.edit,
  org.eclipse.emfcloud.modelserver.edit.command,
- org.eclipse.emfcloud.modelserver.edit.command.util,
  org.eclipse.emfcloud.modelserver.edit.util
 Bundle-Vendor: EclipseSource
