@@ -29,6 +29,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
+import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
@@ -166,7 +167,7 @@ public class DefaultSessionControllerTest {
       JsonNode expectedCommand = Json.object(
          prop("type", Json.text("execute")),
          prop("source", Json.object(
-            prop("eClass", Json.text("http://www.eclipsesource.com/schema/2019/modelserver/command#//Command")),
+            prop("eClass", Json.text(EcoreUtil.getURI(CCommandPackage.Literals.COMMAND).toString())),
             prop("type", Json.text(command.getType().toString())),
             prop("owner", Json.object(
                prop("eClass", Json.text("")),
