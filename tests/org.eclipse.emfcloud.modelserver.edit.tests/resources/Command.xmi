@@ -3,7 +3,7 @@
     xmi:version="2.0"
     xmlns:xmi="http://www.omg.org/XMI"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:cmd="http://www.eclipsesource.com/schema/2019/modelserver/command"
+    xmlns:cmd="http://www.eclipse.org/emfcloud/modelserver/command"
     type="set"
     feature="name">
   <owner href="Coffee.ecore#//@eClassifiers.0"/>

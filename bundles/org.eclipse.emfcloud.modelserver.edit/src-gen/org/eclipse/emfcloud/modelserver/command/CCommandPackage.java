@@ -49,7 +49,7 @@ public interface CCommandPackage extends EPackage {
     *
     * @generated
     */
-   String eNS_URI = "http://www.eclipsesource.com/schema/2019/modelserver/command";
+   String eNS_URI = "http://www.eclipse.org/emfcloud/modelserver/command";
 
    /**
     * The package namespace name.

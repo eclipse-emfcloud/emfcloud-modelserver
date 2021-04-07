@@ -17,7 +17,7 @@
    <extension point="org.eclipse.emf.ecore.generated_package">
       <!-- @generated Command -->
       <package
-            uri="http://www.eclipsesource.com/schema/2019/modelserver/command"
+            uri="http://www.eclipse.org/emfcloud/modelserver/command"
             class="org.eclipse.emfcloud.modelserver.command.CCommandPackage"
             genModel="resources/Command.genmodel"/>
    </extension>

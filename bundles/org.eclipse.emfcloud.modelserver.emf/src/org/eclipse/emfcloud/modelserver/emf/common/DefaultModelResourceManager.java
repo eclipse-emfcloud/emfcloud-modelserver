@@ -368,10 +368,13 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
       result.setType(context.getType());
       result.setSource(EcoreUtil.copy(context.getClientCommand()));
-      context.getServerCommand().getAffectedObjects().stream()
-         .filter(EObject.class::isInstance)
-         .map(EObject.class::cast)
-         .forEach(result.getAffectedObjects()::add);
+      Collection<?> affectedObjects = context.getServerCommand().getAffectedObjects();
+      if (affectedObjects != null) {
+         affectedObjects.stream()
+            .filter(EObject.class::isInstance)
+            .map(EObject.class::cast)
+            .forEach(result.getAffectedObjects()::add);
+      }
       return result;
    }
 
