@@ -94,6 +94,7 @@
       <maven.clean.version>3.1.0</maven.clean.version>
       <maven.checkstyle.version>3.1.1</maven.checkstyle.version>
       <puppycrawl.checkstyle.version>8.39</puppycrawl.checkstyle.version>
+	  <emfcloud.checkstyle.version>0.1.0-SNAPSHOT</emfcloud.checkstyle.version>
       <maven.resources.version>3.2.0</maven.resources.version>
       <maven.surefire.version>3.0.0-M5</maven.surefire.version>
       <maven.failsafe.version>3.0.0-M5</maven.failsafe.version>
@@ -167,7 +168,7 @@
             <artifactId>maven-checkstyle-plugin</artifactId>
             <version>${maven.checkstyle.version}</version>
             <configuration>
-               <configLocation>releng/org.eclipse.emfcloud.modelserver.codestyle/checkstyle/modelserver-checkstyle.xml</configLocation>
+               <configLocation>emfcloud-checkstyle.xml</configLocation>
                <consoleOutput>true</consoleOutput>
             </configuration>
             <executions>
@@ -184,6 +185,11 @@
                   <artifactId>checkstyle</artifactId>
                   <version>${puppycrawl.checkstyle.version}</version>
                </dependency>
+               <dependency>
+						<groupId>org.eclipse.emfcloud</groupId>
+						<artifactId>org.eclipse.emfcloud.checkstyle</artifactId>
+						<version>${emfcloud.checkstyle.version}</version>
+				</dependency>
             </dependencies>
          </plugin>
       </plugins>
