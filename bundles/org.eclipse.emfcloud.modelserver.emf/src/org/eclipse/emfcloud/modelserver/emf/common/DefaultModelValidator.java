@@ -29,6 +29,8 @@ import org.eclipse.emf.ecore.util.ExtendedMetaData;
 import org.eclipse.emfcloud.modelserver.emf.configuration.FacetConfig;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
@@ -58,6 +60,7 @@ public class DefaultModelValidator implements ModelValidator {
       }
       ObjectMapper mapper = mapperProvider.get();
       mapper.registerModule(new ValidationMapperModule(res.get()));
+      mapper.setVisibility(PropertyAccessor.FIELD, Visibility.PROTECTED_AND_PUBLIC);
       BasicDiagnostic diagnostics = DIAGNOSTICIAN.createDefaultDiagnostic(model.get());
       DIAGNOSTICIAN.validate(model.get(), diagnostics, DIAGNOSTICIAN.createDefaultContext());
       return mapper.valueToTree(diagnostics);
