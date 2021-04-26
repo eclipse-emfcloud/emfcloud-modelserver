@@ -387,7 +387,7 @@
             <repository>
                <id>irisa</id>
                <name>Irisa</name>
-               <url>http://maven.irisa.fr/artifactory/list/kermeta-public-release/</url>
+               <url>https://maven.irisa.fr/artifactory/list/kermeta-public-release/</url>
             </repository>
          </repositories>
 
