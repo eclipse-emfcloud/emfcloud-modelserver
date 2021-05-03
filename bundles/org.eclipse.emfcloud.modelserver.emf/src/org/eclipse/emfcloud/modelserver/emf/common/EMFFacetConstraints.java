@@ -121,6 +121,12 @@ public class EMFFacetConstraints {
 
    }
 
+   public boolean hasConstraints() {
+      return !(this.whiteSpace == 0 && enumeration.isEmpty() && pattern.isEmpty() && totalDigits == -1
+         && fractionDigits == -1 && length == -1 && minLength == -1 && maxLength == -1 && minExclusive == null
+         && maxExclusive == null && minInclusive == null && maxInclusive == null);
+   }
+
 }
 
 class WhiteSpaceFilter {

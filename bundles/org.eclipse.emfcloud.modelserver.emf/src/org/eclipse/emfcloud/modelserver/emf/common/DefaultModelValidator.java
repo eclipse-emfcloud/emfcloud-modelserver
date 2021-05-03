@@ -78,16 +78,7 @@ public class DefaultModelValidator implements ModelValidator {
       for (EClassifier classifier : ePackage.getEClassifiers()) {
          if (classifier instanceof EClass) {
             // Map Feature -> ExtendedMetaData
-            Map<String, JsonNode> featureMap = new HashMap<>();
-            for (EStructuralFeature feature : ((EClass) classifier).getEStructuralFeatures()) {
-               if (feature instanceof EAttribute) {
-                  EDataType dataType = ((EAttribute) feature).getEAttributeType();
-                  // Map facet -> Value
-                  Map<String, Object> constraints = getConstraints(dataType);
-                  EMFFacetConstraints emfFacetConstraints = new EMFFacetConstraints(constraints);
-                  featureMap.put(feature.getName(), mapper.valueToTree(emfFacetConstraints));
-               }
-            }
+            Map<String, JsonNode> featureMap = getFeatures((EClass) classifier, mapper);
             // Map Class -> Features
             if (!featureMap.isEmpty()) {
                jsonResult.put(EcoreUtil.getURI(classifier).toString(), featureMap);
@@ -95,6 +86,26 @@ public class DefaultModelValidator implements ModelValidator {
          }
       }
       return mapper.valueToTree(jsonResult);
+   }
+
+   protected Map<String, JsonNode> getFeatures(final EClass eClass, final ObjectMapper mapper) {
+      Map<String, JsonNode> featureMap = new HashMap<>();
+      for (EStructuralFeature feature : eClass.getEStructuralFeatures()) {
+         if (feature instanceof EAttribute) {
+            EDataType dataType = ((EAttribute) feature).getEAttributeType();
+            // Map facet -> Value
+            Map<String, Object> constraints = getConstraints(dataType);
+            EMFFacetConstraints emfFacetConstraints = new EMFFacetConstraints(constraints);
+            if (emfFacetConstraints.hasConstraints()) {
+               featureMap.put(feature.getName(), mapper.valueToTree(emfFacetConstraints));
+            }
+         }
+      }
+      for (EClass parent : eClass.getESuperTypes()) {
+         Map<String, JsonNode> parentMap = getFeatures(parent, mapper);
+         featureMap.putAll(parentMap);
+      }
+      return featureMap;
    }
 
    @SuppressWarnings("checkstyle:CyclomaticComplexity")
