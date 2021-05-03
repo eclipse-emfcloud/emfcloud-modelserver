@@ -93,6 +93,12 @@ public class ValidationMapperModule extends SimpleModule {
          int code = node.get(ValidationMapperModule.CODE).asInt();
          String message = node.get(ValidationMapperModule.MESSAGE).asText();
          Object[] data = p.getCodec().treeToValue(node.get(ValidationMapperModule.DATA), Object[].class);
+
+         if (node.get(ValidationMapperModule.CHILDREN).isEmpty()) {
+            int severity = node.get(ValidationMapperModule.SEVERITY).asInt();
+            return new BasicDiagnostic(severity, source, code, message, data);
+         }
+
          List<BasicDiagnostic> children = new ArrayList<>();
          for (JsonNode child : node.get(ValidationMapperModule.CHILDREN)) {
             children.add(p.getCodec().treeToValue(child, BasicDiagnostic.class));
