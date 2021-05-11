@@ -242,11 +242,11 @@ to it:
 
 ```json
 {
-    "eClass": "http://www.eclipsesource.com/schema/2019/modelserver/command#//CompoundCommand",
+    "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//CompoundCommand",
     "type": "compound",
     "commands": [
         {
-            "eClass": "http://www.eclipsesource.com/schema/2019/modelserver/command#//Command",
+            "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
             "type": "set",
             "owner": {
                 "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
@@ -256,7 +256,7 @@ to it:
           "dataValues": [ "Auto Brew" ]
         },
         {
-            "eClass": "http://www.eclipsesource.com/schema/2019/modelserver/command#//Command",
+            "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
             "type": "add",
             "owner": {
                 "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
