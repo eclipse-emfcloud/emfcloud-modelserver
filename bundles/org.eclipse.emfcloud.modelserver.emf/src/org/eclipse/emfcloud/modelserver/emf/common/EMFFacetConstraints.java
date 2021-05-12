@@ -153,18 +153,18 @@ public class EMFFacetConstraints {
 
    @SuppressWarnings({ "CyclomaticComplexity", "BooleanExpressionComplexity" })
    public boolean hasConstraints() {
-      return !Objects.equals(this.whiteSpace, WHITESPACE_DEFAULT)
-         && !Objects.equals(this.enumeration, ENUMERATION_DEFAULT)
-         && !Objects.equals(this.pattern, PATTERN_DEFAULT)
-         && !Objects.equals(this.totalDigits, TOTALDIGITS_DEFAULT)
-         && !Objects.equals(this.fractionDigits, FRACTIONDIGITS_DEFAULT)
-         && !Objects.equals(this.length, LENGTH_DEFAULT)
-         && !Objects.equals(this.minLength, MINLENGTH_DEFAULT)
-         && !Objects.equals(this.maxLength, MAXLENGTH_DEFAULT)
-         && !Objects.equals(this.minExclusive, MINEXCLUSIVE_DEFAULT)
-         && !Objects.equals(this.maxExclusive, MAXEXCLUSIVE_DEFAULT)
-         && !Objects.equals(this.minInclusive, MININCLUSIVE_DEFAULT)
-         && !Objects.equals(this.maxInclusive, MAXINCLUSIVE_DEFAULT);
+      return !(Objects.equals(this.whiteSpace, WHITESPACE_DEFAULT)
+         && Objects.equals(this.enumeration, ENUMERATION_DEFAULT)
+         && Objects.equals(this.pattern, PATTERN_DEFAULT)
+         && Objects.equals(this.totalDigits, TOTALDIGITS_DEFAULT)
+         && Objects.equals(this.fractionDigits, FRACTIONDIGITS_DEFAULT)
+         && Objects.equals(this.length, LENGTH_DEFAULT)
+         && Objects.equals(this.minLength, MINLENGTH_DEFAULT)
+         && Objects.equals(this.maxLength, MAXLENGTH_DEFAULT)
+         && Objects.equals(this.minExclusive, MINEXCLUSIVE_DEFAULT)
+         && Objects.equals(this.maxExclusive, MAXEXCLUSIVE_DEFAULT)
+         && Objects.equals(this.minInclusive, MININCLUSIVE_DEFAULT)
+         && Objects.equals(this.maxInclusive, MAXINCLUSIVE_DEFAULT));
    }
 }
 

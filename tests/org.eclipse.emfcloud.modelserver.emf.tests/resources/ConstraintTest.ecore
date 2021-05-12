@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="constraintstest" nsURI="http://www.eclipse.org/emfcloud/modelserver/test/constraintstest"
+    nsPrefix="constaintstest">
+  <eClassifiers xsi:type="ecore:EClass" name="NoConstraintsClass"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SuperClassWithConstraint">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="#//StringType"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SubClass" eSuperTypes="#//SuperClassWithConstraint">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="type" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SubSubClass" eSuperTypes="#//SubClass"/>
+  <eClassifiers xsi:type="ecore:EClass" name="SubClassWithConstraint" eSuperTypes="#//SuperClassWithConstraint">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id" eType="#//StringType2"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="StringType" instanceClassName="java.lang.String">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="minLength" value="5"/>
+    </eAnnotations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="StringType2" instanceClassName="java.lang.String">
+    <eAnnotations source="http:///org/eclipse/emf/ecore/util/ExtendedMetaData">
+      <details key="maxLength" value="5"/>
+    </eAnnotations>
+  </eClassifiers>
+</ecore:EPackage>
