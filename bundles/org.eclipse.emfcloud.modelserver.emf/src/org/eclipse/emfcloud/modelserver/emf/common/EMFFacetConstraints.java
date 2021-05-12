@@ -12,13 +12,16 @@ package org.eclipse.emfcloud.modelserver.emf.common;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.ecore.util.ExtendedMetaData;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
 public class EMFFacetConstraints {
-
    public static final String WHITESPACE = "whiteSpace";
    public static final String ENUMERATION = "enumeration";
    public static final String PATTERN = "pattern";
@@ -32,25 +35,54 @@ public class EMFFacetConstraints {
    public static final String MININCLUSIVE = "minInclusive";
    public static final String MAXINCLUSIVE = "maxInclusive";
 
+   public static final int WHITESPACE_DEFAULT = ExtendedMetaData.INSTANCE
+      .getWhiteSpaceFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final List<String> ENUMERATION_DEFAULT = ExtendedMetaData.INSTANCE
+      .getEnumerationFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final List<String> PATTERN_DEFAULT = ExtendedMetaData.INSTANCE
+      .getPatternFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final int TOTALDIGITS_DEFAULT = ExtendedMetaData.INSTANCE
+      .getTotalDigitsFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final int FRACTIONDIGITS_DEFAULT = ExtendedMetaData.INSTANCE
+      .getFractionDigitsFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final int LENGTH_DEFAULT = ExtendedMetaData.INSTANCE
+      .getLengthFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final int MINLENGTH_DEFAULT = ExtendedMetaData.INSTANCE
+      .getMinLengthFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final int MAXLENGTH_DEFAULT = ExtendedMetaData.INSTANCE
+      .getMaxLengthFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final String MINEXCLUSIVE_DEFAULT = ExtendedMetaData.INSTANCE
+      .getMinExclusiveFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final String MAXEXCLUSIVE_DEFAULT = ExtendedMetaData.INSTANCE
+      .getMaxExclusiveFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final String MININCLUSIVE_DEFAULT = ExtendedMetaData.INSTANCE
+      .getMinInclusiveFacet(EcorePackage.Literals.EBOOLEAN);
+   public static final String MAXINCLUSIVE_DEFAULT = ExtendedMetaData.INSTANCE
+      .getMaxInclusiveFacet(EcorePackage.Literals.EBOOLEAN);
+
    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = WhiteSpaceFilter.class)
    private Integer whiteSpace;
-   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = StringListFilter.class)
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = EnumerationFilter.class)
    private List<String> enumeration;
-   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = StringListFilter.class)
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = PatternFilter.class)
    private List<String> pattern;
-   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = TotalDigitsFilter.class)
    private Integer totalDigits;
-   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = FractionDigitsFilter.class)
    private Integer fractionDigits;
-   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = LengthFilter.class)
    private Integer length;
-   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = MinLengthFilter.class)
    private Integer minLength;
-   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IntegerFilter.class)
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = MaxLengthFilter.class)
    private Integer maxLength;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = MinExclusiveFilter.class)
    private String minExclusive;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = MaxExclusiveFilter.class)
    private String maxExclusive;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = MinInclusiveFilter.class)
    private String minInclusive;
+   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = MaxInclusiveFilter.class)
    private String maxInclusive;
 
    public Integer getWhiteSpace() { return whiteSpace; }
@@ -117,25 +149,35 @@ public class EMFFacetConstraints {
       this.maxInclusive = (String) facetMap.getOrDefault(MAXINCLUSIVE, null);
    }
 
-   public EMFFacetConstraints() {
+   public EMFFacetConstraints() {}
 
-   }
-
+   @SuppressWarnings({ "CyclomaticComplexity", "BooleanExpressionComplexity" })
    public boolean hasConstraints() {
-      return !(this.whiteSpace == 0 && enumeration.isEmpty() && pattern.isEmpty() && totalDigits == -1
-         && fractionDigits == -1 && length == -1 && minLength == -1 && maxLength == -1 && minExclusive == null
-         && maxExclusive == null && minInclusive == null && maxInclusive == null);
+      return !Objects.equals(this.whiteSpace, WHITESPACE_DEFAULT)
+         && !Objects.equals(this.enumeration, ENUMERATION_DEFAULT)
+         && !Objects.equals(this.pattern, PATTERN_DEFAULT)
+         && !Objects.equals(this.totalDigits, TOTALDIGITS_DEFAULT)
+         && !Objects.equals(this.fractionDigits, FRACTIONDIGITS_DEFAULT)
+         && !Objects.equals(this.length, LENGTH_DEFAULT)
+         && !Objects.equals(this.minLength, MINLENGTH_DEFAULT)
+         && !Objects.equals(this.maxLength, MAXLENGTH_DEFAULT)
+         && !Objects.equals(this.minExclusive, MINEXCLUSIVE_DEFAULT)
+         && !Objects.equals(this.maxExclusive, MAXEXCLUSIVE_DEFAULT)
+         && !Objects.equals(this.minInclusive, MININCLUSIVE_DEFAULT)
+         && !Objects.equals(this.maxInclusive, MAXINCLUSIVE_DEFAULT);
    }
-
 }
 
-class WhiteSpaceFilter {
+class DefaultValueFilter {
+   protected Object defaultValue;
+
+   DefaultValueFilter(final Object defaultValue) {
+      this.defaultValue = defaultValue;
+   }
+
    @Override
    public boolean equals(final Object obj) {
-      if (obj instanceof Integer) {
-         return obj == Integer.valueOf(0);
-      }
-      return true;
+      return Objects.equals(defaultValue, obj);
    }
 
    @Override
@@ -144,32 +186,74 @@ class WhiteSpaceFilter {
    }
 }
 
-class IntegerFilter {
-   @Override
-   public boolean equals(final Object obj) {
-      if (obj instanceof Integer) {
-         return obj == Integer.valueOf(-1);
-      }
-      return true;
-   }
-
-   @Override
-   public int hashCode() {
-      return super.hashCode();
+class WhiteSpaceFilter extends DefaultValueFilter {
+   WhiteSpaceFilter() {
+      super(EMFFacetConstraints.WHITESPACE_DEFAULT);
    }
 }
 
-class StringListFilter {
-   @Override
-   public boolean equals(final Object obj) {
-      if (obj instanceof List) {
-         return ((List<?>) obj).isEmpty();
-      }
-      return true;
+class EnumerationFilter extends DefaultValueFilter {
+   EnumerationFilter() {
+      super(EMFFacetConstraints.ENUMERATION_DEFAULT);
    }
+}
 
-   @Override
-   public int hashCode() {
-      return super.hashCode();
+class PatternFilter extends DefaultValueFilter {
+   PatternFilter() {
+      super(EMFFacetConstraints.PATTERN_DEFAULT);
+   }
+}
+
+class TotalDigitsFilter extends DefaultValueFilter {
+   TotalDigitsFilter() {
+      super(EMFFacetConstraints.TOTALDIGITS_DEFAULT);
+   }
+}
+
+class FractionDigitsFilter extends DefaultValueFilter {
+   FractionDigitsFilter() {
+      super(EMFFacetConstraints.FRACTIONDIGITS_DEFAULT);
+   }
+}
+
+class LengthFilter extends DefaultValueFilter {
+   LengthFilter() {
+      super(EMFFacetConstraints.LENGTH_DEFAULT);
+   }
+}
+
+class MinLengthFilter extends DefaultValueFilter {
+   MinLengthFilter() {
+      super(EMFFacetConstraints.MINLENGTH_DEFAULT);
+   }
+}
+
+class MaxLengthFilter extends DefaultValueFilter {
+   MaxLengthFilter() {
+      super(EMFFacetConstraints.MAXLENGTH_DEFAULT);
+   }
+}
+
+class MinExclusiveFilter extends DefaultValueFilter {
+   MinExclusiveFilter() {
+      super(EMFFacetConstraints.MINEXCLUSIVE_DEFAULT);
+   }
+}
+
+class MaxExclusiveFilter extends DefaultValueFilter {
+   MaxExclusiveFilter() {
+      super(EMFFacetConstraints.MAXEXCLUSIVE_DEFAULT);
+   }
+}
+
+class MinInclusiveFilter extends DefaultValueFilter {
+   MinInclusiveFilter() {
+      super(EMFFacetConstraints.MININCLUSIVE_DEFAULT);
+   }
+}
+
+class MaxInclusiveFilter extends DefaultValueFilter {
+   MaxInclusiveFilter() {
+      super(EMFFacetConstraints.MAXINCLUSIVE_DEFAULT);
    }
 }
