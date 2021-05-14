@@ -1,45 +1,47 @@
 /**
  * Copyright (c) 2021 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  */
-package org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.impl;
+package org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.impl;
 
 import org.eclipse.emf.ecore.EClass;
-
-import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.ConstaintstestPackage;
-import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SubSubClass;
+import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.ConstraintTestPackage;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.NoConstraintsClass;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>Sub Sub Class</b></em>'.
+ * An implementation of the model object '<em><b>No Constraints Class</b></em>'.
  * <!-- end-user-doc -->
  *
  * @generated
  */
-public class SubSubClassImpl extends SubClassImpl implements SubSubClass {
+public class NoConstraintsClassImpl extends MinimalEObjectImpl.Container implements NoConstraintsClass {
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
-   protected SubSubClassImpl() {
+   protected NoConstraintsClassImpl() {
       super();
    }
 
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
    protected EClass eStaticClass() {
-      return ConstaintstestPackage.Literals.SUB_SUB_CLASS;
+      return ConstraintTestPackage.Literals.NO_CONSTRAINTS_CLASS;
    }
 
-} //SubSubClassImpl
+} // NoConstraintsClassImpl

@@ -1,21 +1,24 @@
 /**
  * Copyright (c) 2021 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  */
-package org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.util;
+package org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.util;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-
 import org.eclipse.emf.ecore.util.Switch;
-
-import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.*;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.ConstraintTestPackage;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.NoConstraintsClass;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubClass;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubClassWithConstraint;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubSubClass;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SuperClassWithConstraint;
 
 /**
  * <!-- begin-user-doc -->
@@ -27,27 +30,30 @@ import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.*;
  * until a non-null result is returned,
  * which is the result of the switch.
  * <!-- end-user-doc -->
- * @see org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.ConstaintstestPackage
+ *
+ * @see org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.ConstraintTestPackage
  * @generated
  */
-public class ConstaintstestSwitch<T> extends Switch<T> {
+public class ConstraintTestSwitch<T> extends Switch<T> {
    /**
     * The cached model package
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
-   protected static ConstaintstestPackage modelPackage;
+   protected static ConstraintTestPackage modelPackage;
 
    /**
     * Creates an instance of the switch.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
-   public ConstaintstestSwitch() {
+   public ConstraintTestSwitch() {
       if (modelPackage == null) {
-         modelPackage = ConstaintstestPackage.eINSTANCE;
+         modelPackage = ConstraintTestPackage.eINSTANCE;
       }
    }
 
@@ -55,12 +61,13 @@ public class ConstaintstestSwitch<T> extends Switch<T> {
     * Checks whether this is a switch for the given package.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @param ePackage the package in question.
     * @return whether this is a switch for the given package.
     * @generated
     */
    @Override
-   protected boolean isSwitchFor(EPackage ePackage) {
+   protected boolean isSwitchFor(final EPackage ePackage) {
       return ePackage == modelPackage;
    }
 
@@ -68,47 +75,67 @@ public class ConstaintstestSwitch<T> extends Switch<T> {
     * Calls <code>caseXXX</code> for each class of the model until one returns a non null result; it yields that result.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @return the first non-null result returned by a <code>caseXXX</code> call.
     * @generated
     */
    @Override
-   protected T doSwitch(int classifierID, EObject theEObject) {
+   protected T doSwitch(final int classifierID, final EObject theEObject) {
       switch (classifierID) {
-         case ConstaintstestPackage.NO_CONSTRAINTS_CLASS: {
-            NoConstraintsClass noConstraintsClass = (NoConstraintsClass)theEObject;
+         case ConstraintTestPackage.NO_CONSTRAINTS_CLASS: {
+            NoConstraintsClass noConstraintsClass = (NoConstraintsClass) theEObject;
             T result = caseNoConstraintsClass(noConstraintsClass);
-            if (result == null) result = defaultCase(theEObject);
+            if (result == null) {
+               result = defaultCase(theEObject);
+            }
             return result;
          }
-         case ConstaintstestPackage.SUPER_CLASS_WITH_CONSTRAINT: {
-            SuperClassWithConstraint superClassWithConstraint = (SuperClassWithConstraint)theEObject;
+         case ConstraintTestPackage.SUPER_CLASS_WITH_CONSTRAINT: {
+            SuperClassWithConstraint superClassWithConstraint = (SuperClassWithConstraint) theEObject;
             T result = caseSuperClassWithConstraint(superClassWithConstraint);
-            if (result == null) result = defaultCase(theEObject);
+            if (result == null) {
+               result = defaultCase(theEObject);
+            }
             return result;
          }
-         case ConstaintstestPackage.SUB_CLASS: {
-            SubClass subClass = (SubClass)theEObject;
+         case ConstraintTestPackage.SUB_CLASS: {
+            SubClass subClass = (SubClass) theEObject;
             T result = caseSubClass(subClass);
-            if (result == null) result = caseSuperClassWithConstraint(subClass);
-            if (result == null) result = defaultCase(theEObject);
+            if (result == null) {
+               result = caseSuperClassWithConstraint(subClass);
+            }
+            if (result == null) {
+               result = defaultCase(theEObject);
+            }
             return result;
          }
-         case ConstaintstestPackage.SUB_SUB_CLASS: {
-            SubSubClass subSubClass = (SubSubClass)theEObject;
+         case ConstraintTestPackage.SUB_SUB_CLASS: {
+            SubSubClass subSubClass = (SubSubClass) theEObject;
             T result = caseSubSubClass(subSubClass);
-            if (result == null) result = caseSubClass(subSubClass);
-            if (result == null) result = caseSuperClassWithConstraint(subSubClass);
-            if (result == null) result = defaultCase(theEObject);
+            if (result == null) {
+               result = caseSubClass(subSubClass);
+            }
+            if (result == null) {
+               result = caseSuperClassWithConstraint(subSubClass);
+            }
+            if (result == null) {
+               result = defaultCase(theEObject);
+            }
             return result;
          }
-         case ConstaintstestPackage.SUB_CLASS_WITH_CONSTRAINT: {
-            SubClassWithConstraint subClassWithConstraint = (SubClassWithConstraint)theEObject;
+         case ConstraintTestPackage.SUB_CLASS_WITH_CONSTRAINT: {
+            SubClassWithConstraint subClassWithConstraint = (SubClassWithConstraint) theEObject;
             T result = caseSubClassWithConstraint(subClassWithConstraint);
-            if (result == null) result = caseSuperClassWithConstraint(subClassWithConstraint);
-            if (result == null) result = defaultCase(theEObject);
+            if (result == null) {
+               result = caseSuperClassWithConstraint(subClassWithConstraint);
+            }
+            if (result == null) {
+               result = defaultCase(theEObject);
+            }
             return result;
          }
-         default: return defaultCase(theEObject);
+         default:
+            return defaultCase(theEObject);
       }
    }
 
@@ -118,12 +145,13 @@ public class ConstaintstestSwitch<T> extends Switch<T> {
     * This implementation returns null;
     * returning a non-null result will terminate the switch.
     * <!-- end-user-doc -->
+    *
     * @param object the target of the switch.
     * @return the result of interpreting the object as an instance of '<em>No Constraints Class</em>'.
     * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
     * @generated
     */
-   public T caseNoConstraintsClass(NoConstraintsClass object) {
+   public T caseNoConstraintsClass(final NoConstraintsClass object) {
       return null;
    }
 
@@ -133,12 +161,13 @@ public class ConstaintstestSwitch<T> extends Switch<T> {
     * This implementation returns null;
     * returning a non-null result will terminate the switch.
     * <!-- end-user-doc -->
+    *
     * @param object the target of the switch.
     * @return the result of interpreting the object as an instance of '<em>Super Class With Constraint</em>'.
     * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
     * @generated
     */
-   public T caseSuperClassWithConstraint(SuperClassWithConstraint object) {
+   public T caseSuperClassWithConstraint(final SuperClassWithConstraint object) {
       return null;
    }
 
@@ -148,12 +177,13 @@ public class ConstaintstestSwitch<T> extends Switch<T> {
     * This implementation returns null;
     * returning a non-null result will terminate the switch.
     * <!-- end-user-doc -->
+    *
     * @param object the target of the switch.
     * @return the result of interpreting the object as an instance of '<em>Sub Class</em>'.
     * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
     * @generated
     */
-   public T caseSubClass(SubClass object) {
+   public T caseSubClass(final SubClass object) {
       return null;
    }
 
@@ -163,12 +193,13 @@ public class ConstaintstestSwitch<T> extends Switch<T> {
     * This implementation returns null;
     * returning a non-null result will terminate the switch.
     * <!-- end-user-doc -->
+    *
     * @param object the target of the switch.
     * @return the result of interpreting the object as an instance of '<em>Sub Sub Class</em>'.
     * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
     * @generated
     */
-   public T caseSubSubClass(SubSubClass object) {
+   public T caseSubSubClass(final SubSubClass object) {
       return null;
    }
 
@@ -178,12 +209,13 @@ public class ConstaintstestSwitch<T> extends Switch<T> {
     * This implementation returns null;
     * returning a non-null result will terminate the switch.
     * <!-- end-user-doc -->
+    *
     * @param object the target of the switch.
     * @return the result of interpreting the object as an instance of '<em>Sub Class With Constraint</em>'.
     * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
     * @generated
     */
-   public T caseSubClassWithConstraint(SubClassWithConstraint object) {
+   public T caseSubClassWithConstraint(final SubClassWithConstraint object) {
       return null;
    }
 
@@ -193,14 +225,15 @@ public class ConstaintstestSwitch<T> extends Switch<T> {
     * This implementation returns null;
     * returning a non-null result will terminate the switch, but this is the last case anyway.
     * <!-- end-user-doc -->
+    *
     * @param object the target of the switch.
     * @return the result of interpreting the object as an instance of '<em>EObject</em>'.
     * @see #doSwitch(org.eclipse.emf.ecore.EObject)
     * @generated
     */
    @Override
-   public T defaultCase(EObject object) {
+   public T defaultCase(final EObject object) {
       return null;
    }
 
-} //ConstaintstestSwitch
+} // ConstraintTestSwitch

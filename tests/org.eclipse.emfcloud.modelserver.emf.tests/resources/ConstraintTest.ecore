@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="constraintstest" nsURI="http://www.eclipse.org/emfcloud/modelserver/test/constraintstest"
-    nsPrefix="constaintstest">
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="constrainttest" nsURI="http://www.eclipse.org/emfcloud/modelserver/test/constrainttest"
+    nsPrefix="constrainttest">
   <eClassifiers xsi:type="ecore:EClass" name="NoConstraintsClass"/>
   <eClassifiers xsi:type="ecore:EClass" name="SuperClassWithConstraint">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="#//StringType"/>

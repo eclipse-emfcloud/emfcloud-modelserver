@@ -1,24 +1,21 @@
 /**
  * Copyright (c) 2021 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  */
-package org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.impl;
+package org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.impl;
 
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.ecore.EClass;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
-
-import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.ConstaintstestPackage;
-import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SuperClassWithConstraint;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.ConstraintTestPackage;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SuperClassWithConstraint;
 
 /**
  * <!-- begin-user-doc -->
@@ -28,7 +25,8 @@ import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SuperClassWith
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.impl.SuperClassWithConstraintImpl#getName <em>Name</em>}</li>
+ * <li>{@link org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.impl.SuperClassWithConstraintImpl#getName
+ * <em>Name</em>}</li>
  * </ul>
  *
  * @generated
@@ -38,6 +36,7 @@ public class SuperClassWithConstraintImpl extends MinimalEObjectImpl.Container i
     * The default value of the '{@link #getName() <em>Name</em>}' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @see #getName()
     * @generated
     * @ordered
@@ -48,6 +47,7 @@ public class SuperClassWithConstraintImpl extends MinimalEObjectImpl.Container i
     * The cached value of the '{@link #getName() <em>Name</em>}' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @see #getName()
     * @generated
     * @ordered
@@ -57,6 +57,7 @@ public class SuperClassWithConstraintImpl extends MinimalEObjectImpl.Container i
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    protected SuperClassWithConstraintImpl() {
@@ -66,43 +67,49 @@ public class SuperClassWithConstraintImpl extends MinimalEObjectImpl.Container i
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
    protected EClass eStaticClass() {
-      return ConstaintstestPackage.Literals.SUPER_CLASS_WITH_CONSTRAINT;
+      return ConstraintTestPackage.Literals.SUPER_CLASS_WITH_CONSTRAINT;
    }
 
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * @generated
-    */
-   public String getName() {
-      return name;
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    * @generated
-    */
-   public void setName(String newName) {
-      String oldName = name;
-      name = newName;
-      if (eNotificationRequired())
-         eNotify(new ENotificationImpl(this, Notification.SET, ConstaintstestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME, oldName, name));
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
-   public Object eGet(int featureID, boolean resolve, boolean coreType) {
+   public String getName() { return name; }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public void setName(final String newName) {
+      String oldName = name;
+      name = newName;
+      if (eNotificationRequired()) {
+         eNotify(new ENotificationImpl(this, Notification.SET, ConstraintTestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME,
+            oldName, name));
+      }
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public Object eGet(final int featureID, final boolean resolve, final boolean coreType) {
       switch (featureID) {
-         case ConstaintstestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME:
+         case ConstraintTestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME:
             return getName();
       }
       return super.eGet(featureID, resolve, coreType);
@@ -111,13 +118,14 @@ public class SuperClassWithConstraintImpl extends MinimalEObjectImpl.Container i
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
-   public void eSet(int featureID, Object newValue) {
+   public void eSet(final int featureID, final Object newValue) {
       switch (featureID) {
-         case ConstaintstestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME:
-            setName((String)newValue);
+         case ConstraintTestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME:
+            setName((String) newValue);
             return;
       }
       super.eSet(featureID, newValue);
@@ -126,12 +134,13 @@ public class SuperClassWithConstraintImpl extends MinimalEObjectImpl.Container i
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
-   public void eUnset(int featureID) {
+   public void eUnset(final int featureID) {
       switch (featureID) {
-         case ConstaintstestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME:
+         case ConstraintTestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME:
             setName(NAME_EDEFAULT);
             return;
       }
@@ -141,12 +150,13 @@ public class SuperClassWithConstraintImpl extends MinimalEObjectImpl.Container i
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
-   public boolean eIsSet(int featureID) {
+   public boolean eIsSet(final int featureID) {
       switch (featureID) {
-         case ConstaintstestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME:
+         case ConstraintTestPackage.SUPER_CLASS_WITH_CONSTRAINT__NAME:
             return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT.equals(name);
       }
       return super.eIsSet(featureID);
@@ -155,11 +165,14 @@ public class SuperClassWithConstraintImpl extends MinimalEObjectImpl.Container i
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
    public String toString() {
-      if (eIsProxy()) return super.toString();
+      if (eIsProxy()) {
+         return super.toString();
+      }
 
       StringBuilder result = new StringBuilder(super.toString());
       result.append(" (name: ");
@@ -168,4 +181,4 @@ public class SuperClassWithConstraintImpl extends MinimalEObjectImpl.Container i
       return result.toString();
    }
 
-} //SuperClassWithConstraintImpl
+} // SuperClassWithConstraintImpl

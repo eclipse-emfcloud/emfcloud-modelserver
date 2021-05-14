@@ -1,68 +1,75 @@
 /**
  * Copyright (c) 2021 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  */
-package org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.util;
+package org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.util;
 
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notifier;
-
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
-
 import org.eclipse.emf.ecore.EObject;
-
-import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.*;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.ConstraintTestPackage;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.NoConstraintsClass;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubClass;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubClassWithConstraint;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubSubClass;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SuperClassWithConstraint;
 
 /**
  * <!-- begin-user-doc -->
  * The <b>Adapter Factory</b> for the model.
  * It provides an adapter <code>createXXX</code> method for each class of the model.
  * <!-- end-user-doc -->
- * @see org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.ConstaintstestPackage
+ *
+ * @see org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.ConstraintTestPackage
  * @generated
  */
-public class ConstaintstestAdapterFactory extends AdapterFactoryImpl {
+public class ConstraintTestAdapterFactory extends AdapterFactoryImpl {
    /**
     * The cached model package.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
-   protected static ConstaintstestPackage modelPackage;
+   protected static ConstraintTestPackage modelPackage;
 
    /**
     * Creates an instance of the adapter factory.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
-   public ConstaintstestAdapterFactory() {
+   public ConstraintTestAdapterFactory() {
       if (modelPackage == null) {
-         modelPackage = ConstaintstestPackage.eINSTANCE;
+         modelPackage = ConstraintTestPackage.eINSTANCE;
       }
    }
 
    /**
     * Returns whether this factory is applicable for the type of the object.
     * <!-- begin-user-doc -->
-    * This implementation returns <code>true</code> if the object is either the model's package or is an instance object of the model.
+    * This implementation returns <code>true</code> if the object is either the model's package or is an instance object
+    * of the model.
     * <!-- end-user-doc -->
+    *
     * @return whether this factory is applicable for the type of the object.
     * @generated
     */
    @Override
-   public boolean isFactoryForType(Object object) {
+   public boolean isFactoryForType(final Object object) {
       if (object == modelPackage) {
          return true;
       }
       if (object instanceof EObject) {
-         return ((EObject)object).eClass().getEPackage() == modelPackage;
+         return ((EObject) object).eClass().getEPackage() == modelPackage;
       }
       return false;
    }
@@ -71,58 +78,66 @@ public class ConstaintstestAdapterFactory extends AdapterFactoryImpl {
     * The switch that delegates to the <code>createXXX</code> methods.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
-   protected ConstaintstestSwitch<Adapter> modelSwitch =
-      new ConstaintstestSwitch<Adapter>() {
-         @Override
-         public Adapter caseNoConstraintsClass(NoConstraintsClass object) {
-            return createNoConstraintsClassAdapter();
-         }
-         @Override
-         public Adapter caseSuperClassWithConstraint(SuperClassWithConstraint object) {
-            return createSuperClassWithConstraintAdapter();
-         }
-         @Override
-         public Adapter caseSubClass(SubClass object) {
-            return createSubClassAdapter();
-         }
-         @Override
-         public Adapter caseSubSubClass(SubSubClass object) {
-            return createSubSubClassAdapter();
-         }
-         @Override
-         public Adapter caseSubClassWithConstraint(SubClassWithConstraint object) {
-            return createSubClassWithConstraintAdapter();
-         }
-         @Override
-         public Adapter defaultCase(EObject object) {
-            return createEObjectAdapter();
-         }
-      };
+   protected ConstraintTestSwitch<Adapter> modelSwitch = new ConstraintTestSwitch<>() {
+      @Override
+      public Adapter caseNoConstraintsClass(final NoConstraintsClass object) {
+         return createNoConstraintsClassAdapter();
+      }
+
+      @Override
+      public Adapter caseSuperClassWithConstraint(final SuperClassWithConstraint object) {
+         return createSuperClassWithConstraintAdapter();
+      }
+
+      @Override
+      public Adapter caseSubClass(final SubClass object) {
+         return createSubClassAdapter();
+      }
+
+      @Override
+      public Adapter caseSubSubClass(final SubSubClass object) {
+         return createSubSubClassAdapter();
+      }
+
+      @Override
+      public Adapter caseSubClassWithConstraint(final SubClassWithConstraint object) {
+         return createSubClassWithConstraintAdapter();
+      }
+
+      @Override
+      public Adapter defaultCase(final EObject object) {
+         return createEObjectAdapter();
+      }
+   };
 
    /**
     * Creates an adapter for the <code>target</code>.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @param target the object to adapt.
     * @return the adapter for the <code>target</code>.
     * @generated
     */
    @Override
-   public Adapter createAdapter(Notifier target) {
-      return modelSwitch.doSwitch((EObject)target);
+   public Adapter createAdapter(final Notifier target) {
+      return modelSwitch.doSwitch((EObject) target);
    }
 
-
    /**
-    * Creates a new adapter for an object of class '{@link org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.NoConstraintsClass <em>No Constraints Class</em>}'.
+    * Creates a new adapter for an object of class
+    * '{@link org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.NoConstraintsClass <em>No Constraints
+    * Class</em>}'.
     * <!-- begin-user-doc -->
     * This default implementation returns null so that we can easily ignore cases;
     * it's useful to ignore a case when inheritance will catch all the cases anyway.
     * <!-- end-user-doc -->
+    *
     * @return the new adapter.
-    * @see org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.NoConstraintsClass
+    * @see org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.NoConstraintsClass
     * @generated
     */
    public Adapter createNoConstraintsClassAdapter() {
@@ -130,13 +145,16 @@ public class ConstaintstestAdapterFactory extends AdapterFactoryImpl {
    }
 
    /**
-    * Creates a new adapter for an object of class '{@link org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SuperClassWithConstraint <em>Super Class With Constraint</em>}'.
+    * Creates a new adapter for an object of class
+    * '{@link org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SuperClassWithConstraint <em>Super Class With
+    * Constraint</em>}'.
     * <!-- begin-user-doc -->
     * This default implementation returns null so that we can easily ignore cases;
     * it's useful to ignore a case when inheritance will catch all the cases anyway.
     * <!-- end-user-doc -->
+    *
     * @return the new adapter.
-    * @see org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SuperClassWithConstraint
+    * @see org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SuperClassWithConstraint
     * @generated
     */
    public Adapter createSuperClassWithConstraintAdapter() {
@@ -144,13 +162,15 @@ public class ConstaintstestAdapterFactory extends AdapterFactoryImpl {
    }
 
    /**
-    * Creates a new adapter for an object of class '{@link org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SubClass <em>Sub Class</em>}'.
+    * Creates a new adapter for an object of class
+    * '{@link org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubClass <em>Sub Class</em>}'.
     * <!-- begin-user-doc -->
     * This default implementation returns null so that we can easily ignore cases;
     * it's useful to ignore a case when inheritance will catch all the cases anyway.
     * <!-- end-user-doc -->
+    *
     * @return the new adapter.
-    * @see org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SubClass
+    * @see org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubClass
     * @generated
     */
    public Adapter createSubClassAdapter() {
@@ -158,13 +178,15 @@ public class ConstaintstestAdapterFactory extends AdapterFactoryImpl {
    }
 
    /**
-    * Creates a new adapter for an object of class '{@link org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SubSubClass <em>Sub Sub Class</em>}'.
+    * Creates a new adapter for an object of class
+    * '{@link org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubSubClass <em>Sub Sub Class</em>}'.
     * <!-- begin-user-doc -->
     * This default implementation returns null so that we can easily ignore cases;
     * it's useful to ignore a case when inheritance will catch all the cases anyway.
     * <!-- end-user-doc -->
+    *
     * @return the new adapter.
-    * @see org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SubSubClass
+    * @see org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubSubClass
     * @generated
     */
    public Adapter createSubSubClassAdapter() {
@@ -172,13 +194,16 @@ public class ConstaintstestAdapterFactory extends AdapterFactoryImpl {
    }
 
    /**
-    * Creates a new adapter for an object of class '{@link org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SubClassWithConstraint <em>Sub Class With Constraint</em>}'.
+    * Creates a new adapter for an object of class
+    * '{@link org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubClassWithConstraint <em>Sub Class With
+    * Constraint</em>}'.
     * <!-- begin-user-doc -->
     * This default implementation returns null so that we can easily ignore cases;
     * it's useful to ignore a case when inheritance will catch all the cases anyway.
     * <!-- end-user-doc -->
+    *
     * @return the new adapter.
-    * @see org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SubClassWithConstraint
+    * @see org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubClassWithConstraint
     * @generated
     */
    public Adapter createSubClassWithConstraintAdapter() {
@@ -190,6 +215,7 @@ public class ConstaintstestAdapterFactory extends AdapterFactoryImpl {
     * <!-- begin-user-doc -->
     * This default implementation returns null.
     * <!-- end-user-doc -->
+    *
     * @return the new adapter.
     * @generated
     */
@@ -197,4 +223,4 @@ public class ConstaintstestAdapterFactory extends AdapterFactoryImpl {
       return null;
    }
 
-} //ConstaintstestAdapterFactory
+} // ConstraintTestAdapterFactory

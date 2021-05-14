@@ -22,7 +22,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
-import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.ConstaintstestPackage;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.ConstraintTestPackage;
 import org.emfjson.jackson.module.EMFModule;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class DefaultModelValidatorTest {
    public void before() throws NoSuchFieldException, SecurityException {
       ResourceSet resourceSet = new ResourceSetImpl();
       resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("xmi", new XMIResourceFactoryImpl());
-      resourceSet.getPackageRegistry().put(ConstaintstestPackage.eNS_URI, ConstaintstestPackage.eINSTANCE);
+      resourceSet.getPackageRegistry().put(ConstraintTestPackage.eNS_URI, ConstraintTestPackage.eINSTANCE);
 
       Optional<Resource> concreteClass1 = Optional
          .of(resourceSet.getResource(URI.createFileURI("resources/ConstraintTest_SubClass.xmi"), true));
@@ -64,32 +64,28 @@ public class DefaultModelValidatorTest {
 
    @Test
    public void getValidationConstraints_NoConstraints() throws DecodingException, IOException {
-      assertTrue(
-         jsonNode.get("http://www.eclipse.org/emfcloud/modelserver/test/constraintstest#//NoConstraintsClass") == null);
+      assertTrue(jsonNode.get(ConstraintTestPackage.eNS_URI + "#//NoConstraintsClass") == null);
    }
 
    @Test
    public void getValidationConstraints_SuperClassConstraint() throws DecodingException, IOException {
-      JsonNode parentClass = jsonNode
-         .get("http://www.eclipse.org/emfcloud/modelserver/test/constraintstest#//SuperClassWithConstraint");
+      JsonNode parentClass = jsonNode.get(ConstraintTestPackage.eNS_URI + "#//SuperClassWithConstraint");
       int parentClassMinLength = parentClass.get("name").get(EMFFacetConstraints.MINLENGTH).asInt();
       assertTrue(parentClassMinLength == 5);
    }
 
    @Test
    public void getValidationConstraints_HideConstraints() throws DecodingException, IOException {
-      JsonNode parentClass = jsonNode
-         .get("http://www.eclipse.org/emfcloud/modelserver/test/constraintstest#//SuperClassWithConstraint");
+      JsonNode parentClass = jsonNode.get(ConstraintTestPackage.eNS_URI + "#//SuperClassWithConstraint");
       JsonNode name = parentClass.get("name");
       assertTrue(name.get(EMFFacetConstraints.MAXLENGTH) == null);
    }
 
    @Test
    public void getValidationConstraints_ParentConstraint() throws DecodingException, IOException {
-      JsonNode subClass = jsonNode.get("http://www.eclipse.org/emfcloud/modelserver/test/constraintstest#//SubClass");
+      JsonNode subClass = jsonNode.get(ConstraintTestPackage.eNS_URI + "#//SubClass");
       int subClassMinLength = subClass.get("name").get(EMFFacetConstraints.MINLENGTH).asInt();
-      JsonNode subSubClass = jsonNode
-         .get("http://www.eclipse.org/emfcloud/modelserver/test/constraintstest#//SubSubClass");
+      JsonNode subSubClass = jsonNode.get(ConstraintTestPackage.eNS_URI + "#//SubSubClass");
       int subSubClassMinLength = subSubClass.get("name").get(EMFFacetConstraints.MINLENGTH).asInt();
       assertTrue(subClassMinLength == 5);
       assertTrue(subSubClassMinLength == 5);
@@ -97,8 +93,7 @@ public class DefaultModelValidatorTest {
 
    @Test
    public void getValidationConstraints_SubClassWithConstraint() throws DecodingException, IOException {
-      JsonNode subClass = jsonNode
-         .get("http://www.eclipse.org/emfcloud/modelserver/test/constraintstest#//SubClassWithConstraint");
+      JsonNode subClass = jsonNode.get(ConstraintTestPackage.eNS_URI + "#//SubClassWithConstraint");
       int minLength = subClass.get("name").get(EMFFacetConstraints.MINLENGTH).asInt();
       int maxLength = subClass.get("id").get(EMFFacetConstraints.MAXLENGTH).asInt();
       assertTrue(minLength == 5);

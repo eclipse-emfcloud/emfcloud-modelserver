@@ -3,6 +3,6 @@
     xmi:version="2.0"
     xmlns:xmi="http://www.omg.org/XMI"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:constaintstest="http://www.eclipse.org/emfcloud/modelserver/test/constraintstest"
-    xsi:schemaLocation="http://www.eclipse.org/emfcloud/modelserver/test/constraintstest ConstraintTest.ecore"
+    xmlns:constaintstest="http://www.eclipse.org/emfcloud/modelserver/test/constrainttest"
+    xsi:schemaLocation="http://www.eclipse.org/emfcloud/modelserver/test/constrainttest ConstraintTest.ecore"
     name="className"/>

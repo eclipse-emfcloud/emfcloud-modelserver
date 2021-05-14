@@ -1,23 +1,20 @@
 /**
  * Copyright (c) 2021 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  */
-package org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.impl;
+package org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.impl;
 
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.ecore.EClass;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-
-import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.ConstaintstestPackage;
-import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SubClass;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.ConstraintTestPackage;
+import org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.SubClass;
 
 /**
  * <!-- begin-user-doc -->
@@ -27,7 +24,7 @@ import org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.SubClass;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.impl.SubClassImpl#getType <em>Type</em>}</li>
+ * <li>{@link org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.impl.SubClassImpl#getType <em>Type</em>}</li>
  * </ul>
  *
  * @generated
@@ -37,6 +34,7 @@ public class SubClassImpl extends SuperClassWithConstraintImpl implements SubCla
     * The default value of the '{@link #getType() <em>Type</em>}' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @see #getType()
     * @generated
     * @ordered
@@ -47,6 +45,7 @@ public class SubClassImpl extends SuperClassWithConstraintImpl implements SubCla
     * The cached value of the '{@link #getType() <em>Type</em>}' attribute.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @see #getType()
     * @generated
     * @ordered
@@ -56,6 +55,7 @@ public class SubClassImpl extends SuperClassWithConstraintImpl implements SubCla
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    protected SubClassImpl() {
@@ -65,43 +65,48 @@ public class SubClassImpl extends SuperClassWithConstraintImpl implements SubCla
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
    protected EClass eStaticClass() {
-      return ConstaintstestPackage.Literals.SUB_CLASS;
+      return ConstraintTestPackage.Literals.SUB_CLASS;
    }
 
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
-    * @generated
-    */
-   public String getType() {
-      return type;
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
-    * @generated
-    */
-   public void setType(String newType) {
-      String oldType = type;
-      type = newType;
-      if (eNotificationRequired())
-         eNotify(new ENotificationImpl(this, Notification.SET, ConstaintstestPackage.SUB_CLASS__TYPE, oldType, type));
-   }
-
-   /**
-    * <!-- begin-user-doc -->
-    * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
-   public Object eGet(int featureID, boolean resolve, boolean coreType) {
+   public String getType() { return type; }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public void setType(final String newType) {
+      String oldType = type;
+      type = newType;
+      if (eNotificationRequired()) {
+         eNotify(new ENotificationImpl(this, Notification.SET, ConstraintTestPackage.SUB_CLASS__TYPE, oldType, type));
+      }
+   }
+
+   /**
+    * <!-- begin-user-doc -->
+    * <!-- end-user-doc -->
+    *
+    * @generated
+    */
+   @Override
+   public Object eGet(final int featureID, final boolean resolve, final boolean coreType) {
       switch (featureID) {
-         case ConstaintstestPackage.SUB_CLASS__TYPE:
+         case ConstraintTestPackage.SUB_CLASS__TYPE:
             return getType();
       }
       return super.eGet(featureID, resolve, coreType);
@@ -110,13 +115,14 @@ public class SubClassImpl extends SuperClassWithConstraintImpl implements SubCla
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
-   public void eSet(int featureID, Object newValue) {
+   public void eSet(final int featureID, final Object newValue) {
       switch (featureID) {
-         case ConstaintstestPackage.SUB_CLASS__TYPE:
-            setType((String)newValue);
+         case ConstraintTestPackage.SUB_CLASS__TYPE:
+            setType((String) newValue);
             return;
       }
       super.eSet(featureID, newValue);
@@ -125,12 +131,13 @@ public class SubClassImpl extends SuperClassWithConstraintImpl implements SubCla
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
-   public void eUnset(int featureID) {
+   public void eUnset(final int featureID) {
       switch (featureID) {
-         case ConstaintstestPackage.SUB_CLASS__TYPE:
+         case ConstraintTestPackage.SUB_CLASS__TYPE:
             setType(TYPE_EDEFAULT);
             return;
       }
@@ -140,12 +147,13 @@ public class SubClassImpl extends SuperClassWithConstraintImpl implements SubCla
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
-   public boolean eIsSet(int featureID) {
+   public boolean eIsSet(final int featureID) {
       switch (featureID) {
-         case ConstaintstestPackage.SUB_CLASS__TYPE:
+         case ConstraintTestPackage.SUB_CLASS__TYPE:
             return TYPE_EDEFAULT == null ? type != null : !TYPE_EDEFAULT.equals(type);
       }
       return super.eIsSet(featureID);
@@ -154,11 +162,14 @@ public class SubClassImpl extends SuperClassWithConstraintImpl implements SubCla
    /**
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
    @Override
    public String toString() {
-      if (eIsProxy()) return super.toString();
+      if (eIsProxy()) {
+         return super.toString();
+      }
 
       StringBuilder result = new StringBuilder(super.toString());
       result.append(" (type: ");
@@ -167,4 +178,4 @@ public class SubClassImpl extends SuperClassWithConstraintImpl implements SubCla
       return result.toString();
    }
 
-} //SubClassImpl
+} // SubClassImpl

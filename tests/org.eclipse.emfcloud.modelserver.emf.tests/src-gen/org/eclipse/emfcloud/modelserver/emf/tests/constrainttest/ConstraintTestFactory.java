@@ -1,14 +1,14 @@
 /**
  * Copyright (c) 2021 EclipseSource and others.
- * 
+ *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
  * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
  * available at https://opensource.org/licenses/MIT.
- * 
+ *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  */
-package org.eclipse.emfcloud.modelserver.emf.tests.constraintstest;
+package org.eclipse.emfcloud.modelserver.emf.tests.constrainttest;
 
 import org.eclipse.emf.ecore.EFactory;
 
@@ -17,22 +17,26 @@ import org.eclipse.emf.ecore.EFactory;
  * The <b>Factory</b> for the model.
  * It provides a create method for each non-abstract class of the model.
  * <!-- end-user-doc -->
- * @see org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.ConstaintstestPackage
+ *
+ * @see org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.ConstraintTestPackage
  * @generated
  */
-public interface ConstaintstestFactory extends EFactory {
+public interface ConstraintTestFactory extends EFactory {
    /**
     * The singleton instance of the factory.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @generated
     */
-   ConstaintstestFactory eINSTANCE = org.eclipse.emfcloud.modelserver.emf.tests.constraintstest.impl.ConstaintstestFactoryImpl.init();
+   ConstraintTestFactory eINSTANCE = org.eclipse.emfcloud.modelserver.emf.tests.constrainttest.impl.ConstraintTestFactoryImpl
+      .init();
 
    /**
     * Returns a new object of class '<em>No Constraints Class</em>'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @return a new object of class '<em>No Constraints Class</em>'.
     * @generated
     */
@@ -42,6 +46,7 @@ public interface ConstaintstestFactory extends EFactory {
     * Returns a new object of class '<em>Super Class With Constraint</em>'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @return a new object of class '<em>Super Class With Constraint</em>'.
     * @generated
     */
@@ -51,6 +56,7 @@ public interface ConstaintstestFactory extends EFactory {
     * Returns a new object of class '<em>Sub Class</em>'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @return a new object of class '<em>Sub Class</em>'.
     * @generated
     */
@@ -60,6 +66,7 @@ public interface ConstaintstestFactory extends EFactory {
     * Returns a new object of class '<em>Sub Sub Class</em>'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @return a new object of class '<em>Sub Sub Class</em>'.
     * @generated
     */
@@ -69,6 +76,7 @@ public interface ConstaintstestFactory extends EFactory {
     * Returns a new object of class '<em>Sub Class With Constraint</em>'.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @return a new object of class '<em>Sub Class With Constraint</em>'.
     * @generated
     */
@@ -78,9 +86,10 @@ public interface ConstaintstestFactory extends EFactory {
     * Returns the package supported by this factory.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
+    *
     * @return the package supported by this factory.
     * @generated
     */
-   ConstaintstestPackage getConstaintstestPackage();
+   ConstraintTestPackage getConstraintTestPackage();
 
-} //ConstaintstestFactory
+} // ConstraintTestFactory

@@ -3,12 +3,13 @@
     xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="Copyright (c) 2021 EclipseSource and others.&#xA;&#xA;This program and the accompanying materials are made available under the&#xA;terms of the Eclipse Public License v. 2.0 which is available at&#xA;https://www.eclipse.org/legal/epl-2.0, or the MIT License which is&#xA;available at https://opensource.org/licenses/MIT.&#xA;&#xA;SPDX-License-Identifier: EPL-2.0 OR MIT"
     modelDirectory="/org.eclipse.emfcloud.modelserver.emf.tests/src-gen" editDirectory=""
     editorDirectory="" modelPluginID="org.eclipse.emfcloud.modelserver.emf.tests"
-    modelName="ConstraintTest" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
-    testsDirectory="" importerID="org.eclipse.emf.importer.ecore" complianceLevel="5.0"
-    copyrightFields="false" operationReflection="true" importOrganizing="true">
+    runtimeJar="true" modelName="ConstraintTest" updateClasspath="false" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    codeFormatting="true" commentFormatting="true" testsDirectory="" importerID="org.eclipse.emf.importer.ecore"
+    complianceLevel="9.0" copyrightFields="false" operationReflection="true" runtimePlatform="RCP"
+    importOrganizing="true" cleanup="true">
   <foreignModel>ConstraintTest.ecore</foreignModel>
-  <genPackages prefix="Constaintstest" basePackage="org.eclipse.emfcloud.modelserver.emf.tests"
-      resource="XML" disposableProviderFactory="true" ecorePackage="ConstraintTest.ecore#/">
+  <genPackages prefix="ConstraintTest" basePackage="org.eclipse.emfcloud.modelserver.emf.tests"
+      disposableProviderFactory="true" ecorePackage="ConstraintTest.ecore#/">
     <genDataTypes ecoreDataType="ConstraintTest.ecore#//StringType"/>
     <genDataTypes ecoreDataType="ConstraintTest.ecore#//StringType2"/>
     <genClasses ecoreClass="ConstraintTest.ecore#//NoConstraintsClass"/>
