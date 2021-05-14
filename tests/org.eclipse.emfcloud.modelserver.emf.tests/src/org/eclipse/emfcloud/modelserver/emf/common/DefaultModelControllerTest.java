@@ -110,14 +110,14 @@ public class DefaultModelControllerTest {
    public void before() throws NoSuchFieldException, SecurityException {
       ResourceSet set = new ResourceSetImpl();
       set.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
-      URI uri = URI.createFileURI("resources/Test1.ecore");
+      URI uri = URI.createFileURI("resources/TestError.ecore");
       Optional<Resource> resource = Optional.of(set.getResource(uri, true));
 
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI(System.getProperty("user.home")));
       codecs = new DICodecsManager(Map.of(ModelServerPathParametersV1.FORMAT_XMI, new XmiCodec()));
-      when(modelRepository.getModel(getModelUri("Test1.ecore").toString()))
+      when(modelRepository.getModel(getModelUri("TestError.ecore").toString()))
          .thenReturn(Optional.of(resource.get().getContents().get(0)));
-      when(modelRepository.loadResource(getModelUri("Test1.ecore").toString())).thenReturn(resource);
+      when(modelRepository.loadResource(getModelUri("TestError.ecore").toString())).thenReturn(resource);
       modelValidator = new DefaultModelValidator(modelRepository, new DefaultFacetConfig(),
          EMFModule::setupDefaultMapper);
       modelController = new DefaultModelController(modelRepository, sessionController, serverConfiguration, codecs,
@@ -361,7 +361,7 @@ public class DefaultModelControllerTest {
 
    @Test
    public void validate() throws EncodingException, IOException {
-      modelController.validate(context, getModelUri("Test1.ecore").toString());
+      modelController.validate(context, getModelUri("TestError.ecore").toString());
 
       verify(context)
          .json(
@@ -371,7 +371,7 @@ public class DefaultModelControllerTest {
 
    @Test
    public void getValidationConstraints() throws EncodingException, IOException {
-      modelController.getValidationConstraints(context, getModelUri("Test1.ecore").toString());
+      modelController.getValidationConstraints(context, getModelUri("TestError.ecore").toString());
       verify(context)
          .json(argThat(jsonNodeStringThat(containsRegex(".\"type\":\"success\",\"data\":.*"))));
    }
