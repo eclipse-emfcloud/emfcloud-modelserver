@@ -13,7 +13,6 @@
 
    <modules>
       <module>org.eclipse.emfcloud.modelserver.codecoverage</module>
-      <module>org.eclipse.emfcloud.modelserver.codestyle</module>
    </modules>
 
    <profiles>
