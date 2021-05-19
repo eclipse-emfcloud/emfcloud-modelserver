@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.change.ChangeDescription;
 import org.eclipse.emf.ecore.change.util.ChangeRecorder;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
+import org.eclipse.emfcloud.modelserver.emf.configuration.ChangePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
@@ -35,6 +36,12 @@ public class RecordingModelResourceManager extends DefaultModelResourceManager {
       final AdapterFactory adapterFactory,
       final ServerConfiguration serverConfiguration) {
       super(configurations, adapterFactory, serverConfiguration);
+   }
+
+   @Override
+   public void initialize() {
+      this.configurations.add(new ChangePackageConfiguration());
+      super.initialize();
    }
 
    @Override

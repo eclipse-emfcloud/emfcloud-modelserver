@@ -13,9 +13,12 @@ package org.eclipse.emfcloud.modelserver.client;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
 
 public class TypedSubscriptionListener<T> implements NotificationSubscriptionListener<T> {
+   private static Logger LOG = Logger.getLogger(TypedSubscriptionListener.class.getSimpleName());
+
    private final Function<? super String, Optional<T>> updateFunction;
 
    public TypedSubscriptionListener(final Function<String, Optional<T>> updateFunction) {
@@ -55,7 +58,9 @@ public class TypedSubscriptionListener<T> implements NotificationSubscriptionLis
    public void onSuccess(final Optional<String> message) {}
 
    @Override
-   public void onError(final Optional<String> message) {}
+   public void onError(final Optional<String> message) {
+      LOG.error("Error: " + message.orElse("Unknown"));
+   }
 
    @Override
    public void onDirtyChange(final boolean isDirty) {}
@@ -67,7 +72,9 @@ public class TypedSubscriptionListener<T> implements NotificationSubscriptionLis
    public void onIncrementalUpdate(final T incrementalUpdate) {}
 
    @Override
-   public void onUnknown(final ModelServerNotification notification) {}
+   public void onUnknown(final ModelServerNotification notification) {
+      LOG.warn("Unknown notification type: " + notification.getType());
+   }
 
    @Override
    public void onOpen(final Response<String> response) {}
@@ -79,8 +86,12 @@ public class TypedSubscriptionListener<T> implements NotificationSubscriptionLis
    public void onClosed(final int code, final String reason) {}
 
    @Override
-   public void onFailure(final Throwable t, final Response<String> response) {}
+   public void onFailure(final Throwable throwable, final Response<String> response) {
+      LOG.error("Failure: " + response.getMessage(), throwable);
+   }
 
    @Override
-   public void onFailure(final Throwable t) {}
+   public void onFailure(final Throwable throwable) {
+      LOG.error("Failure: ", throwable);
+   }
 }

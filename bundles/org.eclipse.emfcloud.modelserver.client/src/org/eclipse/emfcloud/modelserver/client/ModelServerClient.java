@@ -36,6 +36,10 @@ import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
+import org.eclipse.emfcloud.modelserver.emf.configuration.ChangePackageConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.internal.client.EditingContextImpl;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.jetbrains.annotations.NotNull;
@@ -64,20 +68,39 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    public static final String PATCH = "PATCH";
    public static final String POST = "POST";
 
-   private static Logger LOG = Logger.getLogger(ModelServerClient.class.getSimpleName());
+   protected static Logger LOG = Logger.getLogger(ModelServerClient.class.getSimpleName());
 
    protected final OkHttpClient client;
    protected final String baseUrl;
    protected final Map<String, WebSocket> openSockets = new LinkedHashMap<>();
    protected final Map<EditingContextImpl, WebSocket> openEditingSockets = new LinkedHashMap<>();
+   protected final EPackageConfiguration[] configurations;
 
-   public ModelServerClient(final String baseUrl) throws MalformedURLException {
-      this(new OkHttpClient(), baseUrl);
+   public ModelServerClient(final String baseUrl, final EPackageConfiguration... configurations)
+      throws MalformedURLException {
+      this(new OkHttpClient(), baseUrl, configurations);
    }
 
-   public ModelServerClient(final OkHttpClient client, final String baseUrl) throws MalformedURLException {
+   public ModelServerClient(final OkHttpClient client, final String baseUrl,
+      final EPackageConfiguration... configurations) throws MalformedURLException {
       this.client = client;
       this.baseUrl = new URL(baseUrl).toString();
+      this.configurations = configurations;
+      this.init();
+   }
+
+   protected void init() {
+      initEPackages();
+   }
+
+   private void initEPackages() {
+      // default packages that should always be present
+      EPackageConfiguration.setup(
+         new EcorePackageConfiguration(),
+         new CommandPackageConfiguration(),
+         new ChangePackageConfiguration());
+      // custom packages adding or overriding default configurations
+      EPackageConfiguration.setup(this.configurations);
    }
 
    @Override
