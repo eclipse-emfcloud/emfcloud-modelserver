@@ -16,10 +16,13 @@ Require-Bundle: com.fasterxml.jackson.core.jackson-core;bundle-version="[2.9.0,3
  org.eclipse.emf.edit;bundle-version="[2.16.0,3.0.0)",
  org.eclipse.emfcloud.modelserver.common;bundle-version="[0.7.0,1.0.0)",
  org.eclipse.emfcloud.modelserver.edit;bundle-version="[0.7.0,1.0.0)",
- org.eclipse.emfcloud.modelserver.lib;bundle-version="[0.7.0,1.0.0)",
  org.emfjson.jackson;bundle-version="[1.2.0,2.0.0)",
  org.slf4j.api;bundle-version="[1.7.10,2.0.0)",
- org.eclipse.emf.transaction
+ org.eclipse.emf.transaction;bundle-version="[1.9.1,2.0.0)",
+ wrapped.io.javalin.javalin;bundle-version="[4.0.0,5.0.0)",
+ org.apache.commons.cli;bundle-version="[1.4.0,2.0.0)",
+ org.eclipse.jetty.websocket.api;bundle-version="[9.4.36,10.0.0)",
+ wrapped.org.jetbrains.annotations;bundle-version="[13.0.0,14.0.0)"
 Export-Package: org.eclipse.emfcloud.modelserver.emf,
  org.eclipse.emfcloud.modelserver.emf.common,
  org.eclipse.emfcloud.modelserver.emf.common.codecs,

@@ -5,7 +5,8 @@ For more information, please visit the [EMF.cloud Website](https://www.eclipse.o
 ## Build
 To build the model server as standalone JAR and execute all component tests execute the following maven goal in the root directory:
 ```bash
-mvn clean install
+mvn clean install                              (when using mvn version <= 3.8.0)
+mvn clean install --settings .mvn/settings.xml (when using mvn version >= 3.8.1)
 ```
 
 ### Maven Repositories [![build-status-server](https://img.shields.io/jenkins/build?jobUrl=https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-m2/&label=publish)](https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-m2/)

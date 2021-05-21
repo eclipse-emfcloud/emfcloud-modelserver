@@ -90,7 +90,7 @@
 		<package.type.test>eclipse-test-plugin</package.type.test>
 
 		<!-- Maven Plugin Versions: General maven plugin versions -->
-		<tycho.version>2.2.0</tycho.version>
+		<tycho.version>2.3.0</tycho.version>
 		<jacoco.version>0.8.6</jacoco.version>
 		<maven.compiler.version>3.8.1</maven.compiler.version>
 		<maven.clean.version>3.1.0</maven.clean.version>
@@ -125,8 +125,7 @@
 		<maven.jar.version>3.2.0</maven.jar.version>
 		<maven.dependency.version>3.1.2</maven.dependency.version>
 
-		<!-- External Dependency Versions: Versions of dependencies that are not 
-			available via target platform. -->
+		<!-- Maven Dependency Versions -->
 		<jetbrains.annotations.version>20.1.0</jetbrains.annotations.version>
 		<commons.cli.version>1.4</commons.cli.version>
 		<kotlin.stdlib.version>1.4.10</kotlin.stdlib.version>
@@ -305,6 +304,17 @@
 									<version>${target.version}</version>
 								</artifact>
 							</target>
+                     <filters>
+                        <filter>
+                           <!-- We need to restrict to a specific version of jackson-databind as EMF JSon Jackson does not work with newer versions -->
+                           <!-- Error with newer versions: Cannot create TypeBindings for class org.eclipse.emf.ecore.EClass with 1 type parameter: class expects 0 -->
+                           <type>eclipse-plugin</type>
+                           <id>com.fasterxml.jackson.core.jackson-databind</id>
+                           <restrictTo>
+                              <version>${jackson.databind.version}</version>
+                           </restrictTo>
+                        </filter>                       
+                     </filters>
 						</configuration>
 					</plugin>
 				</plugins>

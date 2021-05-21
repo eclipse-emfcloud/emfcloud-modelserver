@@ -22,7 +22,6 @@
       <import plugin="org.eclipse.emf.ecore" version="2.20.0" match="compatible"/>
       <import plugin="org.eclipse.emfcloud.modelserver.common" version="0.7.0" match="compatible"/>
       <import plugin="org.eclipse.emfcloud.modelserver.edit" version="0.7.0" match="compatible"/>
-      <import plugin="org.eclipse.emfcloud.modelserver.lib" version="0.7.0" match="compatible"/>
       <import plugin="com.google.inject" version="3.0.0" match="compatible"/>
       <import plugin="org.eclipse.emf.ecore.xmi" version="2.16.0" match="compatible"/>
       <import plugin="org.emfjson.jackson" version="1.2.0" match="compatible"/>
@@ -54,13 +53,6 @@
 
    <plugin
          id="org.eclipse.emfcloud.modelserver.emf"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.emfcloud.modelserver.lib"
          download-size="0"
          install-size="0"
          version="0.0.0"

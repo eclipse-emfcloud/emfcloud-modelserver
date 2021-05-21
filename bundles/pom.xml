@@ -16,7 +16,6 @@
       <module>org.eclipse.emfcloud.modelserver.common</module>
       <module>org.eclipse.emfcloud.modelserver.edit</module>
       <module>org.eclipse.emfcloud.modelserver.emf</module>
-      <module>org.eclipse.emfcloud.modelserver.lib</module>
    </modules>
 
 </project>

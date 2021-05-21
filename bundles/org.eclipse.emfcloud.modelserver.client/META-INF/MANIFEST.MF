@@ -13,8 +13,10 @@ Require-Bundle: com.fasterxml.jackson.core.jackson-core;bundle-version="[2.9.0,3
  org.eclipse.emf.ecore;bundle-version="[2.20.0,3.0.0)",
  org.eclipse.emfcloud.modelserver.common;bundle-version="[0.7.0,1.0.0)",
  org.eclipse.emfcloud.modelserver.edit;bundle-version="[0.7.0,1.0.0)",
- org.eclipse.emfcloud.modelserver.lib;bundle-version="[0.7.0,1.0.0)",
- org.eclipse.emfcloud.modelserver.emf;bundle-version="[0.7.0,1.0.0)"
+ org.eclipse.emfcloud.modelserver.emf;bundle-version="[0.7.0,1.0.0)",
+ wrapped.org.jetbrains.annotations;bundle-version="[13.0.0,14.0.0)",
+ wrapped.com.squareup.okhttp3.okhttp;bundle-version="[4.9.0,5.0.0)",
+ wrapped.com.squareup.okio.okio;bundle-version="[2.8.0,3.0.0)"
 Export-Package: org.eclipse.emfcloud.modelserver.client,
  org.eclipse.emfcloud.modelserver.internal.client;x-internal:=true
 Bundle-Vendor: EclipseSource

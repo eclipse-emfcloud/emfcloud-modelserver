@@ -1,0 +1,16 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 http://maven.apache.org/xsd/settings-1.2.0.xsd">
+    <mirrors>
+        <!-- Starting from Maven 3.8.1 HTTP repositories are blocked, see https://maven.apache.org/docs/3.8.1/release-notes.html.
+             However, we need one repository to retrieve EMF Transactions v1.4.
+             We therefore unblock that repository from the default "block-every-http-repository"-list by specifying a mirror. -->
+        <mirror>
+            <id>irisa-unblocker</id>
+            <mirrorOf>irisa</mirrorOf>
+            <name>Irisa</name>
+            <url>http://maven.irisa.fr/artifactory/list/kermeta-public-release//</url>
+            <blocked>false</blocked>
+        </mirror>
+    </mirrors>
+</settings>
