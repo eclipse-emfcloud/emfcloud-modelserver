@@ -22,9 +22,9 @@ import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.CoffeePackage;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
-import org.eclipse.emfcloud.modelserver.command.CCommandPackage;
 import org.eclipse.emfcloud.modelserver.edit.command.SetCommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.util.CommandUtil;
+import org.eclipse.emfcloud.modelserver.example.CoffeePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.example.UpdateTaskNameCommandContribution;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
@@ -48,8 +48,9 @@ public final class ExampleModelServerClient {
    private ExampleModelServerClient() {}
 
    public static void main(final String[] args) {
-      registerPackages();
-      try (ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v1/");
+      try (
+         ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v1/",
+            new CoffeePackageConfiguration());
          Scanner userInput = new Scanner(System.in)) {
          System.out.println("Simple Model Server Client Interface");
          System.out.println("====================================");
@@ -164,12 +165,6 @@ public final class ExampleModelServerClient {
       String modelUri = command.length >= 1 ? command[1] : "";
       client.unsubscribe(modelUri);
       System.out.println("< OK");
-   }
-
-   private static void registerPackages() {
-      EcorePackage.eINSTANCE.eClass();
-      CCommandPackage.eINSTANCE.eClass();
-      CoffeePackage.eINSTANCE.eClass();
    }
 
    private static void printHelp() {

@@ -10,10 +10,15 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.configuration;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
+import org.emfjson.jackson.resource.JsonResourceFactory;
 
 public interface EPackageConfiguration {
    /**
@@ -47,5 +52,37 @@ public interface EPackageConfiguration {
     */
    default Optional<Resource.Factory> getResourceFactory(final String extension) {
       return Optional.empty();
+   }
+
+   default void registerFileExtensions() {
+      registerFileExtensions(Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap());
+   }
+
+   default void registerFileExtensions(final Map<String, Object> extensionToFactoryMap) {
+      getFileExtensions().forEach(fileExtension -> {
+         getResourceFactory(fileExtension).ifPresent(factory -> extensionToFactoryMap.put(fileExtension, factory));
+      });
+   }
+
+   default void register() {
+      register(Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap());
+   }
+
+   default void register(final Map<String, Object> extensionToFactoryMap) {
+      registerEPackage();
+      registerFileExtensions(extensionToFactoryMap);
+   }
+
+   static void setup(final EPackageConfiguration... configurations) {
+      setup(Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap(), configurations);
+   }
+
+   static void setup(final Map<String, Object> extensionToFactoryMap, final EPackageConfiguration... configurations) {
+      // default initialization as XMI resources
+      extensionToFactoryMap.put("*", new XMIResourceFactoryImpl());
+      // default json mapping
+      extensionToFactoryMap.put("json", new JsonResourceFactory(EMFJsonConverter.setupDefaultMapper()));
+      // custom configurations: may add or override default configurations (order matters)
+      Arrays.stream(configurations).forEach(configuration -> configuration.register(extensionToFactoryMap));
    }
 }

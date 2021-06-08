@@ -29,12 +29,10 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
-import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
@@ -42,10 +40,10 @@ import org.eclipse.emfcloud.modelserver.edit.ModelServerCommand;
 import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
-import org.emfjson.jackson.resource.JsonResourceFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 public class DefaultModelResourceManager implements ModelResourceManager {
@@ -66,7 +64,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    public DefaultModelResourceManager(final Set<EPackageConfiguration> configurations,
       final AdapterFactory adapterFactory, final ServerConfiguration serverConfiguration) {
 
-      this.configurations = configurations;
+      this.configurations = Sets.newLinkedHashSet(configurations);
       this.adapterFactory = adapterFactory;
       this.serverConfiguration = serverConfiguration;
       initialize();
@@ -74,8 +72,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Override
    public void initialize() {
-      registerExtensions(configurations);
-      configurations.forEach(EPackageConfiguration::registerEPackage);
+      EPackageConfiguration.setup(configurations.toArray(EPackageConfiguration[]::new));
 
       String workspacePath = this.serverConfiguration.getWorkspaceRootURI().toFileString();
       if (workspacePath != null) {
@@ -85,24 +82,6 @@ public class DefaultModelResourceManager implements ModelResourceManager {
          removeErroneousResources();
          initializeEditingDomains();
       }
-   }
-
-   protected void registerExtensions(final Set<EPackageConfiguration> configurations) {
-      Map<String, Object> map = Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap();
-      // register default ResourceFactories (XMI and JSON)
-      map.put("*", new XMIResourceFactoryImpl());
-      map.put("json", new JsonResourceFactory(EMFJsonConverter.setupDefaultMapper()));
-      // register additional ResourceFactories
-      configurations.forEach(conf -> map.putAll(registerExtensions(conf)));
-   }
-
-   protected Map<String, Object> registerExtensions(final EPackageConfiguration configuration) {
-      Map<String, Object> map = Maps.newHashMap();
-      configuration.getFileExtensions().forEach(ext -> {
-         configuration.getResourceFactory(ext).ifPresent(fac -> map.put(ext, fac));
-      });
-
-      return map;
    }
 
    @Override
