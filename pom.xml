@@ -6,6 +6,7 @@
 	<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
 	<description>parent for all modelserver modules</description>
 	<version>0.7.0-SNAPSHOT</version>
+	<name>EMF.cloud Modelserver Parent</name>
 	<packaging>pom</packaging>
 
 	<!-- Required metadata for deploying releases to mvn central -->
@@ -63,9 +64,6 @@
 
 	<modules>
 		<module>bundles</module>
-		<module>examples</module>
-		<module>releng</module>
-		<module>tests</module>
 	</modules>
 
 	<!-- Properties -->
@@ -80,10 +78,6 @@
 
 		<!-- Deployment: used by the maven-deploy-plugin -->
 		<maven.deploy.skip>true</maven.deploy.skip>
-
-		<!-- Target: version used to reference target platform from our releng 
-			bundle -->
-		<target.version>0.7.0-SNAPSHOT</target.version>
 
 		<!-- Package Type: type of bundles to create (can be re-defined by profiles) -->
 		<package.type>eclipse-plugin</package.type>
@@ -205,13 +199,14 @@
 		<profile>
 			<id>p2</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>!noP2</name> <!-- deactivated if system property noP2 is set, otherwise activated -->
+				</property>
 			</activation>
 
 			<modules>
 				<module>features</module>
 			</modules>
-
 
 			<build>
 				<pluginManagement>
@@ -237,6 +232,11 @@
 						<plugin>
 							<groupId>org.eclipse.tycho</groupId>
 							<artifactId>target-platform-configuration</artifactId>
+							<version>${tycho.version}</version>
+						</plugin>
+						<plugin>
+							<groupId>org.eclipse.tycho</groupId>
+							<artifactId>tycho-versions-plugin</artifactId>
 							<version>${tycho.version}</version>
 						</plugin>
 					</plugins>
@@ -276,6 +276,11 @@
 					</plugin>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-versions-plugin</artifactId>
+						<version>${tycho.version}</version>
+					</plugin>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>target-platform-configuration</artifactId>
 						<configuration>
 							<includePackedArtifacts>true</includePackedArtifacts>
@@ -302,7 +307,7 @@
 									<groupId>org.eclipse.emfcloud.modelserver</groupId>
 									<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
 									<classifier>releng/org.eclipse.emfcloud.modelserver.releng.target/r2020-09</classifier>
-									<version>${target.version}</version>
+									<version>${project.version}</version>
 								</artifact>
 							</target>
 						</configuration>
@@ -389,6 +394,7 @@
 			<properties>
 				<package.type>jar</package.type>
 				<package.type.test>jar</package.type.test>
+				<noP2>true</noP2>
 			</properties>
 
 			<repositories>
@@ -516,6 +522,10 @@
 				</snapshotRepository>
 			</distributionManagement>
 
+			<properties>
+				<pluginsOnly>true</pluginsOnly>
+			</properties>
+
 			<build>
 				<plugins>
 					<!-- To release to Sonatype/Maven central -->
@@ -530,42 +540,6 @@
 							<autoreleaseafterclose>false</autoreleaseafterclose>
 						</configuration>
 					</plugin>
-					<!-- To generate javadoc -->
-
-					<!-- Deactivate for now. Not needed for snapshot deployments -->
-					<!-- <plugin> -->
-					<!-- <groupId>org.apache.maven.plugins</groupId> -->
-					<!-- <artifactId>maven-javadoc-plugin</artifactId> -->
-					<!-- <version>3.1.0</version> -->
-					<!-- <executions> -->
-					<!-- <execution> -->
-					<!-- <id>attach-javadocs</id> -->
-					<!-- <goals> -->
-					<!-- <goal>jar</goal> -->
-					<!-- </goals> -->
-					<!-- <configuration> -->
-					<!-- <additionalJOption>-Xdoclint:none</additionalJOption> -->
-					<!-- <tags> -->
-					<!-- <tag> -->
-					<!-- <name>generated</name> -->
-					<!-- <placement>a</placement> -->
-					<!-- <head></head> -->
-					<!-- </tag> -->
-					<!-- <tag> -->
-					<!-- <name>ordered</name> -->
-					<!-- <placement>a</placement> -->
-					<!-- <head></head> -->
-					<!-- </tag> -->
-					<!-- <tag> -->
-					<!-- <name>model</name> -->
-					<!-- <placement>a</placement> -->
-					<!-- <head>Model:</head> -->
-					<!-- </tag> -->
-					<!-- </tags> -->
-					<!-- </configuration> -->
-					<!-- </execution> -->
-					<!-- </executions> -->
-					<!-- </plugin> -->
 
 					<!-- To sign the artifacts -->
 					<plugin>
@@ -590,6 +564,22 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+
+	<!--In certain corner cases we only want to use the core modules/plugins e.g. when deploying to maven central.
+        This profile is active by default and can be deactivated by passing the -DpluginsOnly-->		
+		<profile>
+			<id>non-plugin-modules</id>
+			<activation>
+				<property>
+					<name>!pluginsOnly</name>
+				</property>
+			</activation>
+			<modules>
+				<module>examples</module>
+				<module>releng</module>
+				<module>tests</module>
+			</modules>
 		</profile>
 	</profiles>
 </project>
