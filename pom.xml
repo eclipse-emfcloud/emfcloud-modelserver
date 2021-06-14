@@ -65,7 +65,6 @@
 		<module>bundles</module>
 		<module>examples</module>
 		<module>releng</module>
-		<module>tests</module>
 	</modules>
 
 	<!-- Properties -->
@@ -80,10 +79,6 @@
 
 		<!-- Deployment: used by the maven-deploy-plugin -->
 		<maven.deploy.skip>true</maven.deploy.skip>
-
-		<!-- Target: version used to reference target platform from our releng 
-			bundle -->
-		<target.version>0.7.0-SNAPSHOT</target.version>
 
 		<!-- Package Type: type of bundles to create (can be re-defined by profiles) -->
 		<package.type>eclipse-plugin</package.type>
@@ -209,6 +204,7 @@
 			</activation>
 
 			<modules>
+				<module>tests</module>
 				<module>features</module>
 			</modules>
 
@@ -237,6 +233,11 @@
 						<plugin>
 							<groupId>org.eclipse.tycho</groupId>
 							<artifactId>target-platform-configuration</artifactId>
+							<version>${tycho.version}</version>
+						</plugin>
+						<plugin>
+							<groupId>org.eclipse.tycho</groupId>
+							<artifactId>tycho-versions-plugin</artifactId>
 							<version>${tycho.version}</version>
 						</plugin>
 					</plugins>
@@ -276,6 +277,11 @@
 					</plugin>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-versions-plugin</artifactId>
+						<version>${tycho.version}</version>
+					</plugin>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>target-platform-configuration</artifactId>
 						<configuration>
 							<includePackedArtifacts>true</includePackedArtifacts>
@@ -302,7 +308,7 @@
 									<groupId>org.eclipse.emfcloud.modelserver</groupId>
 									<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
 									<classifier>releng/org.eclipse.emfcloud.modelserver.releng.target/r2020-09</classifier>
-									<version>${target.version}</version>
+									<version>${project.version}</version>
 								</artifact>
 							</target>
 						</configuration>
@@ -590,6 +596,16 @@
 					</plugin>
 				</plugins>
 			</build>
+		</profile>
+		
+		<profile>
+			<id>m2-tests</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<modules>
+				<module>tests</module>
+			</modules>
 		</profile>
 	</profiles>
 </project>

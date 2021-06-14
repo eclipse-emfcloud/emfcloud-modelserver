@@ -15,27 +15,27 @@
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.common</artifactId>
-         <version>${target.version}</version>
+         <version>${project.version}</version>
       </dependency>
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.lib</artifactId>
-         <version>${target.version}</version>
+         <version>${project.version}</version>
       </dependency>
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.edit</artifactId>
-         <version>${target.version}</version>
+         <version>${project.version}</version>
       </dependency>
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.coffee.model</artifactId>
-         <version>${target.version}</version>
+         <version>${project.version}</version>
       </dependency>
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.emf</artifactId>
-         <version>${target.version}</version>
+         <version>${project.version}</version>
       </dependency>
    </dependencies>
 </project>

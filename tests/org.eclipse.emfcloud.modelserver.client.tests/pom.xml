@@ -21,12 +21,12 @@
             <dependency>
                <groupId>org.eclipse.emfcloud.modelserver</groupId>
                <artifactId>org.eclipse.emfcloud.modelserver.tests</artifactId>
-               <version>${target.version}</version>
+               <version>${project.version}</version>
             </dependency>
             <dependency>
                <groupId>org.eclipse.emfcloud.modelserver</groupId>
                <artifactId>org.eclipse.emfcloud.modelserver.client</artifactId>
-               <version>${target.version}</version>
+               <version>${project.version}</version>
             </dependency>
          </dependencies>
       </profile>

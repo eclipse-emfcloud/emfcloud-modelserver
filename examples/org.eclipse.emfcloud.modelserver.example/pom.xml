@@ -18,19 +18,19 @@
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.emf</artifactId>
-         <version>${target.version}</version>
+         <version>${project.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.coffee.model</artifactId>
-         <version>${target.version}</version>
+         <version>${project.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.client</artifactId>
-         <version>${target.version}</version>
+         <version>${project.version}</version>
          <scope>provided</scope>
       </dependency>
       <dependency>

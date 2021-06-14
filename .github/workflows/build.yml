@@ -23,7 +23,7 @@ jobs:
           java-version: 11
           
       - name: Build with Maven
-        run: mvn -B -Pm2 clean verify --file pom.xml
+        run: mvn -B -Pm2 -Pm2-tests clean verify --file pom.xml
 
   build-p2:
     strategy:
