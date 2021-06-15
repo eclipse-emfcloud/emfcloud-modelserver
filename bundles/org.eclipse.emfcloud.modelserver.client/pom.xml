@@ -29,11 +29,6 @@
       </dependency>
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
-         <artifactId>org.eclipse.emfcloud.modelserver.coffee.model</artifactId>
-         <version>${project.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.emf</artifactId>
          <version>${project.version}</version>
       </dependency>
