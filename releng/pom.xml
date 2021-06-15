@@ -17,7 +17,7 @@
 
    <profiles>
       <profile>
-         <id>p2-release</id>
+         <id>p2</id>
          <modules>
             <module>org.eclipse.emfcloud.modelserver.releng.p2</module>
          </modules>

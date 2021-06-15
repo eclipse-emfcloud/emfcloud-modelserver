@@ -239,6 +239,16 @@
 							<artifactId>tycho-versions-plugin</artifactId>
 							<version>${tycho.version}</version>
 						</plugin>
+						<plugin>
+							<groupId>org.eclipse.tycho</groupId>
+							<artifactId>tycho-p2-repository-plugin</artifactId>
+							<version>${tycho.version}</version>
+						</plugin>
+						<plugin>
+							<groupId>org.eclipse.tycho</groupId>
+							<artifactId>tycho-p2-plugin</artifactId>
+							<version>${tycho.version}</version>
+						</plugin>
 					</plugins>
 				</pluginManagement>
 				<plugins>
@@ -262,22 +272,8 @@
 						</configuration>
 					</plugin>
 					<plugin>
-						<!-- enable source bundle generation -->
-						<groupId>org.eclipse.tycho</groupId>
-						<artifactId>tycho-source-plugin</artifactId>
-						<executions>
-							<execution>
-								<id>plugin-source</id>
-								<goals>
-									<goal>plugin-source</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>tycho-versions-plugin</artifactId>
-						<version>${tycho.version}</version>
 					</plugin>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
@@ -312,38 +308,16 @@
 							</target>
 						</configuration>
 					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<!-- P2-Release Profile: Used to build and Eclipse update site. Should 
-			only be used in conjunction with the P2 Profile -->
-		<profile>
-			<id>p2-release</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.eclipse.tycho</groupId>
-							<artifactId>tycho-p2-repository-plugin</artifactId>
-							<version>${tycho.version}</version>
-						</plugin>
-						<plugin>
-							<groupId>org.eclipse.tycho</groupId>
-							<artifactId>tycho-p2-plugin</artifactId>
-							<version>${tycho.version}</version>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-				<plugins>
 					<plugin>
 						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>tycho-source-plugin</artifactId>
 						<executions>
+							<execution>
+								<id>plugin-source</id>
+								<goals>
+									<goal>plugin-source</goal>
+								</goals>
+							</execution>
 							<execution>
 								<id>feature-source</id>
 								<phase>package</phase>
@@ -383,6 +357,7 @@
 				</plugins>
 			</build>
 		</profile>
+
 
 		<!-- M2 Profile: Runs a standard maven build that produces jar artifacts -->
 		<profile>
@@ -566,8 +541,9 @@
 			</build>
 		</profile>
 
-	<!--In certain corner cases we only want to use the core modules/plugins e.g. when deploying to maven central.
-        This profile is active by default and can be deactivated by passing the -DpluginsOnly-->		
+		<!--In certain corner cases we only want to use the core modules/plugins 
+			e.g. when deploying to maven central. This profile is active by default and 
+			can be deactivated by passing the -DpluginsOnly -->
 		<profile>
 			<id>non-plugin-modules</id>
 			<activation>
