@@ -17,8 +17,8 @@ import java.util.Optional;
 
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
+import org.eclipse.emfcloud.jackson.resource.JsonResourceFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
-import org.emfjson.jackson.resource.JsonResourceFactory;
 
 public interface EPackageConfiguration {
    /**

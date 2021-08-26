@@ -18,8 +18,8 @@ import java.util.Optional;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import org.emfjson.jackson.errors.JSONException;
-import org.emfjson.jackson.resource.JsonResource;
+import org.eclipse.emfcloud.jackson.errors.JSONException;
+import org.eclipse.emfcloud.jackson.resource.JsonResource;
 
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.databind.JsonNode;
