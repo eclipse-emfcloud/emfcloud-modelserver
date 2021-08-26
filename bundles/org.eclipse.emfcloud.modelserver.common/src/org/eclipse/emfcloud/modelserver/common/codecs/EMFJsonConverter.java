@@ -18,7 +18,7 @@ import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
-import org.emfjson.jackson.module.EMFModule;
+import org.eclipse.emfcloud.jackson.module.EMFModule;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;

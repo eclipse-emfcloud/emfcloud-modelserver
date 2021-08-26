@@ -14,9 +14,9 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-
 import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.Routing;
+
 import com.google.inject.Inject;
 
 import io.javalin.Javalin;

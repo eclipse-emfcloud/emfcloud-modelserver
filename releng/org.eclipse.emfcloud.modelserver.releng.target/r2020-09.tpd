@@ -25,13 +25,16 @@ location "https://download.eclipse.org/tools/orbit/downloads/drops/R202008312006
 	org.objenesis [2.6.0,3.0.0)
 	org.hamcrest [1.1.0,2.0.0)
 	org.slf4j.api [1.7.10,2.0.0)
+	com.fasterxml.jackson.core.jackson-annotations [2.10.3,3.0.0)
+	com.fasterxml.jackson.core.jackson-core [2.10.3,3.0.0)
+	com.fasterxml.jackson.core.jackson-databind [2.10.3,3.0.0)
 }
 
 // EMF-JSON
-location "http://ghillairet.github.io/p2" {
-	org.emfjson.jackson lazy
+location "https://download.eclipse.org/emfcloud/emfjson-jackson/p2/nightly/" {
+	org.eclipse.emfcloud.emfjson-jackson lazy
 }
 
-location "https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/9.4.36.v20210114/" {
+location "https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/" {
 	org.eclipse.jetty.websocket.server lazy
 }

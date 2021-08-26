@@ -17,11 +17,10 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
-import org.emfjson.jackson.resource.JsonResourceFactory;
+import org.eclipse.emfcloud.jackson.resource.JsonResourceFactory;
+import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.junit.After;
 import org.junit.Before;
-
-import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 
 public abstract class AbstractResourceTest {
    public static final String RESOURCE_PATH = "resources/";

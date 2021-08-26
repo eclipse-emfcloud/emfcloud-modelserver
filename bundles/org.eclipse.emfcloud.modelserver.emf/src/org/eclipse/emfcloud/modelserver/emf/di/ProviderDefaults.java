@@ -13,7 +13,7 @@ package org.eclipse.emfcloud.modelserver.emf.di;
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
-import org.emfjson.jackson.module.EMFModule;
+import org.eclipse.emfcloud.jackson.module.EMFModule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
