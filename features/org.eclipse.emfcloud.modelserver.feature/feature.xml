@@ -16,17 +16,16 @@
    <requires>
       <import plugin="com.fasterxml.jackson.core.jackson-core" version="2.9.0" match="compatible"/>
       <import plugin="com.fasterxml.jackson.core.jackson-databind" version="2.9.0" match="compatible"/>
-      <import plugin="com.google.guava" version="27.1.0" match="compatible"/>
+      <import plugin="com.google.guava" version="30.0.0" match="greaterOrEqual"/>
       <import plugin="org.apache.log4j" version="1.2.15" match="compatible"/>
       <import plugin="org.eclipse.emf.common" version="2.17.0" match="compatible"/>
       <import plugin="org.eclipse.emf.ecore" version="2.20.0" match="compatible"/>
       <import plugin="org.eclipse.emfcloud.modelserver.common" version="0.7.0" match="compatible"/>
       <import plugin="org.eclipse.emfcloud.modelserver.edit" version="0.7.0" match="compatible"/>
       <import plugin="org.eclipse.emfcloud.modelserver.lib" version="0.7.0" match="compatible"/>
-      <import plugin="com.google.inject" version="3.0.0" match="compatible"/>
+      <import plugin="com.google.inject" version="5.0.0" match="compatible"/>
       <import plugin="org.eclipse.emf.ecore.xmi" version="2.16.0" match="compatible"/>
       <import plugin="org.eclipse.emf.edit" version="2.16.0" match="compatible"/>
-      <import plugin="org.slf4j.api" version="1.7.10" match="compatible"/>
       <import plugin="javax.inject"/>
       <import plugin="org.eclipse.emfcloud.emfjson-jackson"/>
    </requires>
