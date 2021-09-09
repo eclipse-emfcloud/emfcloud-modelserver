@@ -1,4 +1,4 @@
-target "2020-09 - Release" with source, requirements
+target "EMF.cloud Model Server Targetplatform" with source, requirements
 
 location "http://download.eclipse.org/releases/2021-06" {
 	org.eclipse.platform.feature.group
@@ -22,13 +22,14 @@ location "https://download.eclipse.org/tools/orbit/downloads/drops/R202106020316
 	com.fasterxml.jackson.core.jackson-databind [2.10.3,3.0.0)
 	org.junit [4.12.0,5.0.0)
 	javax.servlet [3.1.0,4.0.0)
+	org.aopalliance [1.0.0,2.0.0)
 }
 
 // EMF-JSON
-location "https://download.eclipse.org/emfcloud/emfjson-jackson/p2/nightly/" {
+location "https://download.eclipse.org/emfcloud/emfjson-jackson/p2/nightly/1.3/1.3.1.202109010859" {
 	org.eclipse.emfcloud.emfjson-jackson lazy
 }
 
-location "https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/" {
-	org.eclipse.jetty.websocket.server lazy
+location "https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/9.4.43.v20210629/" {
+	org.eclipse.jetty.websocket.server
 }

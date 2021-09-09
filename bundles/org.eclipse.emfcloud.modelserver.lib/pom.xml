@@ -48,12 +48,12 @@
       <dependency>
          <groupId>org.eclipse.jetty.websocket</groupId>
          <artifactId>websocket-api</artifactId>
-         <version>${jetty.websocket.api.version}</version>
+         <version>${jetty.websocket.version}</version>
       </dependency>
       <dependency>
          <groupId>org.eclipse.jetty.websocket</groupId>
          <artifactId>websocket-servlet</artifactId>
-         <version>${jetty.websocket.servlet.version}</version>
+         <version>${jetty.websocket.version}</version>
       </dependency>
       <dependency>
          <groupId>io.javalin</groupId>
@@ -147,23 +147,23 @@
                         <artifactItem>
                            <groupId>org.eclipse.jetty.websocket</groupId>
                            <artifactId>websocket-api</artifactId>
-                           <version>${jetty.websocket.api.version}</version>
+                           <version>${jetty.websocket.version}</version>
                         </artifactItem>
                         <artifactItem>
                            <groupId>org.eclipse.jetty.websocket</groupId>
                            <artifactId>websocket-api</artifactId>
-                           <version>${jetty.websocket.api.version}</version>
+                           <version>${jetty.websocket.version}</version>
                            <classifier>sources</classifier>
                         </artifactItem>
                         <artifactItem>
                            <groupId>org.eclipse.jetty.websocket</groupId>
                            <artifactId>websocket-servlet</artifactId>
-                           <version>${jetty.websocket.servlet.version}</version>
+                           <version>${jetty.websocket.version}</version>
                         </artifactItem>
                         <artifactItem>
                            <groupId>org.eclipse.jetty.websocket</groupId>
                            <artifactId>websocket-servlet</artifactId>
-                           <version>${jetty.websocket.servlet.version}</version>
+                           <version>${jetty.websocket.version}</version>
                            <classifier>sources</classifier>
                         </artifactItem>
                         <artifactItem>
