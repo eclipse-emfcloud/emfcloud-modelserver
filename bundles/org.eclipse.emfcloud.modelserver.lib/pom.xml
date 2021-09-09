@@ -10,6 +10,37 @@
    <artifactId>org.eclipse.emfcloud.modelserver.lib</artifactId>
    <packaging>${package.type}</packaging>
 
+   <url>https://github.com/eclipse/emfcloud-modelserver</url>
+
+   <licenses>
+      <license>
+         <name>Eclipse Public License - v2.0</name>
+         <url>http://www.eclipse.org/legal/epl-v20.html</url>
+         <distribution>repo</distribution>
+      </license>
+      <license>
+         <name>MIT License</name>
+         <url>https://opensource.org/licenses/MIT</url>
+         <distribution>repo</distribution>
+      </license>
+   </licenses>
+
+   <developers>
+      <developer>
+         <name>Eclipse emf.cloud Project</name>
+         <email>emfcloud-dev@eclipse.org</email>
+         <organization>Eclipse emf.cloud</organization>
+         <organizationUrl>https://projects.eclipse.org/projects/ecd.emfcloud</organizationUrl>
+      </developer>
+   </developers>
+
+   <scm>
+      <url>https://github.com/eclipse/emfcloud-modelserver</url>
+      <connection>scm:git@github.com:eclipse/emfcloud-modelserver.git</connection>
+      <developerConnection>scm:git@github.com:eclipse/emfcloud-modelserver.git</developerConnection>
+      <tag>HEAD</tag>
+   </scm>
+
    <properties>
       <maven.deploy.skip>false</maven.deploy.skip>
    </properties>

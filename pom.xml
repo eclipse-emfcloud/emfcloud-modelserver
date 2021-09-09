@@ -28,28 +28,10 @@
 
 	<developers>
 		<developer>
-			<name>Nina Doschek</name>
-			<email>ndoschek@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
-		</developer>
-		<developer>
-			<name>Martin Fleck</name>
-			<email>mfleck@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
-		</developer>
-		<developer>
-			<name>Eugen Neufeld</name>
-			<email>eneufeld@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
-		</developer>
-		<developer>
-			<name>Tobias Ortmayr</name>
-			<email>tortmayr@eclipsesource.com</email>
-			<organization>EclipseSource</organization>
-			<organizationUrl>http://www.eclipsesource.com</organizationUrl>
+			<name>Eclipse emf.cloud Project</name>
+			<email>emfcloud-dev@eclipse.org</email>
+			<organization>Eclipse emf.cloud</organization>
+			<organizationUrl>https://projects.eclipse.org/projects/ecd.emfcloud</organizationUrl>
 		</developer>
 	</developers>
 
