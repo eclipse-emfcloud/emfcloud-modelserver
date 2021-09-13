@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.emf.common;bundle-version="[2.17.0,3.0.0)",
 Export-Package: okhttp3.mock,
  okhttp3.mock.matchers,
  org.eclipse.emfcloud.modelserver.tests.util
-Bundle-ClassPath: lib/okhttp-mock-1.3.2.jar,
+Bundle-ClassPath: lib/okhttp-mock-1.4.1.jar,
  lib/mockito-inline-2.23.0.jar,
  .
 Bundle-Vendor: EclipseSource

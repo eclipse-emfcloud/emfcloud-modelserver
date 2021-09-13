@@ -10,14 +10,6 @@
    <artifactId>org.eclipse.emfcloud.modelserver.tests</artifactId>
    <packaging>${package.type}</packaging>
 
-   <repositories>
-      <repository>
-         <!-- necessary for okhttp-mock -->
-         <id>jcenter</id>
-         <url>https://jcenter.bintray.com</url>
-      </repository>
-   </repositories>
-
    <profiles>
       <profile>
          <id>m2</id>

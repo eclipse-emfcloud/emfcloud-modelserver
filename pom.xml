@@ -112,7 +112,7 @@
 		<jetty.websocket.version>9.4.43.v20210629</jetty.websocket.version>
 		<javalin.version>4.0.0.ALPHA0</javalin.version> <!-- similar to latest 3.x version but with mockito fixes: https://javalin.io/news/2021/02/17/javalin-4.0.0-alpha.html -->
 		<mockito.inline.version>2.23.0</mockito.inline.version>
-		<gmazzo.okhttp.mock.version>1.3.2</gmazzo.okhttp.mock.version>
+		<gmazzo.okhttp.mock.version>1.4.1</gmazzo.okhttp.mock.version>
 
 		<!-- Release Dependencies for M2 -->
 		<nexus.maven.version>1.6.8</nexus.maven.version>
