@@ -16,7 +16,7 @@
          <id>p2</id>
          <properties>
             <targetPlatform.application.name>org.eclipse.cbi.targetplatform.tpd.converter</targetPlatform.application.name>
-            <targetPlatform.application.args>r2020-09.tpd</targetPlatform.application.args>
+            <targetPlatform.application.args>targetplatform.tpd</targetPlatform.application.args>
          </properties>
 
          <build>
@@ -28,9 +28,9 @@
                   <configuration>
                      <repositories>
                         <repository>
-                           <id>2020-09</id>
+                           <id>2021-06</id>
                            <layout>p2</layout>
-                           <url>http://download.eclipse.org/releases/2020-09</url>
+                           <url>http://download.eclipse.org/releases/2021-06</url>
                         </repository>
                         <repository>
                            <id>tpd</id>
