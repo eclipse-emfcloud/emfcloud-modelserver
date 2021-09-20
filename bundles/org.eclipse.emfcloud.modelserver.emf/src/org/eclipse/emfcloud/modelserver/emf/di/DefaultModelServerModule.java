@@ -38,6 +38,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ServerController;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
+import org.eclipse.emfcloud.modelserver.emf.common.SingleThreadModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.UriHelper;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
@@ -56,6 +57,7 @@ import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Singleton;
+import com.google.inject.name.Names;
 
 import io.javalin.Javalin;
 
@@ -71,7 +73,7 @@ public class DefaultModelServerModule extends ModelServerModule {
       bind(SchemaController.class).to(bindSchemaController()).in(Singleton.class);
       bind(SchemaRepository.class).to(bindSchemaRepository()).in(Singleton.class);
       bind(SessionController.class).to(bindSessionController()).in(Singleton.class);
-      bind(ModelController.class).to(bindModelController()).in(Singleton.class);
+      bind(ModelController.class).to(bindThreadSafeModelController()).in(Singleton.class);
       bind(ServerController.class).to(bindServerController()).in(Singleton.class);
       bind(CommandCodec.class).to(bindCommandCodec()).in(Singleton.class);
       bind(ModelResourceManager.class).to(bindModelResourceManager()).in(Singleton.class);
@@ -109,6 +111,11 @@ public class DefaultModelServerModule extends ModelServerModule {
 
    protected Class<? extends ModelController> bindModelController() {
       return DefaultModelController.class;
+   }
+
+   protected Class<? extends ModelController> bindThreadSafeModelController() {
+      bind(ModelController.class).annotatedWith(Names.named("ModelControllerDelegate")).to(bindModelController());
+      return SingleThreadModelController.class;
    }
 
    protected Class<? extends ModelRepository> bindModelRepository() {

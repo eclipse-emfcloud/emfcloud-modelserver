@@ -732,6 +732,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          return getJsonField(node, field);
       } catch (IOException e) {
          LOG.error("Could not parse JSON", e);
+         LOG.debug("Invalid JSON: " + jsonAsString);
          return Optional.empty();
       }
    }
