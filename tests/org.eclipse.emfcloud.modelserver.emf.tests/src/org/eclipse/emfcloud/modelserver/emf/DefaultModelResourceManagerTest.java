@@ -104,9 +104,9 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
       assertTrue(EcoreUtil.equals(expectedResource.getContents(), result.get().getContents()));
    }
 
-   @Test(expected = NullPointerException.class)
+   @Test
    public void testLoadModelFromInvalidModelUri() throws IOException {
-      modelResourceManager.loadResource(adaptModelUri("Test2.ecore"));
+      assertTrue(modelResourceManager.loadResource(adaptModelUri("Test2.ecore")).isEmpty());
    }
 
    @Test
@@ -141,10 +141,10 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
    }
 
    @Test
-   public void removeResource() throws IOException {
+   public void deleteResource() throws IOException {
       modelResourceManager.addResource(adaptModelUri("Test2.json").toString(), EcoreFactory.eINSTANCE.createEClass());
       assertTrue(modelResourceManager.isResourceLoaded(adaptModelUri("Test2.json").toString()));
-      modelResourceManager.removeResource(adaptModelUri("Test2.json").toString());
+      modelResourceManager.deleteResource(adaptModelUri("Test2.json").toString());
       assertFalse(modelResourceManager.isResourceLoaded(adaptModelUri("Test2.json").toString()));
    }
 

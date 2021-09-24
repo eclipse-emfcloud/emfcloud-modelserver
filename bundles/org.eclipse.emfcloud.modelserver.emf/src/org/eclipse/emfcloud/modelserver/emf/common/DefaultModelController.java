@@ -95,7 +95,7 @@ public class DefaultModelController implements ModelController {
    public void delete(final Context ctx, final String modeluri) {
       if (this.modelRepository.hasModel(modeluri)) {
          try {
-            this.modelRepository.removeModel(modeluri);
+            this.modelRepository.deleteModel(modeluri);
             success(ctx, "Model '%s' successfully deleted", modeluri);
             this.sessionController.modelDeleted(modeluri);
          } catch (IOException e) {
