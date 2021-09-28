@@ -16,7 +16,7 @@ import java.util.Set;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.ecore.change.ChangeDescription;
-import org.eclipse.emf.transaction.impl.TransactionChangeRecorder;
+import org.eclipse.emf.ecore.change.util.ChangeRecorder;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ChangePackageConfiguration;
@@ -47,10 +47,10 @@ public class RecordingModelResourceManager extends DefaultModelResourceManager {
    @Override
    protected CommandExecutionContext executeCommand(final ModelServerEditingDomain domain, final Command serverCommand,
       final CCommand clientCommand) {
-      TransactionChangeRecorder recorder = domain.getChangeRecorder();
-      recorder.beginRecording();
+      ChangeRecorder recorder = new ChangeRecorder(domain.getResourceSet());
       CommandExecutionContext context = super.executeCommand(domain, serverCommand, clientCommand);
       ChangeDescription recording = recorder.endRecording();
+      recorder.dispose();
       return new RecordingCommandExecutionContext(context, recording);
    }
 
@@ -58,10 +58,10 @@ public class RecordingModelResourceManager extends DefaultModelResourceManager {
    protected Optional<CommandExecutionContext> undoCommand(final ModelServerEditingDomain domain,
       final Command serverCommand,
       final CCommand clientCommand) {
-      TransactionChangeRecorder recorder = domain.getChangeRecorder();
-      recorder.beginRecording();
+      ChangeRecorder recorder = new ChangeRecorder(domain.getResourceSet());
       Optional<CommandExecutionContext> context = super.undoCommand(domain, serverCommand, clientCommand);
       ChangeDescription recording = recorder.endRecording();
+      recorder.dispose();
       return context.map(existingContext -> new RecordingCommandExecutionContext(existingContext, recording));
    }
 
@@ -69,10 +69,10 @@ public class RecordingModelResourceManager extends DefaultModelResourceManager {
    protected Optional<CommandExecutionContext> redoCommand(final ModelServerEditingDomain domain,
       final Command serverCommand,
       final CCommand clientCommand) {
-      TransactionChangeRecorder recorder = domain.getChangeRecorder();
-      recorder.beginRecording();
+      ChangeRecorder recorder = new ChangeRecorder(domain.getResourceSet());
       Optional<CommandExecutionContext> context = super.redoCommand(domain, serverCommand, clientCommand);
       ChangeDescription recording = recorder.endRecording();
+      recorder.dispose();
       return context.map(existingContext -> new RecordingCommandExecutionContext(existingContext, recording));
    }
 
