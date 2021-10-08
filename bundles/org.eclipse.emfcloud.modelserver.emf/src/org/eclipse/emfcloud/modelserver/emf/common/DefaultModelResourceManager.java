@@ -47,7 +47,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 public class DefaultModelResourceManager implements ModelResourceManager {
-   protected static Logger LOG = Logger.getLogger(DefaultModelResourceManager.class.getSimpleName());
+   protected static final Logger LOG = Logger.getLogger(DefaultModelResourceManager.class.getSimpleName());
 
    @Inject
    protected CommandCodec commandCodec;
@@ -59,6 +59,8 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    protected final AdapterFactory adapterFactory;
    protected final Map<URI, ResourceSet> resourceSets = Maps.newLinkedHashMap();
    protected final Map<ResourceSet, ModelServerEditingDomain> editingDomains = Maps.newLinkedHashMap();
+
+   protected boolean isInitializing;
 
    @Inject
    public DefaultModelResourceManager(final Set<EPackageConfiguration> configurations,
@@ -72,15 +74,20 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Override
    public void initialize() {
-      EPackageConfiguration.setup(configurations.toArray(EPackageConfiguration[]::new));
+      this.isInitializing = true;
+      try {
+         EPackageConfiguration.setup(configurations.toArray(EPackageConfiguration[]::new));
 
-      String workspacePath = this.serverConfiguration.getWorkspaceRootURI().toFileString();
-      if (workspacePath != null) {
-         resourceSets.clear();
-         editingDomains.clear();
-         loadSourceResources(workspacePath);
-         removeErroneousResources();
-         initializeEditingDomains();
+         String workspacePath = this.serverConfiguration.getWorkspaceRootURI().toFileString();
+         if (workspacePath != null) {
+            resourceSets.clear();
+            editingDomains.clear();
+            loadSourceResources(workspacePath);
+            removeErroneousResources();
+            initializeEditingDomains();
+         }
+      } finally {
+         this.isInitializing = false;
       }
    }
 
@@ -104,7 +111,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
             loadSourceResources(file.getAbsolutePath());
          } else if (file.isFile()) {
             resourceSets.put(createURI(file.getAbsolutePath()), new ResourceSetImpl());
-            loadResource(file.getAbsolutePath(), false /* do not remove unloadable resources on workspace startup */);
+            loadResource(file.getAbsolutePath());
          }
       }
    }
@@ -144,38 +151,76 @@ public class DefaultModelResourceManager implements ModelResourceManager {
          : URI.createFileURI(modeluri);
    }
 
+   /**
+    * Loads a resource from its modeluri.
+    *
+    * @param modeluri
+    *                    The URI of the resource to load
+    * @return The loaded resource, or {@link Optional#empty()} if an error occurred
+    *         during loading
+    */
    @Override
-   public Optional<Resource> loadResource(final String modeluri) {
-      return loadResource(modeluri, true);
-   }
-
    @SuppressWarnings("checkstyle:IllegalCatch")
-   protected Optional<Resource> loadResource(final String modeluri, final boolean removeUnloadableResources) {
+   public Optional<Resource> loadResource(final String modeluri) {
       try {
          Resource resource = getResourceSet(modeluri).getResource(createURI(modeluri), true);
          resource.load(Collections.EMPTY_MAP);
          return Optional.of(resource);
       } catch (final Throwable e) {
-         LOG.debug("Could not load resource with URI: " + modeluri);
-         if (removeUnloadableResources) {
-            // properly remove model again so the resource set does not hold a broken resource
-            removeResourceSafe(modeluri);
-         }
+         handleLoadError(modeluri, this.isInitializing, e);
          return Optional.empty();
       }
    }
 
-   protected void removeResourceSafe(final String modeluri) {
-      try {
-         removeResource(modeluri);
-      } catch (IOException exception) {
-         LOG.error("Could not remove resource with URI: " + modeluri, exception);
+   /**
+    * Handle an exception while trying to load a resource.
+    *
+    * @param modeluri
+    *                          The URI of the resource that was being loaded
+    * @param isInitializing
+    *                          A flag indicating if we're in the initialization phase (while the model server attempts
+    *                          to load all possible resources). If false, this probably means that a client explicitly
+    *                          requested the resource.
+    * @param exception
+    *                          The exception that was thrown during resource loading
+    */
+   protected void handleLoadError(final String modeluri, final boolean isInitializing, final Throwable exception) {
+      if (isInitializing) {
+         // Ignore exceptions during initialization; but still log a short debug message
+         LOG.debug("Could not load resource with URI: " + modeluri);
+      } else {
+         LOG.error("Could not load resource with URI: " + modeluri, exception);
+      }
+      // properly remove model again so the resource set does not hold a broken resource
+      removeResource(modeluri);
+   }
+
+   /**
+    * Unloads a resource and remove it from the resource set.
+    *
+    * @param modeluri
+    *                    The URI of the Resource to remove
+    */
+   protected void removeResource(final String modeluri) {
+      ResourceSet resourceSet = getResourceSet(modeluri);
+      if (resourceSet == null) {
+         // No ResourceSet is associated to this URI; so there is nothing
+         // to unload or remove. Skip.
+         return;
+      }
+      Resource resource = resourceSet.getResource(createURI(modeluri), false);
+      if (resource != null) {
+         resourceSet.getResources().remove(resource);
+         if (resource.isLoaded()) {
+            resource.unload();
+         }
       }
    }
 
    @Override
-   public void removeResource(final String modeluri) throws IOException {
-      Resource resource = getResourceSet(modeluri).getResource(createURI(modeluri), false);
+   public void deleteResource(final String modeluri) throws IOException {
+      ResourceSet resourceSet = getResourceSet(modeluri);
+      Resource resource = resourceSet.getResource(createURI(modeluri), false);
       if (resource != null) {
          resource.delete(null);
       }

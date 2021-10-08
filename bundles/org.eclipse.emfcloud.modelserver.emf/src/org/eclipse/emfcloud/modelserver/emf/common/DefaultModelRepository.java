@@ -138,8 +138,8 @@ public class DefaultModelRepository implements ModelRepository {
    }
 
    @Override
-   public void removeModel(final String modeluri) throws IOException {
-      modelResourceManager.removeResource(modeluri);
+   public void deleteModel(final String modeluri) throws IOException {
+      modelResourceManager.deleteResource(modeluri);
    }
 
    @Override

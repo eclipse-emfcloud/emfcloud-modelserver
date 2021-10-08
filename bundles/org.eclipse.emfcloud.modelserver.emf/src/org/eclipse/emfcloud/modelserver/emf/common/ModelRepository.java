@@ -43,7 +43,7 @@ public interface ModelRepository {
 
    void addModel(String modeluri, EObject model) throws IOException;
 
-   void removeModel(String modeluri) throws IOException;
+   void deleteModel(String modeluri) throws IOException;
 
    boolean saveModel(String modeluri);
 

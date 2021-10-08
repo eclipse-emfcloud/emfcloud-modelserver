@@ -45,7 +45,13 @@ public interface ModelResourceManager {
 
    Optional<Resource> updateResource(String modeluri, EObject updatedModel);
 
-   void removeResource(String modeluri) throws IOException;
+   /**
+    * Delete a resource from the ModelServer.
+    *
+    * @param modeluri
+    * @throws IOException
+    */
+   void deleteResource(String modeluri) throws IOException;
 
    CCommandExecutionResult execute(String modeluri, CCommand command) throws DecodingException;
 

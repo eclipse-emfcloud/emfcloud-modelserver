@@ -280,7 +280,8 @@ public class ModelServerRoutingV1 implements Routing {
    }
 
    protected void onSubscriptionError(final WsErrorContext ctx) {
-      error(ctx, ctx.error().getMessage());
+      String message = ctx.error().getMessage() == null ? "No message" : ctx.error().getMessage();
+      error(ctx, message);
    }
 
    protected void onSubscriptionMessage(final WsMessageContext ctx) {
