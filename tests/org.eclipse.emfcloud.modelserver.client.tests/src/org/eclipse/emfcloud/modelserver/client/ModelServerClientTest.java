@@ -301,6 +301,24 @@ public class ModelServerClientTest {
    }
 
    @Test
+   public void close() throws ExecutionException, InterruptedException, MalformedURLException {
+      String modelUri = "SuperBrewer3000.coffee";
+      String closeUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPathsV1.CLOSE)
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+         .build().toString();
+
+      interceptor.addRule()
+         .url(closeUrl)
+         .post()
+         .respond(Json.object(Json.prop(JsonResponseMember.TYPE, Json.text(JsonResponseType.SUCCESS))).toString());
+      ModelServerClient client = createClient();
+
+      final CompletableFuture<Response<Boolean>> f = client.close(modelUri);
+      assertThat(f.get().body(), equalTo(true));
+   }
+
+   @Test
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void create() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);

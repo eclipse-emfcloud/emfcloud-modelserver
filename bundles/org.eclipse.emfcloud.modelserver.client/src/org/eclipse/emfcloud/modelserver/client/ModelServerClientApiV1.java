@@ -37,6 +37,8 @@ public interface ModelServerClientApiV1<A> {
 
    CompletableFuture<Response<Boolean>> delete(String modelUri);
 
+   CompletableFuture<Response<Boolean>> close(String modelUri);
+
    CompletableFuture<Response<String>> create(String modelUri, String createdModelAsJsonText);
 
    CompletableFuture<Response<A>> create(String modelUri, A createdModel, String format);

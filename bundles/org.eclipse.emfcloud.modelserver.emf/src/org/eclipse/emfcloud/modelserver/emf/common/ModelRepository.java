@@ -45,6 +45,14 @@ public interface ModelRepository {
 
    void deleteModel(String modeluri) throws IOException;
 
+   /**
+    * Closes a model, forgetting about its content and any current modification.
+    * Model can be reopened later from its persisted state with a simple {@link #loadResource(String)} call.
+    *
+    * @param modeluri the URI of the model resource
+    */
+   void closeModel(String modeluri);
+
    boolean saveModel(String modeluri);
 
    boolean saveAllModels();
