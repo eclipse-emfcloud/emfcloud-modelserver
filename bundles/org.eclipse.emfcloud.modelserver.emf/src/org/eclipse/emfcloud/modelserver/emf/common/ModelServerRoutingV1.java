@@ -90,6 +90,7 @@ public class ModelServerRoutingV1 implements Routing {
       patch(ModelServerPathsV1.MODEL_BASE_PATH, this::setModel);
       delete(ModelServerPathsV1.MODEL_BASE_PATH, this::deleteModel);
 
+      post(ModelServerPathsV1.CLOSE, this::closeModel);
       patch(ModelServerPathsV1.EDIT, this::executeCommand);
       get(ModelServerPathsV1.UNDO, this::undoCommand);
       get(ModelServerPathsV1.REDO, this::redoCommand);
@@ -210,6 +211,12 @@ public class ModelServerRoutingV1 implements Routing {
    protected void deleteModel(final Context ctx) {
       getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
          param -> modelController.delete(ctx, param),
+         () -> missingParameter(ctx, MODEL_URI));
+   }
+
+   protected void closeModel(final Context ctx) {
+      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
+         param -> modelController.close(ctx, param),
          () -> missingParameter(ctx, MODEL_URI));
    }
 

@@ -53,6 +53,14 @@ public interface ModelResourceManager {
     */
    void deleteResource(String modeluri) throws IOException;
 
+   /**
+    * Closes a resource, forgetting about its content and any current modification.
+    * Resource can be reopened later from its persisted state with a simple {@link #loadResource(String)} call.
+    *
+    * @param modeluri the URI of the model resource
+    */
+   void closeResource(String modeluri);
+
    CCommandExecutionResult execute(String modeluri, CCommand command) throws DecodingException;
 
    Optional<CCommandExecutionResult> undo(String modeluri);

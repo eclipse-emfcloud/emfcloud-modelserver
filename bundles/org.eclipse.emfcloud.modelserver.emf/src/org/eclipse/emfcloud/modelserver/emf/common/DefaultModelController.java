@@ -107,6 +107,17 @@ public class DefaultModelController implements ModelController {
    }
 
    @Override
+   public void close(final Context ctx, final String modeluri) {
+      if (this.modelRepository.hasModel(modeluri)) {
+         this.modelRepository.closeModel(modeluri);
+         success(ctx, "Model '%s' successfully closed", modeluri);
+         this.sessionController.modelClosed(modeluri);
+      } else {
+         ContextResponse.modelNotFound(ctx, modeluri);
+      }
+   }
+
+   @Override
    public void getAll(final Context ctx) {
       try {
          final Map<URI, EObject> allModels = this.modelRepository.getAllModels();

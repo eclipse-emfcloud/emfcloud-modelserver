@@ -226,6 +226,54 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       }
    }
 
+   /**
+    * Closes a resource, forgetting about its content and any current modification.
+    * Since we always keep track of resourceSets and their content, resource will immediately be reloaded from file's
+    * content.
+    *
+    * @param modeluri the URI of the model resource
+    */
+   @Override
+   public void closeResource(final String modeluri) {
+      ResourceSet resourceSet = getResourceSet(modeluri);
+      if (resourceSet != null) {
+         URI uri = createURI(modeluri);
+         boolean resourceStillExists = resourceSet.getURIConverter().exists(uri, resourceSet.getLoadOptions());
+         Resource resource = resourceSet.getResource(uri, false);
+         if (resource != null) {
+            resource.unload();
+            // remove resource and clear resource set and editing domain when necessary
+            /*
+             * wasMainResource is generally true with this default implementation,
+             * but we don't eliminate the case of a loaded library for extensibility.
+             */
+            boolean wasMainResource = resourceSet.getResources().indexOf(resource) == 0;
+            resourceSet.getResources().remove(resource);
+            if (wasMainResource) {
+               ModelServerEditingDomain domain = getEditingDomain(resourceSet);
+               domain.dispose();
+               editingDomains.remove(resourceSet);
+               resourceSets.remove(uri);
+            }
+         }
+         /*
+          * DefaultModelResourceManager has a greedy resources loading mechanics,
+          * so then, we should reload it immediately.
+          * (I don't want to assume no other resource has been loaded in resource set)
+          */
+         if (resourceStillExists) {
+            // recreate resource set when necessary
+            resourceSets.computeIfAbsent(uri, u -> {
+               ResourceSetImpl created = new ResourceSetImpl();
+               createEditingDomain(created);
+               return created;
+            });
+            // reload
+            loadResource(modeluri);
+         }
+      }
+   }
+
    @Override
    public <T extends EObject> Optional<T> loadModel(final String modeluri, final Class<T> clazz) {
       Optional<Resource> res = loadResource(modeluri);

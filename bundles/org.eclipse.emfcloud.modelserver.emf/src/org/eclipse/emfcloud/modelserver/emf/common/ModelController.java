@@ -17,6 +17,8 @@ public interface ModelController {
 
    void delete(Context ctx, String modeluri);
 
+   void close(Context ctx, String modeluri);
+
    void getAll(Context ctx);
 
    void getOne(Context ctx, String modeluri);

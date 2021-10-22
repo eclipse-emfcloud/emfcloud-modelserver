@@ -21,6 +21,13 @@ public interface ModelListener {
 
    void modelDeleted(String modeluri);
 
+   /**
+    * Notifies when a model resource is closed.
+    *
+    * @param modeluri the concerned model's URI
+    */
+   void modelClosed(String modeluri);
+
    void modelSaved(String modeluri);
 
    void allModelsSaved();

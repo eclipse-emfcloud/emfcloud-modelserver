@@ -142,6 +142,17 @@ public class DefaultSessionController implements SessionController {
    }
 
    @Override
+   public void modelClosed(final String modeluri) {
+      // depending on resource manager, model may have been automatically reloaded or not
+      boolean isLoaded = modelRepository.hasModel(modeluri);
+      if (isLoaded) {
+         modelUpdated(modeluri);
+      } else {
+         broadcastFullUpdate(modeluri, null);
+      }
+   }
+
+   @Override
    public void modelSaved(final String modeluri) {
       broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
    }

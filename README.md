@@ -69,6 +69,7 @@ The following table shows the current HTTP endpoints:
 | |Create new model|__POST__|`/models`|query parameter: `?modeluri=...[&format=...]` <br> application/json
 | |Update model|__PATCH__|`/models`|query parameter: `?modeluri=...[&format=...]` <br> application/json
 | |Delete model|__DELETE__|`/models`|query parameter: `?modeluri=...`
+| |Close model|__POST__|`/close`|query parameter: `?modeluri=...`
 | |Save|__GET__|`/save`|query parameter: `?modeluri=...`
 | |SaveAll|__GET__|`/saveall`| -
 | |Undo|__GET__|`/undo`|query parameter: `?modeluri=...`
@@ -139,6 +140,8 @@ public interface ModelServerClientApiV1<A> {
    CompletableFuture<Response<A>> getModelElementByName(String modelUri, String elementname, String format);
 
    CompletableFuture<Response<Boolean>> delete(String modelUri);
+
+   CompletableFuture<Response<Boolean>> close(String modelUri);
 
    CompletableFuture<Response<String>> create(String modelUri, String createdModelAsJsonText);
 

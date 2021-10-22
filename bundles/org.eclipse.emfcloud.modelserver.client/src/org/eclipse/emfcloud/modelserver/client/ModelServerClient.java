@@ -296,6 +296,19 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    }
 
    @Override
+   public CompletableFuture<Response<Boolean>> close(final String modelUri) {
+      final Request request = new Request.Builder()
+         .url(
+            createHttpUrlBuilder(makeUrl(CLOSE))
+               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
+               .build())
+         .post(RequestBody.create(new byte[0]))
+         .build();
+
+      return makeCallAndExpectSuccess(request);
+   }
+
+   @Override
    public CompletableFuture<Response<String>> create(final String modelUri, final String createdModelAsJsonText) {
       TextNode dataNode = Json.text(createdModelAsJsonText);
       final Request request = buildCreateOrUpdateRequest(modelUri, POST, ModelServerPathParametersV1.FORMAT_JSON,
