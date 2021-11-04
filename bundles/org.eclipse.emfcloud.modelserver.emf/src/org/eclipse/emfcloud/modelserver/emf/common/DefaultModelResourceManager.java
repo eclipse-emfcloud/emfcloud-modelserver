@@ -38,6 +38,7 @@ import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
 import org.eclipse.emfcloud.modelserver.edit.ModelServerCommand;
 import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
+import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatchersManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
@@ -51,6 +52,8 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Inject
    protected CommandCodec commandCodec;
+   @Inject
+   protected ModelWatchersManager watchersManager;
 
    @Inject
    protected final ServerConfiguration serverConfiguration;
@@ -163,13 +166,31 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    @SuppressWarnings("checkstyle:IllegalCatch")
    public Optional<Resource> loadResource(final String modeluri) {
       try {
-         Resource resource = getResourceSet(modeluri).getResource(createURI(modeluri), true);
+         ResourceSet rset = getResourceSet(modeluri);
+         Optional<Resource> loadedResource = Optional.ofNullable(rset.getResource(createURI(modeluri), false))
+            .filter(Resource::isLoaded);
+         if (loadedResource.isPresent()) {
+            return loadedResource;
+         }
+         // do load the resource and watch for modifications
+         Resource resource = rset.getResource(createURI(modeluri), true);
          resource.load(Collections.EMPTY_MAP);
+         watchResourceModifications(resource);
          return Optional.of(resource);
       } catch (final Throwable e) {
          handleLoadError(modeluri, this.isInitializing, e);
          return Optional.empty();
       }
+   }
+
+   /**
+    * Watch for resource modifications
+    *
+    * @param resource the resource to watch for
+    */
+   @Override
+   public void watchResourceModifications(final Resource resource) {
+      watchersManager.watch(resource);
    }
 
    /**
