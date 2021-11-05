@@ -38,15 +38,15 @@ public interface ReconcilingStrategy {
     *
     * @author vhemery
     */
-   public static class AlwaysReload implements ReconcilingStrategy {
+   class AlwaysReload implements ReconcilingStrategy {
 
-      /** the injected model repository which can be used to reload models */
+      /** The injected model repository which can be used to reload models. */
       @Inject
-      ModelRepository repository;
+      private ModelRepository repository;
 
-      /** the session controller to inform about model reconciliation */
+      /** The session controller to inform about model reconciliation. */
       @Inject
-      SessionController sessionController;
+      private SessionController sessionController;
 
       /**
        * Reconcile by reloading the model resource.
@@ -84,10 +84,10 @@ public interface ReconcilingStrategy {
     *
     * @author vhemery
     */
-   public static class Ignore implements ReconcilingStrategy {
+   class Ignore implements ReconcilingStrategy {
 
       /**
-       * Reconcile by doing nothing
+       * Reconcile by doing nothing.
        *
        * @param modelResource the model resource to reconcile
        */

@@ -20,7 +20,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 public interface ModelWatchersManager {
 
    /**
-    * Watch for modifications on the model resource
+    * Watch for modifications on the model resource.
     *
     * @param resource the model resource to watch for
     */

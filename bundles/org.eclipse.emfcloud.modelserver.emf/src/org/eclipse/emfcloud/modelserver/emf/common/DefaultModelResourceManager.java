@@ -185,7 +185,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    }
 
    /**
-    * Watch for resource modifications
+    * Watch for resource modifications.
     *
     * @param resource the resource to watch for
     */

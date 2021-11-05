@@ -61,7 +61,8 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
 /**
- * This is an integration test to ensure that the whole model watcher mechanism works with :
+ * This is an integration test to ensure that the whole model watcher mechanism works.
+ * Integration test involves :
  * <ul>
  * <li>{@link DIModelWatchersManager}</li>
  * <li>{@link FileModelWatcher}</li>
@@ -75,7 +76,7 @@ import com.google.inject.multibindings.Multibinder;
 @RunWith(MockitoJUnitRunner.class)
 public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
 
-   /** tells us whether expected reconciliations occurred */
+   /** Tells us whether expected reconciliations occurred. */
    private static AtomicReference<CountDownLatch> latch = new AtomicReference<>();
 
    /**
@@ -146,7 +147,7 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
    }
 
    /**
-    * Convert a uri to a concrete file
+    * Converts a uri to a concrete file.
     *
     * @param uri a uri
     * @return corresponding file or <code>null</code>

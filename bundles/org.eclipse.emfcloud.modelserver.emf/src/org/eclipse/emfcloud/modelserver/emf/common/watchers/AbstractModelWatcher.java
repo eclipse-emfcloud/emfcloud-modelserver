@@ -27,24 +27,24 @@ import com.google.inject.Inject;
  */
 public abstract class AbstractModelWatcher implements ModelWatcher, Runnable {
 
-   /** The thread running this watcher */
+   /** The thread running this watcher. */
    protected final Thread worker;
 
-   /** Whether still on watch */
-   protected boolean running = false;
+   /** Whether still on watch. */
+   protected boolean running;
 
-   /** The EMF resource */
+   /** The EMF resource. */
    protected Resource resource;
 
-   /** The EMF resource */
+   /** The EMF resource. */
    @Inject
    protected ReconcilingStrategy strategy;
 
-   /** the adapter on resource to stop the watcher */
+   /** The adapter on resource to stop the watcher. */
    private AdapterImpl resourceAdapter;
 
    /**
-    * Reconcile the model applying the injected strategy
+    * Reconcile the model applying the injected strategy.
     *
     * @param resource
     */
@@ -79,7 +79,7 @@ public abstract class AbstractModelWatcher implements ModelWatcher, Runnable {
    }
 
    /**
-    * Add an adapter to the resource to stop watching the resource on closure
+    * Add an adapter to the resource to stop watching the resource on closure.
     */
    private void addStopAdapter() {
       // stop watcher automatically when resource is unloaded
@@ -98,7 +98,7 @@ public abstract class AbstractModelWatcher implements ModelWatcher, Runnable {
    }
 
    /**
-    * Tell this watcher to stop polling
+    * Tell this watcher to stop polling.
     */
    public void stop() {
       this.running = false;

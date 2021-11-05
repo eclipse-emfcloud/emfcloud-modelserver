@@ -33,14 +33,14 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 /**
- * Watches for changes on model files to adopt a strategy to update models
+ * Watches for changes on model files to adopt a strategy to update models.
  *
  * @author vhemery
  */
 public class FileModelWatcher extends AbstractModelWatcher {
 
    /**
-    * The factory for {@link FileModelWatcher}
+    * The factory for {@link FileModelWatcher}.
     */
    public static class Factory implements ModelWatcher.Factory {
 
@@ -63,10 +63,10 @@ public class FileModelWatcher extends AbstractModelWatcher {
 
    }
 
-   /** logger */
+   /** Logger. */
    protected static final Logger LOG = Logger.getLogger(FileModelWatcher.class.getSimpleName());
 
-   /** The file to watch for */
+   /** The file to watch for. */
    private File fileToWatch;
 
    /**
@@ -88,7 +88,7 @@ public class FileModelWatcher extends AbstractModelWatcher {
    }
 
    /**
-    * Convert a uri to a concrete file
+    * Converts a uri to a concrete file.
     *
     * @param uri a uri
     * @return corresponding file or <code>null</code>
@@ -113,11 +113,7 @@ public class FileModelWatcher extends AbstractModelWatcher {
       try (WatchService ws = FileSystems.getDefault().newWatchService()) {
          Path path = Paths.get(fileToWatch.getParent());
          path.register(ws, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
-         // watch service may have been initialized late, after a first update. Check it once...
-         if (!fileToWatch.exists() || fileToWatch.lastModified() > resource.getTimeStamp()) {
-            // reconcile model on file change
-            reconcile(this.resource);
-         }
+         handleInitial();
          // run loop
          while (running) {
             WatchKey key = ws.take();
@@ -129,26 +125,44 @@ public class FileModelWatcher extends AbstractModelWatcher {
             Thread.sleep(50);
             List<WatchEvent<?>> events = key.pollEvents();
             for (WatchEvent<?> event : events) {
-               Object ctx = event.context();
-               boolean changeOnWatchedFile = ctx instanceof Path
-                  && ((Path) ctx).getFileName().toString().equals(fileToWatch.getName());
-               if (changeOnWatchedFile) {
-                  if (StandardWatchEventKinds.ENTRY_DELETE.equals(event.kind())
-                     || fileToWatch.lastModified() > resource.getTimeStamp()) {
-                     // reconcile model on file change
-                     reconcile(this.resource);
-                  }
-               }
+               handleEvent(event);
             }
-            if (!key.reset()) {
-               running = false;
-            }
+            running = running && key.reset();
          }
       } catch (IOException e) {
          String msg = MessageFormat.format("Failed while watching for file {0}", this.fileToWatch.toURI());
          LOG.error(msg, e);
       } catch (InterruptedException e) {
          // assume it is to stop, nothing to do
+      }
+   }
+
+   /**
+    * Handle a difference occurring before the first watch loop.
+    */
+   private void handleInitial() {
+      // watch service may have been initialized late, after a first update. Check it once...
+      if (!fileToWatch.exists() || fileToWatch.lastModified() > resource.getTimeStamp()) {
+         // reconcile model on file change
+         reconcile(this.resource);
+      }
+   }
+
+   /**
+    * Handle a file watch event, trigerring the reconciliation when necessary.
+    *
+    * @param event the file watch event
+    */
+   private void handleEvent(final WatchEvent<?> event) {
+      Object ctx = event.context();
+      boolean changeOnWatchedFile = ctx instanceof Path
+         && ((Path) ctx).getFileName().toString().equals(fileToWatch.getName());
+      if (changeOnWatchedFile) {
+         if (StandardWatchEventKinds.ENTRY_DELETE.equals(event.kind())
+            || fileToWatch.lastModified() > resource.getTimeStamp()) {
+            // reconcile model on file change
+            reconcile(this.resource);
+         }
       }
    }
 

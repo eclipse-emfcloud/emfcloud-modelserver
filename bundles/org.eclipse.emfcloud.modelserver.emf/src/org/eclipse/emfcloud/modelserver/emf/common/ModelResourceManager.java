@@ -30,11 +30,11 @@ public interface ModelResourceManager {
    Optional<Resource> loadResource(String modeluri);
 
    /**
-    * Watch for resource modifications (should be invoked just after loading)
+    * Watch for resource modifications (should be invoked just after loading).
     *
     * @param resource the resource to watch for
     */
-   void watchResourceModifications(final Resource resource);
+   void watchResourceModifications(Resource resource);
 
    <T extends EObject> Optional<T> loadModel(String modeluri, Class<T> clazz);
 

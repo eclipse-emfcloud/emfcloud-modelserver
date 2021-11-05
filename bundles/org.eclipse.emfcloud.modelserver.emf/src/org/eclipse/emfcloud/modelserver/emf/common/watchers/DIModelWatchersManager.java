@@ -28,10 +28,10 @@ import com.google.inject.Inject;
  */
 public class DIModelWatchersManager implements ModelWatchersManager {
 
-   /** logger */
+   /** Logger. */
    protected static final Logger LOG = Logger.getLogger(DIModelWatchersManager.class.getSimpleName());
 
-   /** the registered {@link ModelWatcher} factories */
+   /** The registered {@link ModelWatcher} factories. */
    @Inject(optional = true)
    private final Set<ModelWatcher.Factory> watcherFactories = Collections.emptySet();
 

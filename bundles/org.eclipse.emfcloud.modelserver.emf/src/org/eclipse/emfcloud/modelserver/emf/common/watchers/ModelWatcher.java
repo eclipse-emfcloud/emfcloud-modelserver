@@ -13,19 +13,19 @@ package org.eclipse.emfcloud.modelserver.emf.common.watchers;
 import org.eclipse.emf.ecore.resource.Resource;
 
 /**
- * Watches for changes on model resources to adopt a strategy to update models
+ * Watches for changes on model resources to adopt a strategy to update models.
  *
  * @author vhemery
  */
 public interface ModelWatcher {
 
    /**
-    * Factory to create a {@link ModelWatcher} from a supported {@link Resource}
+    * Factory to create a {@link ModelWatcher} from a supported {@link Resource}.
     */
    public interface Factory {
 
       /**
-       * Test whether factory can handle this model resource (test often based on URI)
+       * Test whether factory can handle this model resource (test often based on URI).
        *
        * @param resource the resource to create {@link ModelWatcher} for
        * @return true when resource is supported
@@ -44,7 +44,7 @@ public interface ModelWatcher {
    }
 
    /**
-    * Watch for modifications on the model resource
+    * Watch for modifications on the model resource.
     *
     * @param resource the model resource to watch for
     */
