@@ -28,7 +28,7 @@ import com.google.inject.Inject;
 public abstract class AbstractModelWatcher implements ModelWatcher, Runnable {
 
    /** The thread running this watcher */
-   private final Thread worker;
+   protected final Thread worker;
 
    /** Whether still on watch */
    protected boolean running = false;

@@ -22,6 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -53,6 +56,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
@@ -71,6 +75,52 @@ import com.google.inject.multibindings.Multibinder;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
+
+   /** tells us whether expected reconciliations occurred */
+   private static AtomicReference<CountDownLatch> latch = new AtomicReference<>();
+
+   /**
+    * A custom strategy, which reloads, but also notifies us when reconciliation has occurred...
+    *
+    * @author vhemery
+    */
+   private static class ReconcilingStrategyWithNotification extends ReconcilingStrategy.AlwaysReload {
+      @Override
+      public void reconcileModel(final Resource modelResource) {
+         super.reconcileModel(modelResource);
+         Optional.ofNullable(latch.get()).ifPresent(CountDownLatch::countDown);
+      }
+   }
+
+   /**
+    * A file watcher with higher priority for integration builds...
+    *
+    * @author vhemery
+    */
+   public static class HigherPriorityFileModelWatcher extends FileModelWatcher {
+
+      /**
+       * The factory for {@link FileModelWatcher}
+       */
+      public static class Factory extends FileModelWatcher.Factory {
+
+         @Inject
+         private Injector injector;
+
+         @Override
+         public ModelWatcher createWatcher(final Resource resource) {
+            return injector.getInstance(HigherPriorityFileModelWatcher.class);
+         }
+
+      }
+
+      public HigherPriorityFileModelWatcher() {
+         super();
+         // set it as non-daemon, or linux (not using thread priority by default) will still give it low priority
+         this.worker.setDaemon(false);
+         this.worker.setPriority(Thread.MAX_PRIORITY);
+      }
+   }
 
    private static ModelResourceManager modelResourceManager;
 
@@ -101,7 +151,7 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
             ePackageConfigurationBinder.addBinding().to(EcorePackageConfiguration.class);
 
             watcherFactoryBinder = Multibinder.newSetBinder(binder(), ModelWatcher.Factory.class);
-            watcherFactoryBinder.addBinding().to(FileModelWatcher.Factory.class);
+            watcherFactoryBinder.addBinding().to(HigherPriorityFileModelWatcher.Factory.class);
 
             bind(ServerConfiguration.class).toInstance(serverConfig);
             bind(CommandCodec.class).toInstance(commandCodec);
@@ -109,7 +159,7 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
             bind(AdapterFactory.class).toInstance(new EcoreAdapterFactory());
 
             // for the reconciling strategy to work, we need the actual ModelRepository and ModelResourceManager
-            bind(ReconcilingStrategy.class).to(ReconcilingStrategy.AlwaysReload.class).in(Singleton.class);
+            bind(ReconcilingStrategy.class).to(ReconcilingStrategyWithNotification.class).in(Singleton.class);
             bind(ModelWatchersManager.class).to(DIModelWatchersManager.class).in(Singleton.class);
             bind(ModelRepository.class).to(DefaultModelRepository.class).in(Singleton.class);
             bind(ModelResourceManager.class).to(DefaultModelResourceManager.class).in(Singleton.class);
@@ -167,26 +217,22 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
 
          // replace resource content with an EPackage, outside of ModelServer framework
          outsiderResource.getContents().replaceAll(c -> EcoreFactory.eINSTANCE.createEPackage());
+         latch.set(new CountDownLatch(1));
          outsiderResource.save(Collections.emptyMap());
 
-         // reload and check the model server resource has not yet been updated
-         loadedModelElement = modelResourceManager.loadModel(modelUri, EModelElement.class);
-         assertFalse(loadedModelElement.filter(EPackage.class::isInstance).isPresent());
-
-         // recheck after reconciliation has occurred
-         Thread.sleep(1000L);
+         // ensure reconciliation has occurred
+         assertTrue(latch.get().await(5, TimeUnit.MINUTES));
+         // reload and check the model server resource has been updated
          loadedModelElement = modelResourceManager.loadModel(modelUri, EModelElement.class);
          assertTrue(loadedModelElement.filter(EPackage.class::isInstance).isPresent());
 
          // delete resource
+         latch.set(new CountDownLatch(1));
          outsiderResource.delete(Collections.emptyMap());
 
-         // reload and check the model server resource has not yet been deleted too
-         loadedModelElement = modelResourceManager.loadModel(modelUri, EModelElement.class);
-         assertTrue(loadedModelElement.isPresent());
-
-         // recheck after reconciliation has occurred
-         Thread.sleep(1000L);
+         // ensure reconciliation has occurred
+         assertTrue(latch.get().await(5, TimeUnit.MINUTES));
+         // reload and check the model server resource has been deleted too
          loadedModelElement = modelResourceManager.loadModel(modelUri, EModelElement.class);
          assertFalse(loadedModelElement.isPresent());
       } catch (InterruptedException e) {
