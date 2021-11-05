@@ -52,14 +52,13 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Inject
    protected CommandCodec commandCodec;
-   @Inject
-   protected ModelWatchersManager watchersManager;
 
    @Inject
    protected final ServerConfiguration serverConfiguration;
 
    protected final Set<EPackageConfiguration> configurations;
    protected final AdapterFactory adapterFactory;
+   protected ModelWatchersManager watchersManager;
    protected final Map<URI, ResourceSet> resourceSets = Maps.newLinkedHashMap();
    protected final Map<ResourceSet, ModelServerEditingDomain> editingDomains = Maps.newLinkedHashMap();
 
@@ -67,11 +66,13 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Inject
    public DefaultModelResourceManager(final Set<EPackageConfiguration> configurations,
-      final AdapterFactory adapterFactory, final ServerConfiguration serverConfiguration) {
+      final AdapterFactory adapterFactory, final ServerConfiguration serverConfiguration,
+      final ModelWatchersManager watchersManager) {
 
       this.configurations = Sets.newLinkedHashSet(configurations);
       this.adapterFactory = adapterFactory;
       this.serverConfiguration = serverConfiguration;
+      this.watchersManager = watchersManager;
       initialize();
    }
 
@@ -329,6 +330,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       newResourceSet.getResources().add(resource);
       resource.getContents().add(model);
       resource.save(null);
+      watchResourceModifications(resource);
       createEditingDomain(newResourceSet);
    }
 

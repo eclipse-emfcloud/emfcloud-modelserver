@@ -10,6 +10,8 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common.watchers;
 
+import java.util.Objects;
+
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -38,6 +40,9 @@ public abstract class AbstractModelWatcher implements ModelWatcher, Runnable {
    @Inject
    protected ReconcilingStrategy strategy;
 
+   /** the adapter on resource to stop the watcher */
+   private AdapterImpl resourceAdapter;
+
    /**
     * Reconcile the model applying the injected strategy
     *
@@ -57,10 +62,20 @@ public abstract class AbstractModelWatcher implements ModelWatcher, Runnable {
 
    @Override
    public void watch(final Resource resource) {
-      this.resource = resource;
-      this.running = true;
-      this.worker.start();
-      addStopAdapter();
+      if (running && Objects.equals(this.resource, resource)) {
+         // watcher is already running on this resource, do nothing
+      } else if (running) {
+         // watcher is already running on another resource, change resource
+         this.resource.eAdapters().remove(this.resourceAdapter);
+         this.resource = resource;
+         addStopAdapter();
+      } else {
+         // watcher is not running, run it (nominal case)
+         this.resource = resource;
+         this.running = true;
+         this.worker.start();
+         addStopAdapter();
+      }
    }
 
    /**
@@ -68,7 +83,7 @@ public abstract class AbstractModelWatcher implements ModelWatcher, Runnable {
     */
    private void addStopAdapter() {
       // stop watcher automatically when resource is unloaded
-      resource.eAdapters().add(new AdapterImpl() {
+      resourceAdapter = new AdapterImpl() {
          @Override
          public void notifyChanged(final Notification msg) {
             if (resource.equals(msg.getNotifier())
@@ -78,7 +93,8 @@ public abstract class AbstractModelWatcher implements ModelWatcher, Runnable {
                resource.eAdapters().remove(this);
             }
          }
-      });
+      };
+      resource.eAdapters().add(resourceAdapter);
    }
 
    /**

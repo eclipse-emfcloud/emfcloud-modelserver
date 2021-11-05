@@ -34,6 +34,7 @@ import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatchersManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
@@ -53,6 +54,9 @@ import com.google.inject.multibindings.Multibinder;
 public class DefaultModelResourceManagerTest extends AbstractResourceTest {
 
    private static ModelResourceManager modelResourceManager;
+
+   @Mock
+   private ModelWatchersManager watchersManager;
 
    @Mock
    private CommandCodec commandCodec;
@@ -83,6 +87,7 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
 
             bind(ServerConfiguration.class).toInstance(serverConfig);
             bind(CommandCodec.class).toInstance(commandCodec);
+            bind(ModelWatchersManager.class).toInstance(watchersManager);
             bind(AdapterFactory.class).toInstance(new EcoreAdapterFactory());
          }
       }).getInstance(DefaultModelResourceManager.class);
