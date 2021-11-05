@@ -56,7 +56,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
@@ -92,36 +91,6 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
       }
    }
 
-   /**
-    * A file watcher with higher priority for integration builds...
-    *
-    * @author vhemery
-    */
-   public static class HigherPriorityFileModelWatcher extends FileModelWatcher {
-
-      /**
-       * The factory for {@link FileModelWatcher}
-       */
-      public static class Factory extends FileModelWatcher.Factory {
-
-         @Inject
-         private Injector injector;
-
-         @Override
-         public ModelWatcher createWatcher(final Resource resource) {
-            return injector.getInstance(HigherPriorityFileModelWatcher.class);
-         }
-
-      }
-
-      public HigherPriorityFileModelWatcher() {
-         super();
-         // set it as non-daemon, or linux (not using thread priority by default) will still give it low priority
-         this.worker.setDaemon(false);
-         this.worker.setPriority(Thread.MAX_PRIORITY);
-      }
-   }
-
    private static ModelResourceManager modelResourceManager;
 
    @Mock
@@ -151,7 +120,7 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
             ePackageConfigurationBinder.addBinding().to(EcorePackageConfiguration.class);
 
             watcherFactoryBinder = Multibinder.newSetBinder(binder(), ModelWatcher.Factory.class);
-            watcherFactoryBinder.addBinding().to(HigherPriorityFileModelWatcher.Factory.class);
+            watcherFactoryBinder.addBinding().to(FileModelWatcher.Factory.class);
 
             bind(ServerConfiguration.class).toInstance(serverConfig);
             bind(CommandCodec.class).toInstance(commandCodec);
@@ -221,7 +190,7 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
          outsiderResource.save(Collections.emptyMap());
 
          // ensure reconciliation has occurred
-         assertTrue(latch.get().await(5, TimeUnit.MINUTES));
+         assertTrue(latch.get().await(15, TimeUnit.SECONDS));
          // reload and check the model server resource has been updated
          loadedModelElement = modelResourceManager.loadModel(modelUri, EModelElement.class);
          assertTrue(loadedModelElement.filter(EPackage.class::isInstance).isPresent());
@@ -231,7 +200,7 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
          outsiderResource.delete(Collections.emptyMap());
 
          // ensure reconciliation has occurred
-         assertTrue(latch.get().await(5, TimeUnit.MINUTES));
+         assertTrue(latch.get().await(15, TimeUnit.SECONDS));
          // reload and check the model server resource has been deleted too
          loadedModelElement = modelResourceManager.loadModel(modelUri, EModelElement.class);
          assertFalse(loadedModelElement.isPresent());

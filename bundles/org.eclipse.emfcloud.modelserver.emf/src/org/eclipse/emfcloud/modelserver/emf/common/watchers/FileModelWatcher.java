@@ -113,6 +113,12 @@ public class FileModelWatcher extends AbstractModelWatcher {
       try (WatchService ws = FileSystems.getDefault().newWatchService()) {
          Path path = Paths.get(fileToWatch.getParent());
          path.register(ws, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE);
+         // watch service may have been initialized late, after a first update. Check it once...
+         if (!fileToWatch.exists() || fileToWatch.lastModified() > resource.getTimeStamp()) {
+            // reconcile model on file change
+            reconcile(this.resource);
+         }
+         // run loop
          while (running) {
             WatchKey key = ws.take();
             /*
