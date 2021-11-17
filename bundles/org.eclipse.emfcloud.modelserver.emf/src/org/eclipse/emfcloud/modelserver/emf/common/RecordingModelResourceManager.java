@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.change.ChangeDescription;
 import org.eclipse.emf.ecore.change.util.ChangeRecorder;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
+import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatchersManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ChangePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -34,8 +35,8 @@ public class RecordingModelResourceManager extends DefaultModelResourceManager {
    @Inject
    public RecordingModelResourceManager(final Set<EPackageConfiguration> configurations,
       final AdapterFactory adapterFactory,
-      final ServerConfiguration serverConfiguration) {
-      super(configurations, adapterFactory, serverConfiguration);
+      final ServerConfiguration serverConfiguration, final ModelWatchersManager watchersManager) {
+      super(configurations, adapterFactory, serverConfiguration, watchersManager);
    }
 
    @Override

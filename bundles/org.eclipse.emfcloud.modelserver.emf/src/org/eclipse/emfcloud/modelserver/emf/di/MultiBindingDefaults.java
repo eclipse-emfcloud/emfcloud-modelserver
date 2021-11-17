@@ -28,6 +28,8 @@ import org.eclipse.emfcloud.modelserver.edit.command.SetCommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRoutingV1;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
+import org.eclipse.emfcloud.modelserver.emf.common.watchers.FileModelWatcher;
+import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatcher;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
@@ -56,4 +58,7 @@ public final class MultiBindingDefaults {
       EMFCommandType.REMOVE, RemoveCommandContribution.class,
       EMFCommandType.COMPOUND, CompoundCommandContribution.class,
       UpdateModelCommandContribution.TYPE, UpdateModelCommandContribution.class);
+
+   public static final List<Class<? extends ModelWatcher.Factory>> DEFAULT_MODEL_WATCHER_FACTORIES = List.of(
+      FileModelWatcher.Factory.class);
 }
