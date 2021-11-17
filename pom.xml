@@ -89,10 +89,15 @@
 		<google.guice.version>3.0</google.guice.version>
 		<google.guava.version>27.1-jre</google.guava.version>
 		<jackson.databind.version>2.10.5.1</jackson.databind.version>
+		<eclipse.core.runtime.version>3.7.0</eclipse.core.runtime.version>
+		<eclipse.core.resources.version>3.7.100</eclipse.core.resources.version>
+		<emf.common.version>2.23.0</emf.common.version>
 		<emf.ecore.version>2.23.0</emf.ecore.version>
+		<emf.ecore.change.version>2.14.0</emf.ecore.change.version>
 		<emf.ecore.xmi.version>2.16.0</emf.ecore.xmi.version>
 		<emf.edit.version>2.16.0</emf.edit.version>
-		<emf.transaction.version>1.4.0-v20100331-1738</emf.transaction.version>
+		<emf.transaction.version>1.4.0.201306111400</emf.transaction.version>
+		<emf.validation.version>1.8.0.201405281429</emf.validation.version>
 		<emfjson.jackson.version>1.3.1-SNAPSHOT</emfjson.jackson.version>
 		<commons.io.version>2.6</commons.io.version>
 		<junit.version>4.13.1</junit.version>
@@ -360,9 +365,9 @@
 					<url>https://oss.sonatype.org/content/groups/public</url>
 				</repository>
 				<repository>
-					<id>irisa</id>
-					<name>Irisa</name>
-					<url>http://maven.irisa.fr/artifactory/list/kermeta-public-release/</url>
+					<id>wso2</id>
+					<name>WSO2</name>
+					<url>http://dist.wso2.org/maven2/</url>
 				</repository>
 			</repositories>
 
@@ -396,9 +401,29 @@
 					<version>${jackson.databind.version}</version>
 				</dependency>
 				<dependency>
+					<groupId>org.eclipse.core</groupId>
+					<artifactId>org.eclipse.core.runtime</artifactId>
+					<version>${eclipse.core.runtime.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.core</groupId>
+					<artifactId>org.eclipse.core.resources</artifactId>
+					<version>${eclipse.core.resources.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.emf</groupId>
+					<artifactId>org.eclipse.emf.common</artifactId>
+					<version>${emf.common.version}</version>
+				</dependency>
+				<dependency>
 					<groupId>org.eclipse.emf</groupId>
 					<artifactId>org.eclipse.emf.ecore</artifactId>
 					<version>${emf.ecore.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.emf</groupId>
+					<artifactId>org.eclipse.emf.ecore.change</artifactId>
+					<version>${emf.ecore.change.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.emf</groupId>
@@ -406,9 +431,14 @@
 					<version>${emf.edit.version}</version>
 				</dependency>
 				<dependency>
-					<groupId>org.eclipse.emf</groupId>
-					<artifactId>transaction</artifactId>
+					<groupId>org.eclipse</groupId>
+					<artifactId>org.eclipse.emf.transaction</artifactId>
 					<version>${emf.transaction.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse</groupId>
+					<artifactId>org.eclipse.emf.validation</artifactId>
+					<version>${emf.validation.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.eclipse.emf</groupId>

@@ -1,10 +1,10 @@
 <settings xmlns="http://maven.apache.org/SETTINGS/1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 http://maven.apache.org/xsd/settings-1.2.0.xsd">
     <mirrors>
         <mirror>
-            <id>irisa-mirror</id>
-            <mirrorOf>irisa</mirrorOf>
-            <name>Irisa mirror to unblock.</name>
-            <url>http://maven.irisa.fr/artifactory/list/kermeta-public-release/</url>
+            <id>wso2-mirror</id>
+            <mirrorOf>wso2</mirrorOf>
+            <name>WSO2 mirror to unblock.</name>
+            <url>http://dist.wso2.org/maven2/</url>
             <blocked>false</blocked>
         </mirror>
     </mirrors>
