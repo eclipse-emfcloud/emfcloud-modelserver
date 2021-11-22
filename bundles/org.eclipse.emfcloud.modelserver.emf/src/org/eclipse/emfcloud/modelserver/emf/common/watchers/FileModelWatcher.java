@@ -159,7 +159,9 @@ public class FileModelWatcher extends AbstractModelWatcher {
          && ((Path) ctx).getFileName().toString().equals(fileToWatch.getName());
       if (changeOnWatchedFile) {
          if (StandardWatchEventKinds.ENTRY_DELETE.equals(event.kind())
-            || fileToWatch.lastModified() > resource.getTimeStamp()) {
+            || fileToWatch.lastModified() > resource.getTimeStamp()
+            // when parent folder is trashed, we may receive only a modify event...
+            || !fileToWatch.exists()) {
             // reconcile model on file change
             reconcile(this.resource);
          }
