@@ -114,7 +114,9 @@ public class DefaultModelServerModule extends ModelServerModule {
    }
 
    protected Class<? extends ModelController> bindThreadSafeModelController() {
-      bind(ModelController.class).annotatedWith(Names.named("ModelControllerDelegate")).to(bindModelController());
+      bind(ModelController.class)
+         .annotatedWith(Names.named(SingleThreadModelController.MODEL_CONTROLLER_DELEGATE))
+         .to(bindModelController());
       return SingleThreadModelController.class;
    }
 

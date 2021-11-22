@@ -31,6 +31,15 @@ import io.javalin.http.Context;
  */
 public class SingleThreadModelController implements ModelController {
 
+   /**
+    * Dependency injection name for the actual Model Controller implementation,
+    * to which the {@link SingleThreadModelController} will delegate calls (after
+    * switching to the correct Thread).
+    *
+    * @see Named
+    */
+   public static final String MODEL_CONTROLLER_DELEGATE = "ModelControllerDelegate";
+
    private static final Logger LOG = Logger.getLogger(SingleThreadModelController.class);
 
    private static final AtomicInteger COUNT = new AtomicInteger(0);
@@ -44,7 +53,7 @@ public class SingleThreadModelController implements ModelController {
    protected final String name;
 
    @Inject
-   public SingleThreadModelController(final @Named("ModelControllerDelegate") ModelController delegate) {
+   public SingleThreadModelController(final @Named(MODEL_CONTROLLER_DELEGATE) ModelController delegate) {
       this.name = getClass().getSimpleName() + " " + COUNT.incrementAndGet();
       this.delegate = delegate;
       this.thread = new Thread(this::runThread);
