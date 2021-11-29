@@ -67,7 +67,8 @@ public class DefaultUriHelper implements UriHelper {
    @Override
    public Optional<URI> toFileUri(final String fileUrl) {
       try {
-         File file = getAbsoluteFile(fileUrl);
+         String decodedUrl = URLDecoder.decode(fileUrl, "UTF-8");
+         File file = getAbsoluteFile(decodedUrl);
          URI uri = withTrailingSeparator(URI.createFileURI(file.toURI().normalize().getPath()));
          return Optional.ofNullable(uri).filter(URI::isFile);
       } catch (NullPointerException | IllegalArgumentException | UnsupportedEncodingException e) {
