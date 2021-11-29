@@ -393,7 +393,8 @@ All involved code must adhere to the provided codestyle and checkstyle settings.
 - Install the Eclipse Checkstyle Plug-in via its update site `https://checkstyle.org/eclipse-cs/#!/install`.
 
 #### Configure Checkstyle
-To configure Checkstyle for the new project right click on the project, choose `Checkstyle > Configure project(s) from blueprint...` and select `org.eclipse.emfcloud.modelserver.common` as blueprint project.
+This project uses the common checkstyle ruleset from EMF.cloud. Please follow the [instructions for usage in Eclipse](https://github.com/eclipse-emfcloud/emfcloud/tree/master/codestyle#usage-in-eclipse-ide) to configure this ruleset for a new project.
+To configure Checkstyle for a new project in the same workspace your can also right click on the project, choose `Checkstyle > Configure project(s) from blueprint...` and select `org.eclipse.emfcloud.modelserver.common` as blueprint project.
 Run `Checkstyle > Check Code with Checkstyle` to make sure Checkstyle is activated correctly.
 
 #### Import Existing Projects
