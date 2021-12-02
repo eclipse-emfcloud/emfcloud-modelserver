@@ -40,6 +40,18 @@ public class DefaultServerConfigurationTest {
    public void normalizeWorkspaceRootEncoded() throws UnsupportedEncodingException {
       serverConfiguration.setWorkspaceRoot("file:/c%3A/foo%20bar/");
       assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), osEndsWith("c:/foo bar/"));
+
+      serverConfiguration.setWorkspaceRoot("/c%3A/foo%20bar2/");
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), osEndsWith("c:/foo bar2/"));
+   }
+
+   @Test
+   public void normalizeWorkspaceRootDecoded() throws UnsupportedEncodingException {
+      serverConfiguration.setWorkspaceRoot("file:/c:/foo bar/");
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), osEndsWith("c:/foo bar/"));
+
+      serverConfiguration.setWorkspaceRoot("c:/foo bar2/");
+      assertThat(serverConfiguration.getWorkspaceRootURI().toFileString(), osEndsWith("c:/foo bar2/"));
    }
 
    @Test
