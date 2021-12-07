@@ -10,22 +10,18 @@ pipeline {
         stage ('Build: Plain Maven (M2)') {
             steps {
                 // ignore test failures since we parse the test results afterwards
-                sh 'mvn clean verify -Pm2 -B -Dmaven.test.failure.ignore=true' 
+                timeout(30) {
+                    sh 'mvn clean verify -Pm2 -B -Dmaven.test.failure.ignore=true'
+                } 
             }
         }
         
         stage ('Build: Eclipse-based (P2)') {
             steps {
                 // ignore test failures since we parse the test results afterwards
-                sh 'mvn clean verify -Pp2 -B -Dmaven.test.failure.ignore=true' 
-            }
-        }
-        
-        stage ('Generate: Reports') {
-            steps {
-                junit '**/surefire-reports/*.xml'
-                recordIssues failOnError: true, qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]],
-                tools: [checkStyle(pattern: '**/target/checkstyle-result.xml', reportEncoding: 'UTF-8')]           
+                timeout(30) {
+                    sh 'mvn clean verify -Pp2 -B -Dmaven.test.failure.ignore=true' 
+                }
             }
         }
 
@@ -41,6 +37,23 @@ pipeline {
             	    }
             	)
             }
+        }
+    }
+
+     post {
+        always {
+                // Record & publish checkstyle issues
+            recordIssues  enabledForFailure: true, publishAllIssues: true,
+            tool: checkStyle(reportEncoding: 'UTF-8'),
+            qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]
+
+            // Record & publish test results
+            withChecks('Tests') {
+                junit 'tests/**/surefire-reports/*.xml'
+            }
+
+            // Record maven,java warnings
+            recordIssues enabledForFailure: true, skipPublishingChecks:true, tools: [mavenConsole(), java()]
         }
     }
 }
