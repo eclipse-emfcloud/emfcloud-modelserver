@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -32,7 +32,9 @@ import org.eclipse.emf.ecore.util.EcoreAdapterFactory;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatchersManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
@@ -48,6 +50,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
+import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -89,6 +92,8 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
             bind(CommandCodec.class).toInstance(commandCodec);
             bind(ModelWatchersManager.class).toInstance(watchersManager);
             bind(AdapterFactory.class).toInstance(new EcoreAdapterFactory());
+            bind(ModelRepository.class).to(DefaultModelRepository.class).in(Scopes.SINGLETON);
+            bind(ModelResourceManager.class).to(DefaultModelResourceManager.class).in(Scopes.SINGLETON);
          }
       }).getInstance(DefaultModelResourceManager.class);
    }

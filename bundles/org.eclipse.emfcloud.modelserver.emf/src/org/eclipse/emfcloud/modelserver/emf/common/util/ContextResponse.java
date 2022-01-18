@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 EclipseSource and others.
+ * Copyright (c) 2021-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -85,12 +85,24 @@ public final class ContextResponse {
       internalError(context, "An error occurred during data encoding", exception);
    }
 
+   public static void encodingError(final WsContext context, final EncodingException exception) {
+      error(context, "An error occurred during data encoding", exception);
+   }
+
    public static void decodingError(final Context context, final DecodingException exception) {
       internalError(context, "An error occurred during data decoding", exception);
    }
 
+   public static void decodingError(final WsContext context, final DecodingException exception) {
+      error(context, "An error occurred during data decoding", exception);
+   }
+
    public static void modelNotFound(final Context context, final String modelUri) {
       error(context, HttpURLConnection.HTTP_NOT_FOUND, "Model '%s' not found!", modelUri);
+   }
+
+   public static void modelNotFound(final WsContext context, final String modelUri) {
+      error(context, "Model '%s' not found!", modelUri);
    }
 
    public static void notFound(final Context context, final String errorMessage) {
@@ -139,6 +151,10 @@ public final class ContextResponse {
 
    public static void success(final WsContext context) {
       context.send(JsonResponse.success(context.getSessionId()));
+   }
+
+   public static void success(final WsContext context, final JsonNode response) {
+      context.send(JsonResponse.success(response));
    }
 
    public static void dirtyState(final WsContext context, final boolean dirty) {

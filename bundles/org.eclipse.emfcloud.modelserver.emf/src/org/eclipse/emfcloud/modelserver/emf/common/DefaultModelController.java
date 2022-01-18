@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -21,25 +21,40 @@ import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.r
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.success;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
+import org.eclipse.emfcloud.modelserver.command.util.CommandSwitch;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchTestException;
+import org.eclipse.emfcloud.modelserver.common.patch.PatchCommand;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest;
 import org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.patch.PatchCommandHandler;
+import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -48,24 +63,29 @@ import io.javalin.http.Context;
 import io.javalin.plugin.json.JavalinJackson;
 
 public class DefaultModelController implements ModelController {
-   protected static Logger LOG = Logger.getLogger(DefaultModelController.class.getSimpleName());
+   protected static final Logger LOG = Logger.getLogger(DefaultModelController.class.getSimpleName());
 
    protected final ModelRepository modelRepository;
    protected final SessionController sessionController;
    protected final ServerConfiguration serverConfiguration;
    protected final CodecsManager codecs;
    protected final ModelValidator modelValidator;
+   protected final PatchCommandHandler.Registry commandHandlerRegistry;
+   protected final JsonPatchHelper jsonPatchHelper;
 
    @Inject
    public DefaultModelController(final ModelRepository modelRepository, final SessionController sessionController,
       final ServerConfiguration serverConfiguration, final CodecsManager codecs, final ModelValidator modelValidator,
-      final Provider<ObjectMapper> objectMapperProvider) {
+      final Provider<ObjectMapper> objectMapperProvider, final PatchCommandHandler.Registry commandHandlerRegistry,
+      final ModelResourceManager resourceManager) {
       JavalinJackson.configure(objectMapperProvider.get());
       this.modelRepository = modelRepository;
       this.sessionController = sessionController;
       this.serverConfiguration = serverConfiguration;
       this.codecs = codecs;
       this.modelValidator = modelValidator;
+      this.commandHandlerRegistry = commandHandlerRegistry;
+      this.jsonPatchHelper = new JsonPatchHelper(resourceManager, serverConfiguration);
    }
 
    @Override
@@ -292,6 +312,140 @@ public class DefaultModelController implements ModelController {
       } catch (DecodingException exception) {
          decodingError(ctx, exception);
       }
+   }
+
+   @Override
+   public void executeCommandV2(final Context ctx, final String modelURI) {
+      Optional<EObject> root = this.modelRepository.getModel(modelURI);
+      if (root.isEmpty() || root.get() == null) {
+         modelNotFound(ctx, modelURI);
+         return;
+      }
+      Optional<PatchCommand<?>> command = readPatchCommand(ctx);
+      if (command.isPresent()) {
+         PatchCommand<?> pCommand = command.get();
+         CCommandExecutionResult result;
+         if (isCCommand(pCommand)) {
+            try {
+               result = this.modelRepository.executeCommand(modelURI, getCCommand(pCommand));
+            } catch (DecodingException ex) {
+               decodingError(ctx, ex);
+               return;
+            }
+         } else if (isJsonPatch(pCommand)) {
+            ArrayNode jsonPatch = getJsonPatch(pCommand);
+            try {
+               result = this.modelRepository.executeCommand(modelURI, jsonPatch);
+            } catch (JsonPatchTestException | JsonPatchException ex) {
+               LOG.error(ex.getMessage(), ex);
+               return;
+            }
+         } else {
+            // TODO Handle unsupported Patch/Command type
+            return;
+         }
+
+         root.ifPresent(model -> {
+            try {
+               JsonNode patchResult = jsonPatchHelper.getJsonPatch(model, result);
+               sessionController.commandExecuted(modelURI, patchResult);
+            } catch (EncodingException ex) {
+               LOG.error(ex.getMessage(), ex);
+            }
+         });
+         success(ctx, "Model '%s' successfully updated", modelURI);
+      }
+   }
+
+   private CCommand getCCommand(final PatchCommand<?> pCommand) {
+      Object data = pCommand.getData();
+      if (data instanceof CCommand) {
+         CCommand cCommand = (CCommand) data;
+         resolveWorkspaceURIs(cCommand);
+         return cCommand;
+      }
+      return null;
+   }
+
+   /**
+    * In V1 (And with the Theia client), clients were expected to include
+    * the complete URIs when referencing EObjects (including the workspace
+    * path prefix). With V2 and standalone client, the client no longer has
+    * knowledge about the workspace location, and may not be able to provide
+    * full URIs. Resolve relative URIs against the current workspace root.
+    *
+    * @param jsonResource
+    */
+   protected void resolveWorkspaceURIs(final CCommand cCommand) {
+      if (serverConfiguration.getWorkspaceRootURI() == null) {
+         return;
+      }
+      TreeIterator<EObject> allContents = cCommand.eAllContents();
+      doResolveWorkspaceURIs(cCommand);
+      while (allContents.hasNext()) {
+         EObject next = allContents.next();
+         new CommandSwitch<Void>() {
+            @Override
+            public Void caseCommand(final CCommand object) {
+               doResolveWorkspaceURIs(object);
+               return null;
+            }
+         }.doSwitch(next);
+      }
+   }
+
+   private void doResolveWorkspaceURIs(final CCommand cCommand) {
+      EObject owner = cCommand.getOwner();
+      List<EObject> objectValues = cCommand.getObjectValues();
+      List<EObject> objectsToAdd = cCommand.getObjectsToAdd();
+      Stream.concat(
+         Stream.concat(
+            Stream.ofNullable(owner),
+            objectValues.stream()),
+         objectsToAdd.stream())
+         .forEach(this::doResolveWorkspaceURIs);
+   }
+
+   private void doResolveWorkspaceURIs(final EObject eObject) {
+      URI objectURI = EcoreUtil.getURI(eObject);
+      if (eObject.eIsProxy() && objectURI.isRelative()) {
+         ((InternalEObject) eObject).eSetProxyURI(objectURI.resolve(serverConfiguration.getWorkspaceRootURI()));
+      }
+   }
+
+   private ArrayNode getJsonPatch(final PatchCommand<?> pCommand) {
+      Object data = pCommand.getData();
+      if (data instanceof ArrayNode) {
+         return (ArrayNode) data;
+      }
+      return null;
+   }
+
+   private boolean isJsonPatch(final PatchCommand<?> pCommand) {
+      return ModelServerPathParametersV2.JSON_PATCH.equals(pCommand.getType());
+   }
+
+   private boolean isCCommand(final PatchCommand<?> pCommand) {
+      return ModelServerPathParametersV2.EMF_COMMAND.equals(pCommand.getType());
+   }
+
+   private Optional<PatchCommand<?>> readPatchCommand(final Context ctx) {
+      Optional<String> data = ContextRequest.readData(ctx);
+      if (data.isEmpty()) {
+         return Optional.empty();
+      }
+
+      // In V1, Data is always encoded as Json (Although the actual Command might be encoded as XMI)
+      ObjectMapper mapper = new ObjectMapper();
+      try {
+         JsonNode patch = mapper.readTree(data.get());
+         return commandHandlerRegistry.getPatchCommand(ctx, patch);
+      } catch (JsonMappingException ex) {
+         LOG.error(ex.getMessage(), ex);
+      } catch (JsonProcessingException ex) {
+         LOG.error(ex.getMessage(), ex);
+      }
+      return Optional.empty();
    }
 
 }

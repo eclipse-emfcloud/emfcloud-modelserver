@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 EclipseSource and others.
+ * Copyright (c) 2021-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -12,12 +12,18 @@ package org.eclipse.emfcloud.modelserver.emf.common;
 
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public interface ModelListener {
    void modelCreated(String modeluri);
 
    void modelUpdated(String modeluri);
 
    void commandExecuted(String modeluri, CCommandExecutionResult execution);
+
+   default void commandExecuted(final String modeluri, final JsonNode patch) {
+      // Does nothing by default
+   }
 
    void modelDeleted(String modeluri);
 

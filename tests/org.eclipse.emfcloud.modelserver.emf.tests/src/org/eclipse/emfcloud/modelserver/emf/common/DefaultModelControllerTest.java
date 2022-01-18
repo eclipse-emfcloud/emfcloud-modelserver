@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -65,6 +65,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.patch.PatchCommandHandler;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.hamcrest.Description;
@@ -121,7 +122,7 @@ public class DefaultModelControllerTest {
       modelValidator = new DefaultModelValidator(modelRepository, new DefaultFacetConfig(),
          EMFModule::setupDefaultMapper);
       modelController = new DefaultModelController(modelRepository, sessionController, serverConfiguration, codecs,
-         modelValidator, EMFModule::setupDefaultMapper);
+         modelValidator, EMFModule::setupDefaultMapper, new PatchCommandHandler.RegistryImpl(), modelResourceManager);
    }
 
    @Test
@@ -225,7 +226,7 @@ public class DefaultModelControllerTest {
       result.setSource(EcoreUtil.copy(setCommand));
       result.setType(CommandExecutionType.EXECUTE);
 
-      when(modelRepository.executeCommand(eq(modeluri), any())).thenReturn(result);
+      when(modelRepository.executeCommand(eq(modeluri), any(CCommand.class))).thenReturn(result);
 
       modelController.executeCommand(context, modeluri);
 
@@ -269,7 +270,7 @@ public class DefaultModelControllerTest {
       CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
       result.setSource(EcoreUtil.copy(addCommand));
       result.setType(CommandExecutionType.EXECUTE);
-      when(modelRepository.executeCommand(eq(modeluri), any())).thenReturn(result);
+      when(modelRepository.executeCommand(eq(modeluri), any(CCommand.class))).thenReturn(result);
 
       modelController.executeCommand(context, modeluri);
 

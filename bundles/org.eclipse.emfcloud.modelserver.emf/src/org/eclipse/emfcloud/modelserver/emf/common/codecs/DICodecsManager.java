@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -34,9 +34,7 @@ import io.javalin.websocket.WsContext;
 public class DICodecsManager implements CodecsManager {
 
    /** The format we prefer to use. */
-   @Inject(optional = true)
-   @Named(PREFERRED_FORMAT)
-   private final String preferredFormat = ModelServerPathParameters.FORMAT_JSON;
+   private String preferredFormat = ModelServerPathParameters.FORMAT_JSON;
 
    private final Map<String, Codec> formatToCodec = new LinkedHashMap<>();
 
@@ -102,12 +100,32 @@ public class DICodecsManager implements CodecsManager {
    }
 
    @Override
+   public Optional<EObject> decode(final WsContext context, final String payload) throws DecodingException {
+      return findCodec(context).decode(payload);
+   }
+
+   @Override
+   public Optional<EObject> decode(final WsContext context, final String payload, final URI workspaceURI)
+      throws DecodingException {
+      return findCodec(context).decode(payload, workspaceURI);
+   }
+
+   @Override
    public String findFormat(final WsContext context) {
       return context.queryParam(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_JSON);
+   }
+
+   @Override
+   public Codec findCodec(final WsContext context) {
+      String format = findFormat(context);
+      return Optional.ofNullable(formatToCodec.get(format)).orElseGet(JsonCodec::new);
    }
 
    protected Codec findFormat(final Map<String, List<String>> queryParams) {
       String format = ContextRequest.getParam(queryParams, ModelServerPathParametersV1.FORMAT).orElse(preferredFormat);
       return Optional.ofNullable(formatToCodec.get(format)).orElseGet(JsonCodec::new);
    }
+
+   @Inject(optional = true)
+   public void setPreferredFormat(@Named(PREFERRED_FORMAT) final String format) { this.preferredFormat = format; }
 }

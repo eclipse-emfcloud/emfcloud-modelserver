@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 EclipseSource and others.
+ * Copyright (c) 2020-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -34,6 +34,8 @@ import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchTestException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
 import org.eclipse.emfcloud.modelserver.edit.ModelServerCommand;
@@ -41,7 +43,9 @@ import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribut
 import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatchersManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -56,11 +60,15 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    @Inject
    protected final ServerConfiguration serverConfiguration;
 
+   @Inject
+   protected ModelRepository modelRepository;
+
    protected final Set<EPackageConfiguration> configurations;
    protected final AdapterFactory adapterFactory;
    protected ModelWatchersManager watchersManager;
    protected final Map<URI, ResourceSet> resourceSets = Maps.newLinkedHashMap();
    protected final Map<ResourceSet, ModelServerEditingDomain> editingDomains = Maps.newLinkedHashMap();
+   protected final JsonPatchHelper jsonPatchHelper;
 
    protected boolean isInitializing;
 
@@ -73,6 +81,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       this.adapterFactory = adapterFactory;
       this.serverConfiguration = serverConfiguration;
       this.watchersManager = watchersManager;
+      this.jsonPatchHelper = new JsonPatchHelper(this, serverConfiguration);
       initialize();
    }
 
@@ -359,27 +368,25 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       }
 
       Optional<CCommand> clientCommand = ModelServerCommand.getClientCommand(undoCommand.get());
-      if (clientCommand.isEmpty()) {
-         return Optional.empty();
-      }
+      // Note: In API V2, when applying changes to the model via Json Patch, we don't have a client command
 
-      Optional<CommandExecutionContext> context = undoCommand(domain, undoCommand.get(), clientCommand.get());
-      if (context.isEmpty()) {
-         return Optional.empty();
-      }
+      Optional<CommandExecutionContext> context = undoCommand(domain, undoCommand.get(), clientCommand);
+      // Context may also be empty in V2
 
-      CCommandExecutionResult result = createExecutionResult(context.get());
-      ReadResourceSet readResourceSet = new ReadResourceSet(domain);
-      readResourceSet.resolve(result, "$command.undo.res");
-      return Optional.of(result);
+      return context.map(ctx -> {
+         CCommandExecutionResult result = createExecutionResult(ctx);
+         ReadResourceSet readResourceSet = new ReadResourceSet(domain);
+         readResourceSet.resolve(result, "$command.undo.res");
+         return result;
+      });
    }
 
    protected Optional<CommandExecutionContext> undoCommand(final ModelServerEditingDomain domain,
-      final Command serverCommand, final CCommand clientCommand) {
+      final Command serverCommand, final Optional<CCommand> clientCommand) {
       if (!domain.undo()) {
          return Optional.empty();
       }
-      return Optional.of(new CommandExecutionContext(CommandExecutionType.UNDO, clientCommand, serverCommand));
+      return clientCommand.map(cc -> new CommandExecutionContext(CommandExecutionType.UNDO, cc, serverCommand));
    }
 
    @Override
@@ -392,27 +399,25 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       }
 
       Optional<CCommand> clientCommand = ModelServerCommand.getClientCommand(redoCommand.get());
-      if (clientCommand.isEmpty()) {
-         return Optional.empty();
-      }
+      // Note: In API V2, when applying changes to the model via Json Patch, we don't have a client command
 
-      Optional<CommandExecutionContext> context = redoCommand(domain, redoCommand.get(), clientCommand.get());
-      if (context.isEmpty()) {
-         return Optional.empty();
-      }
+      Optional<CommandExecutionContext> context = redoCommand(domain, redoCommand.get(), clientCommand);
+      // Context may also be empty in V2
 
-      CCommandExecutionResult result = createExecutionResult(context.get());
-      ReadResourceSet readResourceSet = new ReadResourceSet(domain);
-      readResourceSet.resolve(result, "$command.redo.res");
-      return Optional.of(result);
+      return context.map(ctx -> {
+         CCommandExecutionResult result = createExecutionResult(ctx);
+         ReadResourceSet readResourceSet = new ReadResourceSet(domain);
+         readResourceSet.resolve(result, "$command.redo.res");
+         return result;
+      });
    }
 
    protected Optional<CommandExecutionContext> redoCommand(final ModelServerEditingDomain domain,
-      final Command serverCommand, final CCommand clientCommand) {
+      final Command serverCommand, final Optional<CCommand> clientCommand) {
       if (!domain.redo()) {
          return Optional.empty();
       }
-      return Optional.of(new CommandExecutionContext(CommandExecutionType.REDO, clientCommand, serverCommand));
+      return clientCommand.map(cc -> new CommandExecutionContext(CommandExecutionType.REDO, cc, serverCommand));
    }
 
    protected CCommand encodeCommand(final Command command) {
@@ -451,6 +456,23 @@ public class DefaultModelResourceManager implements ModelResourceManager {
          LOG.error("Encoding of " + clientCommand + " failed: " + exception.getMessage());
          throw new IllegalArgumentException(exception);
       }
+   }
+
+   @Override
+   public CCommandExecutionResult execute(final String modeluri, final ArrayNode jsonPatch)
+      throws JsonPatchTestException, JsonPatchException {
+      ResourceSet resourceSet = getResourceSet(modeluri);
+      ModelServerEditingDomain domain = getEditingDomain(resourceSet);
+
+      Command command = jsonPatchHelper.getCommand(modeluri, resourceSet, jsonPatch);
+      // execute command
+      CommandExecutionContext context = executeCommand(domain, command, null);
+
+      // create result
+      ReadResourceSet readResourceSet = new ReadResourceSet(domain);
+      CCommandExecutionResult result = createExecutionResult(context);
+      readResourceSet.resolve(result, "$command.exec.res");
+      return result;
    }
 
    protected CommandExecutionContext executeCommand(final ModelServerEditingDomain domain, final Command serverCommand,

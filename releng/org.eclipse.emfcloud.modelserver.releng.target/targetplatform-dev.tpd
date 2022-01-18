@@ -1,0 +1,11 @@
+target "EMF.cloud Model Server Targetplatform" with source, requirements
+
+include "targetplatform.tpd"
+
+location "https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/9.4.44.v20210927/" {
+	org.eclipse.jetty.http [9.4.44,10.0.0)
+	org.eclipse.jetty.io [9.4.44,10.0.0)
+	org.eclipse.jetty.security [9.4.44,10.0.0)
+	org.eclipse.jetty.servlet [9.4.44,10.0.0)
+	org.eclipse.jetty.util [9.4.44,10.0.0)
+}

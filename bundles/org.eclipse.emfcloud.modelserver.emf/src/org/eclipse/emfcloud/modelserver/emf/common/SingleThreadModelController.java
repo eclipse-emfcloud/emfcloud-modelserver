@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 EclipseSource and others.
+ * Copyright (c) 2021-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -165,6 +165,11 @@ public class SingleThreadModelController implements ModelController {
    }
 
    @Override
+   public void executeCommandV2(final Context ctx, final String modelURI) {
+      runAndWait(() -> delegate.executeCommandV2(ctx, modelURI));
+   }
+
+   @Override
    public void undo(final Context ctx, final String modeluri) {
       runAndWait(() -> delegate.undo(ctx, modeluri));
    }
@@ -226,7 +231,7 @@ public class SingleThreadModelController implements ModelController {
             LOG.error("Interrupted", e);
             return;
          } catch (ExecutionException e) {
-            LOG.error(e);
+            LOG.error("Execution Exception", e);
             return;
          }
       }

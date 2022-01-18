@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -111,5 +111,38 @@ public final class Json {
       }
 
       return mainNode;
+   }
+
+   /**
+    * Query whether JSON content is either an empty string, an empty array, or an empty object.
+    *
+    * @param json some kind of JSON content
+    * @return whether it is logically empty
+    */
+   public static boolean isEmpty(final Object json) {
+      if (json == null) {
+         return true;
+      }
+      if (json instanceof String) {
+         String jsonString = (String) json;
+         return jsonString.isBlank() || jsonString.equals("[]") || jsonString.equals("{}");
+      }
+      return !(json instanceof JsonNode) || isEmpty((JsonNode) json);
+   }
+
+   /**
+    * Query whether a JSON node is either an empty string, an empty array, or an empty object.
+    *
+    * @param json some kind of JSON content
+    * @return whether it is logically empty
+    */
+   public static boolean isEmpty(final JsonNode json) {
+      if (json == null || json.isNull()) {
+         return true;
+      }
+      if (json.isTextual()) {
+         return json.asText().isBlank();
+      }
+      return json.isEmpty();
    }
 }

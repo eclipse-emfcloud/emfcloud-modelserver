@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -27,8 +27,11 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchTestException;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.inject.Inject;
 
 /**
@@ -135,6 +138,12 @@ public class DefaultModelRepository implements ModelRepository {
    public CCommandExecutionResult executeCommand(final String modeluri, final CCommand command)
       throws DecodingException {
       return modelResourceManager.execute(modeluri, command);
+   }
+
+   @Override
+   public CCommandExecutionResult executeCommand(final String modeluri, final ArrayNode jsonPatch)
+      throws JsonPatchTestException, JsonPatchException {
+      return modelResourceManager.execute(modeluri, jsonPatch);
    }
 
    @Override

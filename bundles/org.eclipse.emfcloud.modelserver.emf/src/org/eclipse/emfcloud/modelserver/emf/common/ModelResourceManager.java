@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 EclipseSource and others.
+ * Copyright (c) 2020-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -22,6 +22,10 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchTestException;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public interface ModelResourceManager {
 
@@ -93,5 +97,10 @@ public interface ModelResourceManager {
       // we do not know the server configuration for relative URIs nor the possible schemes here...
       // concrete implementations would probably override
       return uri.toString();
+   }
+
+   default CCommandExecutionResult execute(final String modeluri, final ArrayNode jsonPatch)
+      throws JsonPatchTestException, JsonPatchException {
+      throw new UnsupportedOperationException("V2 API is not supported by this implementation");
    }
 }

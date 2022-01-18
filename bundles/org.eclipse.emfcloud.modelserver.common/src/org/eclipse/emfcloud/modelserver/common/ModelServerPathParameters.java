@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 EclipseSource and others.
+ * Copyright (c) 2020-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -10,4 +10,4 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.common;
 
-public interface ModelServerPathParameters extends ModelServerPathParametersV1 {}
+public interface ModelServerPathParameters extends ModelServerPathParametersV2 {}

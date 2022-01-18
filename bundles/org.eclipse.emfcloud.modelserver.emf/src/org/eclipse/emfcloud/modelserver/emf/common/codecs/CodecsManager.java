@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 EclipseSource and others.
+ * Copyright (c) 2020-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 
@@ -92,11 +93,41 @@ public interface CodecsManager {
       throws DecodingException;
 
    /**
+    * Decode a JsonNode to an EObject.
+    *
+    * @param context the javalin websocket context
+    * @param payload tthe String payload holding EObject definition to decode
+    * @return the decoded EObject
+    * @throws DecodingException when decoding failed
+    */
+   Optional<EObject> decode(WsContext context, String payload) throws DecodingException;
+
+   /**
+    * Decode a JsonNode to an EObject.
+    *
+    * @param context      the javalin websocket context
+    * @param payload      tthe String payload holding EObject definition to decode
+    * @param workspaceURI the URI to access to the model from the workspace
+    * @return the decoded EObject
+    * @throws DecodingException when decoding failed
+    */
+   Optional<EObject> decode(WsContext context, String payload, URI workspaceURI)
+      throws DecodingException;
+
+   /**
     * Returns the format, for which the websocket subscribed for.
     *
     * @param context the javalin websocket context
     * @return format string
     */
    String findFormat(WsContext context);
+
+   /**
+    * Obtains the codec that handles the format of the websocket.
+    *
+    * @param context the javalin websocket context
+    * @return the codec for the websocket's format
+    */
+   Codec findCodec(WsContext context);
 
 }

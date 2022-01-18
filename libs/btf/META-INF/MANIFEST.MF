@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Btf
+Bundle-SymbolicName: btf
+Bundle-Version: 1.3.0.qualifier
+Bundle-Vendor: Francis Galiegue
+Automatic-Module-Name: btf
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-ClassPath: lib/btf-1.3.jar,
+ .
+Export-Package: com.github.fge;version="1.3.0"
