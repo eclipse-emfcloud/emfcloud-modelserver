@@ -29,6 +29,7 @@ public class SimpleLazyCompoundCommand extends AbstractCommand implements LazyCo
    }
 
    @Override
+   @SuppressWarnings("checkstyle:IllegalExceptionCatch")
    public boolean canExecute() {
       if (commands.isEmpty()) {
          return true;
