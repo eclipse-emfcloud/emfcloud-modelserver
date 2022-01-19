@@ -2,7 +2,7 @@
  * Copyright (c) 2022 STMicroelectronics.
  *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
  * http://www.eclipse.org/legal/epl-2.0.
  *
  * SPDX-License-Identifier: EPL-2.0
@@ -294,7 +294,7 @@ public abstract class AbstractJsonPatchHelper {
       return AdapterFactoryEditingDomain.getEditingDomainFor(eObject);
    }
 
-   protected abstract Resource getResource(final String modelURI, final URI resourceURI);
+   protected abstract Resource getResource(String modelURI, URI resourceURI);
 
    protected Command testAction(final ResourceSet resourceSet, final JsonNode patchAction)
       throws JsonPatchTestException {

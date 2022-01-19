@@ -25,17 +25,17 @@ public interface ModelServerPathParametersV2 {
    // V2 Parameters
 
    /**
-    * The Json Format for V2 APIs
+    * The Json Format for V2 APIs.
     */
    String FORMAT_JSON_V2 = "json-v2";
 
    /**
-    * Patch Commands in the Json Patch format
+    * Patch Commands in the Json Patch format.
     */
    String JSON_PATCH = "modelserver.patch";
 
    /**
-    * Patch Commands in the EMF CCommand format
+    * Patch Commands in the EMF CCommand format.
     */
    String EMF_COMMAND = "modelserver.emfcommand";
 
