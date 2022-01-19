@@ -386,7 +386,8 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       if (!domain.undo()) {
          return Optional.empty();
       }
-      return clientCommand.map(cc -> new CommandExecutionContext(CommandExecutionType.UNDO, cc, serverCommand));
+      return Optional
+         .of(new CommandExecutionContext(CommandExecutionType.UNDO, clientCommand.orElse(null), serverCommand));
    }
 
    @Override
@@ -417,7 +418,8 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       if (!domain.redo()) {
          return Optional.empty();
       }
-      return clientCommand.map(cc -> new CommandExecutionContext(CommandExecutionType.REDO, cc, serverCommand));
+      return Optional
+         .of(new CommandExecutionContext(CommandExecutionType.REDO, clientCommand.orElse(null), serverCommand));
    }
 
    protected CCommand encodeCommand(final Command command) {
@@ -484,7 +486,12 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    protected CCommandExecutionResult createExecutionResult(final CommandExecutionContext context) {
       CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
       result.setType(context.getType());
-      result.setSource(EcoreUtil.copy(context.getClientCommand()));
+
+      // The client command will be null in the case of applying a JSON Patch
+      if (context.getClientCommand() != null) {
+         result.setSource(EcoreUtil.copy(context.getClientCommand()));
+      }
+
       Collection<?> affectedObjects = context.getServerCommand().getAffectedObjects();
       if (affectedObjects != null) {
          affectedObjects.stream()

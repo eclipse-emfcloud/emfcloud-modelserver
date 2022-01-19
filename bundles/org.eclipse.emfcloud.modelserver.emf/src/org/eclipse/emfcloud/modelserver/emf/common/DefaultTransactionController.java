@@ -304,8 +304,9 @@ public class DefaultTransactionController implements TransactionController {
       public void apply(final WsMessageContext ctx, final ArrayNode patch) {
          try {
             // TODO: For now, we are letting the original patch stand in for its own result
-            modelRepository.executeCommand(modelURI, patch);
+            CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, patch);
             JsonNode response = patch;
+            executions.add(execution);
             success(ctx, response);
          } catch (JsonPatchException | JsonPatchTestException exception) {
             error(ctx, "Inapplicable JSON patch", exception);

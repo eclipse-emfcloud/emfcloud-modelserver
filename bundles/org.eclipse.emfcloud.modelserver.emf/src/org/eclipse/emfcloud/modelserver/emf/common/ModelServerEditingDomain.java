@@ -129,7 +129,11 @@ public class ModelServerEditingDomain extends TransactionalEditingDomainImpl {
 
       // Don't unwrap the compound because execute must be a no-op, just placing it on the stack
       cCompound.map(compound -> new ModelServerCommand(command, compound))
-         .ifPresent(this::execute);
+         .ifPresentOrElse(this::execute,
+            () -> {
+               // We applied a JSON Patch, so there is no client command
+               execute(command);
+            });
    }
 
    /**

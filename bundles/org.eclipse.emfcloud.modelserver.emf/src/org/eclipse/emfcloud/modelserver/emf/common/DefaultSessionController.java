@@ -196,7 +196,9 @@ public class DefaultSessionController implements SessionController {
    }
 
    protected void broadcastValidation(final String modeluri) {
-      broadcastValidation(modeluri, modelValidator.validate(modeluri));
+      if (hasOpenValidationSessions(modeluri)) {
+         broadcastValidation(modeluri, modelValidator.validate(modeluri));
+      }
    }
 
    protected void broadcastFullUpdate(final String modeluri, @Nullable final EObject updatedModel) {
@@ -241,7 +243,10 @@ public class DefaultSessionController implements SessionController {
    }
 
    protected void broadcastValidation(final String modeluri, final JsonNode newResult) {
-      getOpenValidationSessions(modeluri).forEach(session -> session.send(validationResult(newResult)));
+      if (hasOpenValidationSessions(modeluri)) {
+         final JsonNode validationResult = validationResult(newResult);
+         getOpenValidationSessions(modeluri).forEach(session -> session.send(validationResult));
+      }
    }
 
    /**
@@ -278,6 +283,10 @@ public class DefaultSessionController implements SessionController {
 
    protected Stream<WsContext> getOpenValidationSessions(final String modeluri) {
       return getAllOpenSessions(modeluri).filter(this::requiresLiveValidation);
+   }
+
+   protected boolean hasOpenValidationSessions(final String modeluri) {
+      return getAllOpenSessions(modeluri).anyMatch(this::requiresLiveValidation);
    }
 
    protected void broadcastError(final String modeluri, final String errorMessage) {
