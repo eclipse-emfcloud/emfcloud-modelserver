@@ -46,7 +46,6 @@
 
 	<modules>
 		<module>bundles</module>
-		<module>libs</module>
 	</modules>
 
 	<!-- Properties -->
@@ -201,6 +200,7 @@
 
 			<modules>
 				<module>features</module>
+				<module>libs</module>
 			</modules>
 
 			<build>
