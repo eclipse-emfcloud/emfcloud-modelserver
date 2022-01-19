@@ -74,6 +74,7 @@ public class DefaultModelController implements ModelController {
    protected final JsonPatchHelper jsonPatchHelper;
 
    @Inject
+   @SuppressWarnings("checkstyle:ParameterNumberCheck")
    public DefaultModelController(final ModelRepository modelRepository, final SessionController sessionController,
       final ServerConfiguration serverConfiguration, final CodecsManager codecs, final ModelValidator modelValidator,
       final Provider<ObjectMapper> objectMapperProvider, final PatchCommandHandler.Registry commandHandlerRegistry,

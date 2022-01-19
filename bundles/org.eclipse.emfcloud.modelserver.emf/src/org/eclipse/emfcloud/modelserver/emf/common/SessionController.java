@@ -35,7 +35,7 @@ public interface SessionController extends ModelListener {
     * @param modeluri
     *                    The URI of the model to subscribe to.
     * @return
-    *         <code>true</code> if the subscription was successful, <code>false<code> otherwise.
+    *         <code>true</code> if the subscription was successful, <code>false</code> otherwise.
     */
    default boolean subscribeV2(final WsContext ctx, final String modeluri) {
       throw new UnsupportedOperationException("V2 API is not supported by this implementation");

@@ -86,7 +86,7 @@ public abstract class AbstractModelServerRouting implements Routing {
    protected abstract String getBasePath();
 
    /**
-    * API Endpoints common for V1 and V2 APIs
+    * API Endpoints common for V1 and V2 APIs.
     */
    protected void commonApiEndpoints() {
       before(this::waitForPrecondition);
