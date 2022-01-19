@@ -9,17 +9,31 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.common.patch;
 
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Optional;
+
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.command.IdentityCommand;
+import org.eclipse.emf.common.command.UnexecutableCommand;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EFactory;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.EStructuralFeature.Setting;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.edit.command.AddCommand;
+import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
 import org.eclipse.emf.edit.domain.EditingDomain;
+import org.eclipse.emfcloud.modelserver.jsonschema.JsonConstants;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -28,6 +42,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
  * A Helper to create EMF Commands from a Json Patch.
  */
 public abstract class AbstractJsonPatchHelper {
+
+   protected static final Logger LOG = Logger.getLogger(AbstractJsonPatchHelper.class.getSimpleName());
+
    private static final String TEST = "test";
    private static final String MOVE = "move";
    private static final String REMOVE = "remove";
@@ -79,11 +96,11 @@ public abstract class AbstractJsonPatchHelper {
          case REPLACE:
             return getReplaceCommand(modelURI, resourceSet, patchAction);
          case ADD:
-            return getAddCommand(resourceSet, patchAction);
+            return getAddCommand(modelURI, resourceSet, patchAction);
          case REMOVE:
-            return getRemoveCommand(resourceSet, patchAction);
+            return getRemoveCommand(modelURI, resourceSet, patchAction);
          case MOVE:
-            return getMoveCommand(resourceSet, patchAction);
+            return getMoveCommand(modelURI, resourceSet, patchAction);
          case TEST:
             return testAction(resourceSet, patchAction);
          default:
@@ -91,18 +108,104 @@ public abstract class AbstractJsonPatchHelper {
       }
    }
 
-   protected Command getMoveCommand(final ResourceSet resourceSet, final JsonNode patchAction) {
+   protected Command getMoveCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
+      throws JsonPatchException {
       // TODO Auto-generated method stub
       return null;
    }
 
-   protected Command getRemoveCommand(final ResourceSet resourceSet, final JsonNode patchAction) {
-      // TODO Auto-generated method stub
+   protected Command getRemoveCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
+      throws JsonPatchException {
+      JsonNode path = patchAction.get("path");
+      // If the last segment of the path is an integer, we remove a value from a list (modelURI#objectID/feature/index).
+      // Otherwise, we treat the path as an ObjectURI and remove this object from the model (modelURI#objectID).
+      String jsonPath = path.asText();
+      int lastSegment = jsonPath.lastIndexOf('/');
+      Optional<Integer> index;
+      try {
+         index = Optional.of(Integer.parseInt(jsonPath.substring(lastSegment + 1)));
+      } catch (NumberFormatException ex) {
+         index = Optional.empty();
+      }
+
+      if (index.isPresent()) {
+         String objectPath = jsonPath.substring(0, lastSegment);
+         EStructuralFeature.Setting setting = getSetting(modelURI, resourceSet, objectPath);
+         int intValue = index.get();
+         return RemoveCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+            setting.getEStructuralFeature(), intValue);
+      }
+
+      URI objectURI = URI.createURI(jsonPath);
+      Resource resource = getResource(modelURI, objectURI.trimFragment());
+      EObject eObjectToDelete = resource.getEObject(objectURI.fragment());
+      if (eObjectToDelete == null) {
+         return UnexecutableCommand.INSTANCE;
+      }
+
+      EObject parent = eObjectToDelete.eContainer();
+      EStructuralFeature feature = eObjectToDelete.eContainingFeature();
+      return RemoveCommand.create(getEditingDomain(eObjectToDelete), parent, feature,
+         Collections.singleton(eObjectToDelete));
+   }
+
+   protected Command getAddCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
+      throws JsonPatchException {
+      JsonNode path = patchAction.get("path");
+      EStructuralFeature.Setting setting = getSetting(modelURI, resourceSet, path.asText());
+      JsonNode value = patchAction.get("value");
+      EObject toCreate = getObjectToCreate(modelURI, resourceSet, value);
+      if (toCreate == null) {
+         throw new JsonPatchException("Invalid value specified for 'add' operation");
+      }
+
+      return AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+         setting.getEStructuralFeature(), Collections.singleton(toCreate));
+   }
+
+   protected EObject getObjectToCreate(final String modelURI, final ResourceSet resourceSet, final JsonNode value) {
+      String type = value.get(JsonConstants.TYPE_ATTR).asText();
+      if (type == null) {
+         return null;
+      }
+      EClassifier eClassifier = getEClass(modelURI, resourceSet, type);
+      if (eClassifier == null) {
+         return null;
+      }
+
+      if (eClassifier instanceof EClass) {
+         EClass eClass = (EClass) eClassifier;
+         EFactory eFactoryInstance = eClass.getEPackage().getEFactoryInstance();
+         EObject newObject = eFactoryInstance.create(eClass);
+         Iterator<Entry<String, JsonNode>> fields = value.fields();
+         while (fields.hasNext()) {
+            Entry<String, JsonNode> field = fields.next();
+            if (field.getKey().startsWith(JsonConstants.METADATA_PREFIX)) {
+               continue;
+            }
+            EStructuralFeature feature = eClass.getEStructuralFeature(field.getKey());
+            if (feature == null) {
+               LOG.warn("Ignored unknown field: " + field.getKey());
+               continue;
+            }
+
+            Object emfValue = getEMFValue(modelURI, resourceSet, feature, field.getValue());
+            newObject.eSet(feature, emfValue);
+         }
+         return newObject;
+      }
+
+      // Other EClassifiers: Enum and Datatype can't be instantiated (But they may be used to specify values with
+      // 'replace')
+
       return null;
    }
 
-   protected Command getAddCommand(final ResourceSet resourceSet, final JsonNode patchAction) {
-      // TODO Auto-generated method stub
+   protected EClassifier getEClass(final String modelURI, final ResourceSet resourceSet, final String type) {
+      EObject eObject = resourceSet.getEObject(URI.createURI(type), false);
+      if (eObject instanceof EClassifier) {
+         return (EClassifier) eObject;
+      }
       return null;
    }
 
@@ -111,13 +214,14 @@ public abstract class AbstractJsonPatchHelper {
       JsonNode path = patchAction.get("path");
       JsonNode value = patchAction.get("value");
       EStructuralFeature.Setting setting = getSetting(modelURI, resourceSet, path.asText());
-      Object emfValue = getEMFValue(value);
+      Object emfValue = getEMFValue(modelURI, resourceSet, setting.getEStructuralFeature(), value);
       Command command = SetCommand.create(getEditingDomain(setting.getEObject()),
          setting.getEObject(), setting.getEStructuralFeature(), emfValue);
       return command;
    }
 
-   protected Object getEMFValue(final JsonNode value) {
+   protected Object getEMFValue(final String modelURI, final ResourceSet resourceSet, final EStructuralFeature feature,
+      final JsonNode value) {
       if (value == null || value.isNull()) {
          return null;
       } else if (value.isTextual()) {
@@ -127,13 +231,23 @@ public abstract class AbstractJsonPatchHelper {
       } else if (value.isNumber()) {
          return value.asInt();
       }
-      // TODO Support Objects
-      // Objects are defined as {$type: "eClassURI"} (with additional attributes? But without nested nodes)
-      // Further changes will be applied with Replace operations
+      // TODO Check the feature type for consistency with the value type
+      // TODO Support object references {"$type": "...", "$ref": "uri"}
+      // TODO Support datatypes and enums
       return null;
    }
 
    /**
+    * <p>
+    * Remove the EMF {@link Setting} corresponding to the specified Json Path.
+    * </p>
+    * <p>
+    * The Json Path should include the modelURI and the ObjectID (as specified
+    * by the $id attribute in the Json model): <code>path/to/model#my/object/id/feature</code>.
+    * </p>
+    * <p>
+    * Standard Json Paths are currently not supported, but may be added in the future.
+    * </p>
     *
     * @param modelURI
     * @param resourceSet

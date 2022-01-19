@@ -24,4 +24,8 @@ public class JsonPatchException extends Exception {
       super(message);
    }
 
+   public JsonPatchException(final String message, final Exception cause) {
+      super(message, cause);
+   }
+
 }
