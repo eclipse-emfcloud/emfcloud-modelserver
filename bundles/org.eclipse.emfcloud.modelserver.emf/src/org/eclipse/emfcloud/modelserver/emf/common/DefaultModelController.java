@@ -19,6 +19,7 @@ import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.m
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.notFound;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.response;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.success;
+import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.successPatch;
 
 import java.io.IOException;
 import java.util.List;
@@ -254,6 +255,8 @@ public class DefaultModelController implements ModelController {
    public void undo(final Context ctx, final String modeluri) {
       Optional<CCommandExecutionResult> undoExecution = modelRepository.undo(modeluri);
       if (undoExecution.isPresent()) {
+         // TODO: Split v1 and v2 results
+         // In V2, send a jsonPatch response
          success(ctx, "Successful undo.");
          sessionController.commandExecuted(modeluri, undoExecution.get());
          return;
@@ -265,6 +268,8 @@ public class DefaultModelController implements ModelController {
    public void redo(final Context ctx, final String modeluri) {
       Optional<CCommandExecutionResult> redoExecution = modelRepository.redo(modeluri);
       if (redoExecution.isPresent()) {
+         // TODO: Split v1 and v2 results
+         // In V2, send a jsonPatch response
          success(ctx, "Successful redo.");
          sessionController.commandExecuted(modeluri, redoExecution.get());
          return;
@@ -346,15 +351,13 @@ public class DefaultModelController implements ModelController {
             return;
          }
 
-         root.ifPresent(model -> {
-            try {
-               JsonNode patchResult = jsonPatchHelper.getJsonPatch(model, result);
-               sessionController.commandExecuted(modelURI, patchResult);
-            } catch (EncodingException ex) {
-               LOG.error(ex.getMessage(), ex);
-            }
-         });
-         success(ctx, "Model '%s' successfully updated", modelURI);
+         try {
+            JsonNode patchResult = jsonPatchHelper.getJsonPatch(root.get(), result);
+            successPatch(ctx, patchResult, "Model '%s' successfully updated", modelURI);
+            sessionController.commandExecuted(modelURI, patchResult);
+         } catch (EncodingException ex) {
+            LOG.error(ex.getMessage(), ex);
+         }
       }
    }
 

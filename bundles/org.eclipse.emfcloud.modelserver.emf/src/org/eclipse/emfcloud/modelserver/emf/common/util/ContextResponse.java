@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponse;
+import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -45,6 +46,28 @@ public final class ContextResponse {
 
    public static void success(final Context context, final String messageFormat, final Object... args) {
       success(context, String.format(messageFormat, args));
+   }
+
+   /**
+    * Send a 'success' response to the client, containing the specified formatted message and Json Patch.
+    *
+    * @param context
+    *                         The Context representing the client connection.
+    * @param patch
+    *                         The Json Patch node, showing the diff between the previous state of the model,
+    *                         and the new state (e.g. after a model operation, or undo/redo).
+    * @param messageFormat
+    *                         The message to be attached to the result. Follows {@link String#format(String, Object...)}
+    *                         syntax.
+    * @param args
+    *                         The arguments for the formatted message.
+    */
+   public static void successPatch(final Context context, final JsonNode patch, final String messageFormat,
+      final Object... args) {
+      JsonNode patchAndMessage = Json.object(
+         Json.prop("message", Json.text(String.format(messageFormat, args))),
+         Json.prop("patch", patch));
+      success(context, patchAndMessage);
    }
 
    public static void error(final Context context, final int statusCode, final String errorMsgFormat,
