@@ -19,10 +19,14 @@ import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.command.IdentityCommand;
 import org.eclipse.emf.common.command.UnexecutableCommand;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EEnumLiteral;
 import org.eclipse.emf.ecore.EFactory;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EStructuralFeature.Setting;
 import org.eclipse.emf.ecore.InternalEObject;
@@ -154,16 +158,52 @@ public abstract class AbstractJsonPatchHelper {
       JsonNode path = patchAction.get("path");
       EStructuralFeature.Setting setting = getSetting(modelURI, resourceSet, path.asText());
       JsonNode value = patchAction.get("value");
-      EObject toCreate = getObjectToCreate(modelURI, resourceSet, value);
-      if (toCreate == null) {
-         throw new JsonPatchException("Invalid value specified for 'add' operation");
+      Command result = null;
+      if (setting.getEStructuralFeature() instanceof EReference) {
+         // References
+         EObject objectToAdd = getObjectToAdd(modelURI, resourceSet, value);
+         if (objectToAdd == null) {
+            throw new JsonPatchException("Invalid value specified for 'add' operation");
+         }
+
+         EStructuralFeature feature = setting.getEStructuralFeature();
+
+         if (feature instanceof EReference) {
+            EReference reference = (EReference) feature;
+            if (reference.isContainment() && objectToAdd.eResource() != null
+               && objectToAdd.eResource().getResourceSet() == resourceSet) {
+               // This is actually a move. First, remove the Object from its original parent.
+               // This is not required to actually apply the change (EMF will do it automatically),
+               // however this is necessary to properly undo the change.
+               result = RemoveCommand.create(getEditingDomain(objectToAdd), objectToAdd.eContainer(),
+                  objectToAdd.eContainingFeature(),
+                  objectToAdd);
+            }
+         }
+
+         Command create = AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+            setting.getEStructuralFeature(), Collections.singleton(objectToAdd));
+         result = result == null ? create : result.chain(create);
+      } else {
+         // Attributes
+         Object emfValue = getEMFValue(modelURI, resourceSet, setting.getEStructuralFeature(), value);
+         result = AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+            setting.getEStructuralFeature(), Collections.singleton(emfValue));
       }
 
-      return AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-         setting.getEStructuralFeature(), Collections.singleton(toCreate));
+      return result;
    }
 
-   protected EObject getObjectToCreate(final String modelURI, final ResourceSet resourceSet, final JsonNode value) {
+   protected EObject getObjectToAdd(final String modelURI, final ResourceSet resourceSet, final JsonNode value)
+      throws JsonPatchException {
+      JsonNode idAttr = value.get(JsonConstants.ID_ATTR);
+      if (idAttr != null) {
+         // If the ID is specified, we're adding an existing object to a list (or a different parent).
+         // Find the existing object (or return null if the $id is invalid).
+         URI eObjectURI = URI.createURI(idAttr.asText());
+         return getEObject(modelURI, eObjectURI);
+      }
+      // Otherwise, create a new Object of the specified $type (or return null if the $type is invalid)
       String type = value.get(JsonConstants.TYPE_ATTR).asText();
       if (type == null) {
          return null;
@@ -220,20 +260,49 @@ public abstract class AbstractJsonPatchHelper {
       return command;
    }
 
+   /**
+    * Return the EMF Value represented by the given JsonNode value.
+    *
+    * @param modelURI
+    * @param resourceSet
+    * @param feature
+    * @param value
+    * @return
+    * @throws JsonPatchException
+    */
    protected Object getEMFValue(final String modelURI, final ResourceSet resourceSet, final EStructuralFeature feature,
-      final JsonNode value) {
-      if (value == null || value.isNull()) {
-         return null;
-      } else if (value.isTextual()) {
-         return value.asText();
-      } else if (value.isBoolean()) {
-         return value.asBoolean();
-      } else if (value.isNumber()) {
-         return value.asInt();
+      final JsonNode value) throws JsonPatchException {
+      if (feature instanceof EAttribute) {
+         // Attributes
+         if (feature.getEType() instanceof EEnum) {
+            EEnum enumType = (EEnum) feature.getEType();
+            EEnumLiteral literal = enumType.getEEnumLiteral(value.asText());
+            if (literal != null) {
+               return literal;
+            }
+         } else {
+            if (value == null || value.isNull()) {
+               return null;
+            } else if (value.isTextual()) {
+               return value.asText();
+            } else if (value.isBoolean()) {
+               return value.asBoolean();
+            } else if (value.isNumber()) {
+               return value.asInt();
+            }
+         }
+      } else {
+         // References
+         JsonNode refNode = value.get(JsonConstants.REF_ATTR);
+         JsonNode idNode = value.get(JsonConstants.ID_ATTR);
+         if (refNode == null && idNode == null) {
+            throw new JsonPatchException("Reference values should include a $ref or an $id attribute");
+         }
+         String objectId = refNode == null ? idNode.asText() : refNode.asText();
+         return getEObject(modelURI, URI.createURI(objectId));
       }
-      // TODO Check the feature type for consistency with the value type
-      // TODO Support object references {"$type": "...", "$ref": "uri"}
-      // TODO Support datatypes and enums
+      // TODO Support datatypes?
+      // TODO Support multiple values? (value: [{value1}, {value2}] instead of value: {value1} )
       return null;
    }
 
@@ -295,6 +364,11 @@ public abstract class AbstractJsonPatchHelper {
    }
 
    protected abstract Resource getResource(String modelURI, URI resourceURI);
+
+   protected EObject getEObject(final String modelURI, final URI eObjectURI) {
+      Resource resource = getResource(modelURI, eObjectURI.trimFragment());
+      return resource.getEObject(eObjectURI.fragment());
+   }
 
    protected Command testAction(final ResourceSet resourceSet, final JsonNode patchAction)
       throws JsonPatchTestException {
