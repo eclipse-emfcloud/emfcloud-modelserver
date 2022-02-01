@@ -259,6 +259,7 @@ public final class CommandUtil {
       return a;
    }
 
+   @SuppressWarnings("checkstyle:CyclomaticComplexity")
    private static void mergeFeatureChanges(final FeatureChange dst, final FeatureChange src) {
       if (src.isSet()) {
          dst.setSet(true);

@@ -170,8 +170,7 @@ public abstract class AbstractJsonPatchHelper {
 
          if (feature instanceof EReference) {
             EReference reference = (EReference) feature;
-            if (reference.isContainment() && objectToAdd.eResource() != null
-               && objectToAdd.eResource().getResourceSet() == resourceSet) {
+            if (reference.isContainment() && getResourceSet(objectToAdd) == resourceSet) {
                // This is actually a move. First, remove the Object from its original parent.
                // This is not required to actually apply the change (EMF will do it automatically),
                // however this is necessary to properly undo the change.
@@ -194,6 +193,11 @@ public abstract class AbstractJsonPatchHelper {
       return result;
    }
 
+   protected final ResourceSet getResourceSet(final EObject objectToAdd) {
+      return objectToAdd == null || objectToAdd.eResource() == null ? null : objectToAdd.eResource().getResourceSet();
+   }
+
+   @SuppressWarnings("checkstyle:CyclomaticComplexity")
    protected EObject getObjectToAdd(final String modelURI, final ResourceSet resourceSet, final JsonNode value)
       throws JsonPatchException {
       JsonNode idAttr = value.get(JsonConstants.ID_ATTR);
@@ -281,15 +285,7 @@ public abstract class AbstractJsonPatchHelper {
                return literal;
             }
          } else {
-            if (value == null || value.isNull()) {
-               return null;
-            } else if (value.isTextual()) {
-               return value.asText();
-            } else if (value.isBoolean()) {
-               return value.asBoolean();
-            } else if (value.isNumber()) {
-               return value.asInt();
-            }
+            return getPrimitiveEMFValue(value);
          }
       } else {
          // References
@@ -303,6 +299,19 @@ public abstract class AbstractJsonPatchHelper {
       }
       // TODO Support datatypes?
       // TODO Support multiple values? (value: [{value1}, {value2}] instead of value: {value1} )
+      return null;
+   }
+
+   protected Object getPrimitiveEMFValue(final JsonNode value) {
+      if (value == null || value.isNull()) {
+         return null;
+      } else if (value.isTextual()) {
+         return value.asText();
+      } else if (value.isBoolean()) {
+         return value.asBoolean();
+      } else if (value.isNumber()) {
+         return value.asInt();
+      }
       return null;
    }
 

@@ -9,6 +9,7 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.util;
 
+import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.change.ChangeDescription;
@@ -34,6 +35,9 @@ import com.github.fge.jsonpatch.diff.JsonDiff;
  * A Helper to create EMF Commands from a Json Patch.
  */
 public class JsonPatchHelper extends AbstractJsonPatchHelper {
+
+   protected static final Logger LOG = Logger.getLogger(JsonPatchHelper.class.getSimpleName());
+
    private final ModelResourceManager modelManager;
    private final ServerConfiguration serverConfiguration;
 
@@ -124,14 +128,15 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
             cd.applyAndReverse();
             transaction.commit();
          } catch (RollbackException e) {
-            e.printStackTrace();
+            LOG.error("Failed to generate JsonPatch", e);
+            return null;
          } finally {
             if (transaction != null && transaction.isActive()) {
                rollback(transaction, editingDomain);
             }
          }
       } catch (InterruptedException e) {
-         e.printStackTrace();
+         LOG.error("Failed to generate JsonPatch", e);
          return null;
       }
       return diffModel(oldModel, newModel);

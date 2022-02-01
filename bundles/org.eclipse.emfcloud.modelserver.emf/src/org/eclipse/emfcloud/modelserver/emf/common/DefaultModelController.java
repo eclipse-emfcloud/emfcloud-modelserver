@@ -329,35 +329,39 @@ public class DefaultModelController implements ModelController {
       }
       Optional<PatchCommand<?>> command = readPatchCommand(ctx);
       if (command.isPresent()) {
-         PatchCommand<?> pCommand = command.get();
-         CCommandExecutionResult result;
-         if (isCCommand(pCommand)) {
-            try {
-               result = this.modelRepository.executeCommand(modelURI, getCCommand(pCommand));
-            } catch (DecodingException ex) {
-               decodingError(ctx, ex);
-               return;
-            }
-         } else if (isJsonPatch(pCommand)) {
-            ArrayNode jsonPatch = getJsonPatch(pCommand);
-            try {
-               result = this.modelRepository.executeCommand(modelURI, jsonPatch);
-            } catch (JsonPatchTestException | JsonPatchException ex) {
-               LOG.error(ex.getMessage(), ex);
-               return;
-            }
-         } else {
-            // TODO Handle unsupported Patch/Command type
+         executePatchCommand(ctx, modelURI, root, command.get());
+      }
+   }
+
+   protected void executePatchCommand(final Context ctx, final String modelURI, final Optional<EObject> root,
+      final PatchCommand<?> pCommand) {
+      CCommandExecutionResult result;
+      if (isCCommand(pCommand)) {
+         try {
+            result = this.modelRepository.executeCommand(modelURI, getCCommand(pCommand));
+         } catch (DecodingException ex) {
+            decodingError(ctx, ex);
             return;
          }
-
+      } else if (isJsonPatch(pCommand)) {
+         ArrayNode jsonPatch = getJsonPatch(pCommand);
          try {
-            JsonNode patchResult = jsonPatchHelper.getJsonPatch(root.get(), result);
-            successPatch(ctx, patchResult, "Model '%s' successfully updated", modelURI);
-            sessionController.commandExecuted(modelURI, patchResult);
-         } catch (EncodingException ex) {
+            result = this.modelRepository.executeCommand(modelURI, jsonPatch);
+         } catch (JsonPatchTestException | JsonPatchException ex) {
             LOG.error(ex.getMessage(), ex);
+            return;
          }
+      } else {
+         // TODO Handle unsupported Patch/Command type
+         return;
+      }
+
+      try {
+         JsonNode patchResult = jsonPatchHelper.getJsonPatch(root.get(), result);
+         successPatch(ctx, patchResult, "Model '%s' successfully updated", modelURI);
+         sessionController.commandExecuted(modelURI, patchResult);
+      } catch (EncodingException ex) {
+         LOG.error(ex.getMessage(), ex);
       }
    }
 
