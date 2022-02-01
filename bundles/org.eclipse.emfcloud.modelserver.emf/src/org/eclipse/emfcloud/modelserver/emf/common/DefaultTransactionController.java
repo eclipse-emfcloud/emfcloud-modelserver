@@ -40,12 +40,14 @@ import org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest;
 import org.eclipse.emfcloud.modelserver.emf.common.util.Message;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.patch.PatchCommandHandler;
+import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.base.Suppliers;
 import com.google.inject.Inject;
 
 import io.javalin.http.Context;
@@ -67,6 +69,7 @@ public class DefaultTransactionController implements TransactionController {
    protected final ObjectMapper objectMapper;
    protected final CodecsManager codecs;
    protected final PatchCommandHandler.Registry patchCommandHandlerRegistry;
+   protected final JsonPatchHelper jsonPatchHelper;
 
    /** Map of URL path ID portion (e.g., last segment of "/api/v2/transaction/<transaction-id>") to transaction. */
    private final Map<String, TransactionContext> transactions = new LinkedHashMap<>();
@@ -84,6 +87,7 @@ public class DefaultTransactionController implements TransactionController {
       this.codecs = codecs;
       this.objectMapper = objectMapper;
       this.patchCommandHandlerRegistry = patchCommandHandlerRegistry;
+      this.jsonPatchHelper = new JsonPatchHelper(modelResourceManager, serverConfiguration);
    }
 
    @Override
@@ -270,7 +274,7 @@ public class DefaultTransactionController implements TransactionController {
        */
       public void execute(final WsMessageContext ctx, final PatchCommand<?> patchOrCommand) {
          Optional<EObject> root = modelRepository.getModel(modelURI);
-         if (root.isEmpty() || root.get() == null) {
+         if (root.isEmpty()) {
             modelNotFound(ctx, modelURI);
             return;
          }
@@ -303,9 +307,14 @@ public class DefaultTransactionController implements TransactionController {
 
       public void apply(final WsMessageContext ctx, final ArrayNode patch) {
          try {
-            // TODO: For now, we are letting the original patch stand in for its own result
             CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, patch);
-            JsonNode response = patch;
+
+            JsonNode response = getJSONPatchUpdate(execution);
+            if (response == null) {
+               // For now, let the original patch stand in for its own result
+               response = patch;
+            }
+
             executions.add(execution);
             success(ctx, response);
          } catch (JsonPatchException | JsonPatchTestException exception) {
@@ -336,13 +345,30 @@ public class DefaultTransactionController implements TransactionController {
                getEditingDomain().closeCompoundCommand();
 
                executions.stream().reduce(CommandUtil::compose)
-                  .ifPresent(aggregate -> sessionController.commandExecuted(modelURI, aggregate));
+                  .ifPresent(aggregate -> {
+                     sessionController.commandExecuted(modelURI, Suppliers.ofInstance(aggregate),
+                        Suppliers.memoize(() -> getJSONPatchUpdate(aggregate)));
+                  });
 
                executions = null;
                transactions.remove(getID());
             } finally {
                state = State.CLOSED;
             }
+         }
+      }
+
+      private JsonNode getJSONPatchUpdate(final CCommandExecutionResult executionResult) {
+         Optional<EObject> root = modelRepository.getModel(modelURI);
+         if (root.isEmpty()) {
+            return null;
+         }
+
+         try {
+            return jsonPatchHelper.getJsonPatch(root.get(), executionResult);
+         } catch (EncodingException ex) {
+            LOG.error(ex.getMessage(), ex);
+            return null;
          }
       }
 

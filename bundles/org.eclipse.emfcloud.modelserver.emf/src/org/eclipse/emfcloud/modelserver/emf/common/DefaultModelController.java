@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
@@ -56,6 +57,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -253,28 +255,26 @@ public class DefaultModelController implements ModelController {
 
    @Override
    public void undo(final Context ctx, final String modeluri) {
-      Optional<CCommandExecutionResult> undoExecution = modelRepository.undo(modeluri);
-      if (undoExecution.isPresent()) {
-         // TODO: Split v1 and v2 results
-         // In V2, send a jsonPatch response
-         success(ctx, "Successful undo.");
-         sessionController.commandExecuted(modeluri, undoExecution.get());
-         return;
-      }
-      accepted(ctx, "Cannot undo");
+      withModel(ctx, modeluri, root -> {
+         modelRepository.undo(modeluri).ifPresentOrElse(undoExecution -> {
+            success(ctx, "Successful undo.");
+
+            sessionController.commandExecuted(modeluri, Suppliers.ofInstance(undoExecution),
+               Suppliers.memoize(() -> getJSONPatchUpdate(ctx, modeluri, root, undoExecution)));
+         }, () -> accepted(ctx, "Cannot undo"));
+      });
    }
 
    @Override
    public void redo(final Context ctx, final String modeluri) {
-      Optional<CCommandExecutionResult> redoExecution = modelRepository.redo(modeluri);
-      if (redoExecution.isPresent()) {
-         // TODO: Split v1 and v2 results
-         // In V2, send a jsonPatch response
-         success(ctx, "Successful redo.");
-         sessionController.commandExecuted(modeluri, redoExecution.get());
-         return;
-      }
-      accepted(ctx, "Cannot redo");
+      withModel(ctx, modeluri, root -> {
+         modelRepository.redo(modeluri).ifPresentOrElse(redoExecution -> {
+            success(ctx, "Successful redo.");
+
+            sessionController.commandExecuted(modeluri, Suppliers.ofInstance(redoExecution),
+               Suppliers.memoize(() -> getJSONPatchUpdate(ctx, modeluri, root, redoExecution)));
+         }, () -> accepted(ctx, "Cannot redo"));
+      });
    }
 
    @Override
@@ -302,39 +302,35 @@ public class DefaultModelController implements ModelController {
 
    @Override
    public void executeCommand(final Context ctx, final String modelURI) {
-      Optional<EObject> root = this.modelRepository.getModel(modelURI);
-      if (root.isEmpty() || root.get() == null) {
-         modelNotFound(ctx, modelURI);
-         return;
-      }
-      Optional<CCommand> command = readPayload(ctx).filter(CCommand.class::isInstance).map(CCommand.class::cast);
-      if (command.isEmpty()) {
-         return;
-      }
-      try {
-         CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, command.get());
-         sessionController.commandExecuted(modelURI, execution);
-         success(ctx, "Model '%s' successfully updated", modelURI);
-      } catch (DecodingException exception) {
-         decodingError(ctx, exception);
-      }
+      withModel(ctx, modelURI, root -> {
+         Optional<CCommand> command = readPayload(ctx).filter(CCommand.class::isInstance).map(CCommand.class::cast);
+         if (command.isEmpty()) {
+            return;
+         }
+         try {
+            CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, command.get());
+
+            success(ctx, "Model '%s' successfully updated", modelURI);
+
+            sessionController.commandExecuted(modelURI, Suppliers.ofInstance(execution),
+               Suppliers.memoize(() -> getJSONPatchUpdate(ctx, modelURI, root, execution)));
+         } catch (DecodingException exception) {
+            decodingError(ctx, exception);
+         }
+      });
    }
 
    @Override
    public void executeCommandV2(final Context ctx, final String modelURI) {
-      Optional<EObject> root = this.modelRepository.getModel(modelURI);
-      if (root.isEmpty() || root.get() == null) {
-         modelNotFound(ctx, modelURI);
-         return;
-      }
-      Optional<PatchCommand<?>> command = readPatchCommand(ctx);
-      if (command.isPresent()) {
-         executePatchCommand(ctx, modelURI, root, command.get());
-      }
+      withModel(ctx, modelURI, root -> {
+         Optional<PatchCommand<?>> command = readPatchCommand(ctx);
+         command.ifPresent(pCommand -> executePatchCommand(ctx, modelURI, root, pCommand));
+      });
    }
 
-   protected void executePatchCommand(final Context ctx, final String modelURI, final Optional<EObject> root,
+   protected void executePatchCommand(final Context ctx, final String modelURI, final EObject root,
       final PatchCommand<?> pCommand) {
+
       CCommandExecutionResult result;
       if (isCCommand(pCommand)) {
          try {
@@ -356,12 +352,37 @@ public class DefaultModelController implements ModelController {
          return;
       }
 
-      try {
-         JsonNode patchResult = jsonPatchHelper.getJsonPatch(root.get(), result);
+      JsonNode patchResult = getJSONPatchUpdate(ctx, modelURI, root, result);
+      if (patchResult != null) {
          successPatch(ctx, patchResult, "Model '%s' successfully updated", modelURI);
-         sessionController.commandExecuted(modelURI, patchResult);
+
+         sessionController.commandExecuted(modelURI, Suppliers.ofInstance(result),
+            Suppliers.ofInstance(patchResult));
+      } else {
+         success(ctx, "Model '%s' successfully updated", modelURI);
+      }
+   }
+
+   /**
+    * Perform the given action on the indicated model, if present, or else return a 404 to the client.
+    *
+    * @param ctx         the client request context
+    * @param modelURI    the model on which to operation
+    * @param modelAction the operation to perform on the model
+    */
+   private void withModel(final Context ctx, final String modelURI, final Consumer<? super EObject> modelAction) {
+      Optional<EObject> root = this.modelRepository.getModel(modelURI);
+      root.ifPresentOrElse(modelAction, () -> modelNotFound(ctx, modelURI));
+   }
+
+   private JsonNode getJSONPatchUpdate(final Context ctx, final String modelURI, final EObject root,
+      final CCommandExecutionResult executionResult) {
+
+      try {
+         return jsonPatchHelper.getJsonPatch(root, executionResult);
       } catch (EncodingException ex) {
          LOG.error(ex.getMessage(), ex);
+         return null;
       }
    }
 

@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -67,6 +68,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.patch.PatchCommandHandler;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -81,6 +83,7 @@ import org.mockito.stubbing.Answer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Suppliers;
 
 import io.javalin.http.Context;
 
@@ -236,7 +239,7 @@ public class DefaultModelControllerTest {
 
       // No subscribers registered for this incrementalUpdate, therefore no pre-encoded commands are created and the map
       // can remain empty for this test
-      verify(sessionController).commandExecuted(eq(modeluri), eq(result));
+      verify(sessionController).commandExecuted(eq(modeluri), eq(Suppliers.ofInstance(result)), anySupplier());
    }
 
    @Test
@@ -281,7 +284,7 @@ public class DefaultModelControllerTest {
       // No subscribers registered for this incrementalUpdate, therefore no pre-encoded commands are created and the map
       // can be remain for this test
 
-      verify(sessionController).commandExecuted(eq(modeluri), eq(result));
+      verify(sessionController).commandExecuted(eq(modeluri), eq(Suppliers.ofInstance(result)), anySupplier());
    }
 
    @Test
@@ -518,4 +521,9 @@ public class DefaultModelControllerTest {
          URI.createHierarchicalURI(new String[] { modeluri }, null, null)
             .resolve(serverConfiguration.getWorkspaceRootURI()));
    }
+
+   static <T> Supplier<T> anySupplier() {
+      return argThat(CoreMatchers.instanceOf(Supplier.class));
+   }
+
 }

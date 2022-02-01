@@ -11,7 +11,7 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import org.eclipse.emfcloud.modelserver.command.CCommand;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV2;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 
 import io.javalin.http.Context;
 
@@ -55,8 +55,8 @@ public interface ModelController {
    /**
     * V2 version of the executeCommand API. This methods expects
     * a Json Object with a "type" attribute, where type may be
-    * either {@link ModelServerPathsV2#JSON_PATCH} or
-    * {@link ModelServerPathsV2#EMF_COMMAND}, and a "data" attribute
+    * either {@link ModelServerPathParametersV2#JSON_PATCH} or
+    * {@link ModelServerPathParametersV2#EMF_COMMAND}, and a "data" attribute
     * representing a Command or a Patch, in a format that corresponds
     * to the specified type.
     *
