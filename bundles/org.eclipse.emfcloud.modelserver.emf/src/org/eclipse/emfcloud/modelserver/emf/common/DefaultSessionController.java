@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
@@ -139,6 +140,7 @@ public class DefaultSessionController implements SessionController {
    }
 
    @Override
+   @Deprecated
    public void commandExecuted(final String modeluri, final CCommandExecutionResult execution) {
       Optional<EObject> root = modelRepository.getModel(modeluri);
       if (root.isEmpty()) {
@@ -151,13 +153,28 @@ public class DefaultSessionController implements SessionController {
    }
 
    @Override
-   public void commandExecuted(final String modeluri, final JsonNode patch) {
+   public void commandExecuted(final String modeluri, final Supplier<? extends CCommandExecutionResult> execution,
+      final Supplier<? extends JsonNode> patch) {
       Optional<EObject> root = modelRepository.getModel(modeluri);
       if (root.isEmpty()) {
          broadcastError(modeluri, "Could not load changed object");
          return;
       }
-      broadcastIncrementalUpdatesV2(modeluri, patch);
+
+      if (hasSession(modeluri)) {
+         CCommandExecutionResult v1Update = execution.get();
+         if (v1Update != null) {
+            broadcastIncrementalUpdates(modeluri, v1Update);
+         }
+      }
+
+      if (hasV2Session(modeluri)) {
+         JsonNode v2Update = patch.get();
+         if (v2Update != null) {
+            broadcastIncrementalUpdatesV2(modeluri, v2Update);
+         }
+      }
+
       broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
       broadcastValidation(modeluri);
    }
@@ -193,6 +210,10 @@ public class DefaultSessionController implements SessionController {
    @Override
    public boolean hasSession(final String modeluri) {
       return modelUrisToClients.containsKey(modeluri);
+   }
+
+   protected boolean hasV2Session(final String modeluri) {
+      return modelUrisToClientsV2.containsKey(modeluri);
    }
 
    protected void broadcastValidation(final String modeluri) {

@@ -9,6 +9,8 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.util;
 
+import javax.inject.Inject;
+
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -41,6 +43,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    private final ModelResourceManager modelManager;
    private final ServerConfiguration serverConfiguration;
 
+   @Inject
    public JsonPatchHelper(final ModelResourceManager modelManager, final ServerConfiguration serverConfiguration) {
       this.modelManager = modelManager;
       this.serverConfiguration = serverConfiguration;
