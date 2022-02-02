@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
@@ -39,6 +40,7 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.util.CommandSwitch;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
@@ -81,7 +83,7 @@ public class DefaultModelController implements ModelController {
    public DefaultModelController(final ModelRepository modelRepository, final SessionController sessionController,
       final ServerConfiguration serverConfiguration, final CodecsManager codecs, final ModelValidator modelValidator,
       final Provider<ObjectMapper> objectMapperProvider, final PatchCommandHandler.Registry commandHandlerRegistry,
-      final ModelResourceManager resourceManager) {
+      final ModelResourceManager resourceManager, final JsonPatchHelper jsonPatchHelper) {
       JavalinJackson.configure(objectMapperProvider.get());
       this.modelRepository = modelRepository;
       this.sessionController = sessionController;
@@ -89,7 +91,7 @@ public class DefaultModelController implements ModelController {
       this.codecs = codecs;
       this.modelValidator = modelValidator;
       this.commandHandlerRegistry = commandHandlerRegistry;
-      this.jsonPatchHelper = new JsonPatchHelper(resourceManager, serverConfiguration);
+      this.jsonPatchHelper = jsonPatchHelper;
    }
 
    @Override
@@ -257,22 +259,42 @@ public class DefaultModelController implements ModelController {
    public void undo(final Context ctx, final String modeluri) {
       withModel(ctx, modeluri, root -> {
          modelRepository.undo(modeluri).ifPresentOrElse(undoExecution -> {
-            success(ctx, "Successful undo.");
+            final String message = "Successful undo.";
+            Supplier<JsonNode> patchResponse = Suppliers
+               .memoize(() -> getJSONPatchUpdate(ctx, modeluri, root, undoExecution));
 
-            sessionController.commandExecuted(modeluri, Suppliers.ofInstance(undoExecution),
-               Suppliers.memoize(() -> getJSONPatchUpdate(ctx, modeluri, root, undoExecution)));
+            if (isV1API(ctx)) {
+               // Don't give V1 API clients the patch result
+               success(ctx, message);
+            } else {
+               successPatch(ctx, patchResponse.get(), message);
+            }
+
+            sessionController.commandExecuted(modeluri, Suppliers.ofInstance(undoExecution), patchResponse);
          }, () -> accepted(ctx, "Cannot undo"));
       });
+   }
+
+   protected boolean isV1API(final Context ctx) {
+      return ctx.matchedPath().startsWith("/" + ModelServerPathsV1.BASE_PATH + "/");
    }
 
    @Override
    public void redo(final Context ctx, final String modeluri) {
       withModel(ctx, modeluri, root -> {
          modelRepository.redo(modeluri).ifPresentOrElse(redoExecution -> {
-            success(ctx, "Successful redo.");
+            final String message = "Successful redo.";
+            Supplier<JsonNode> patchResponse = Suppliers
+               .memoize(() -> getJSONPatchUpdate(ctx, modeluri, root, redoExecution));
 
-            sessionController.commandExecuted(modeluri, Suppliers.ofInstance(redoExecution),
-               Suppliers.memoize(() -> getJSONPatchUpdate(ctx, modeluri, root, redoExecution)));
+            if (isV1API(ctx)) {
+               // Don't give V1 API clients the patch result
+               success(ctx, message);
+            } else {
+               successPatch(ctx, patchResponse.get(), message);
+            }
+
+            sessionController.commandExecuted(modeluri, Suppliers.ofInstance(redoExecution), patchResponse);
          }, () -> accepted(ctx, "Cannot redo"));
       });
    }

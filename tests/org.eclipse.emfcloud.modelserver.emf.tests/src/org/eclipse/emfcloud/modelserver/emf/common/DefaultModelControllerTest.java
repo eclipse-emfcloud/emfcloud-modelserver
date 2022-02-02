@@ -57,6 +57,7 @@ import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
@@ -67,10 +68,12 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.patch.PatchCommandHandler;
+import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.hamcrest.Description;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.Before;
@@ -103,6 +106,8 @@ public class DefaultModelControllerTest {
    private SessionController sessionController;
    @Mock
    private ServerConfiguration serverConfiguration;
+   @Mock
+   private JsonPatchHelper jsonPatchHelper;
    @InjectMocks
    private DefaultModelValidator modelValidator;
 
@@ -125,7 +130,8 @@ public class DefaultModelControllerTest {
       modelValidator = new DefaultModelValidator(modelRepository, new DefaultFacetConfig(),
          EMFModule::setupDefaultMapper);
       modelController = new DefaultModelController(modelRepository, sessionController, serverConfiguration, codecs,
-         modelValidator, EMFModule::setupDefaultMapper, new PatchCommandHandler.RegistryImpl(), modelResourceManager);
+         modelValidator, EMFModule::setupDefaultMapper, new PatchCommandHandler.RegistryImpl(), modelResourceManager,
+         jsonPatchHelper);
    }
 
    @Test
@@ -285,6 +291,69 @@ public class DefaultModelControllerTest {
       // can be remain for this test
 
       verify(sessionController).commandExecuted(eq(modeluri), eq(Suppliers.ofInstance(result)), anySupplier());
+   }
+
+   @Test
+   public void undoRedo() throws EncodingException, DecodingException {
+      ResourceSet rset = new ResourceSetImpl();
+      String modeluri = "SuperBrewer3000.json";
+      JsonResource res = createJsonResource(modeluri);
+      rset.getResources().add(res);
+      final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
+      res.getContents().add(eClass);
+
+      final EAttribute attribute = EcoreFactory.eINSTANCE.createEAttribute();
+      CCommand addCommand = CCommandFactory.eINSTANCE.createCommand();
+      addCommand.setType(EMFCommandType.ADD);
+      addCommand.setOwner(eClass);
+      addCommand.setFeature("eAttributes");
+      addCommand.getObjectsToAdd().add(attribute);
+      addCommand.getObjectValues().add(attribute);
+      JsonResource cmdRes = new JsonResource(URI.createURI("$command.json"));
+      cmdRes.getContents().add(addCommand);
+      String commandAsString = Json
+         .object(Json.prop(JsonResponseMember.DATA, Json.text(new JsonCodec().encode(addCommand).toString())))
+         .toString();
+
+      final LinkedHashMap<String, List<String>> queryParams = new LinkedHashMap<>();
+      queryParams.put(ModelServerPathParametersV2.MODEL_URI, Collections.singletonList(modeluri));
+      // This param is important to indicate that the result should include the JSON Patch
+      queryParams.put(ModelServerPathParametersV2.FORMAT, List.of(ModelServerPathParametersV2.FORMAT_JSON_V2));
+      when(context.queryParamMap()).thenReturn(queryParams);
+      when(context.body()).thenReturn(commandAsString);
+      when(context.matchedPath()).thenReturn("/api/v2/undo", "/api/v2/redo");
+      when(modelRepository.getModel(modeluri)).thenReturn(Optional.of(attribute));
+
+      CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
+      result.setSource(EcoreUtil.copy(addCommand));
+      result.setType(CommandExecutionType.EXECUTE);
+
+      when(modelRepository.executeCommand(eq(modeluri), any(CCommand.class))).thenReturn(result);
+      when(modelRepository.undo(modeluri))
+         .thenReturn(Optional.of(CCommandFactory.eINSTANCE.createCommandExecutionResult()));
+      when(modelRepository.redo(modeluri))
+         .thenReturn(Optional.of(CCommandFactory.eINSTANCE.createCommandExecutionResult()));
+      when(jsonPatchHelper.getJsonPatch(any(), any())).thenReturn(
+         Json.array(Json.object(Map.of("op", Json.text("add")))),
+         Json.array(Json.object(Map.of("op", Json.text("remove")))),
+         Json.array(Json.object(Map.of("op", Json.text("add")))));
+
+      modelController.executeCommand(context, modeluri);
+
+      // unload to proxify
+      res.unload();
+
+      // No subscribers registered for this incrementalUpdate, therefore no pre-encoded commands are created and the map
+      // can be remain for this test
+
+      modelController.undo(context, modeluri);
+      modelController.redo(context, modeluri);
+
+      // Verify the execution
+      verify(context).json(argThat(jsonStringThat(CoreMatchers.containsString("successfully updated"))));
+      // And the undo/redo
+      verify(context, times(2))
+         .json(argThat(successWithDataThat(jsonStringThat(CoreMatchers.containsString("\"op\":")))));
    }
 
    @Test
@@ -524,6 +593,29 @@ public class DefaultModelControllerTest {
 
    static <T> Supplier<T> anySupplier() {
       return argThat(CoreMatchers.instanceOf(Supplier.class));
+   }
+
+   static Matcher<JsonNode> successWithDataThat(final Matcher<? super JsonNode> jsonMatcher) {
+      return CoreMatchers.both(jsonStringThat(CoreMatchers.containsString("success")))
+         .and(dataThat(jsonMatcher));
+   }
+
+   static Matcher<JsonNode> dataThat(final Matcher<? super JsonNode> jsonMatcher) {
+      return new FeatureMatcher<JsonNode, JsonNode>(jsonMatcher, "data payload", "data") {
+         @Override
+         protected JsonNode featureValueOf(final JsonNode actual) {
+            return actual.get("data");
+         }
+      };
+   }
+
+   static Matcher<JsonNode> jsonStringThat(final Matcher<? super String> stringMatcher) {
+      return new FeatureMatcher<JsonNode, String>(stringMatcher, "string representation", "toString") {
+         @Override
+         protected String featureValueOf(final JsonNode actual) {
+            return actual.toString();
+         }
+      };
    }
 
 }
