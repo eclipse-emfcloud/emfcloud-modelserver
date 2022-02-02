@@ -13,7 +13,6 @@ package org.eclipse.emfcloud.modelserver.client;
 import java.net.MalformedURLException;
 import java.util.Set;
 
-import org.eclipse.emfcloud.modelserver.client.v1.ModelServerClientV1;
 import org.eclipse.emfcloud.modelserver.client.v2.ModelServerClientV2;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 
@@ -21,9 +20,9 @@ import okhttp3.OkHttpClient;
 
 public class ModelServerClient extends ModelServerClientV2 {
 
-   public static final Set<String> DEFAULT_SUPPORTED_FORMATS = ModelServerClientV1.DEFAULT_SUPPORTED_FORMATS;
-   public static final String PATCH = ModelServerClientV1.PATCH;
-   public static final String POST = ModelServerClientV1.POST;
+   public static final Set<String> DEFAULT_SUPPORTED_FORMATS = ModelServerClientV2.DEFAULT_SUPPORTED_FORMATS;
+   public static final String PATCH = ModelServerClientV2.PATCH;
+   public static final String POST = ModelServerClientV2.POST;
 
    public ModelServerClient(final String baseUrl, final EPackageConfiguration... configurations)
       throws MalformedURLException {

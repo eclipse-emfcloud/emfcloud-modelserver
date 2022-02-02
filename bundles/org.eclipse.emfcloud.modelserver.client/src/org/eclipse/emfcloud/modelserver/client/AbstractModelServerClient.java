@@ -65,6 +65,8 @@ import okhttp3.WebSocketListener;
  */
 public abstract class AbstractModelServerClient implements AutoCloseable {
 
+   public static final String APPLICATION_JSON = "application/json";
+
    public static final Set<String> DEFAULT_SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
       ModelServerPathParameters.FORMAT_XMI);
 
@@ -344,7 +346,7 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
             RequestBody.create(
                Json.object(
                   Json.prop(JsonResponseMember.DATA, dataNode)).toString(),
-               MediaType.parse("application/json")))
+               MediaType.parse(APPLICATION_JSON)))
          .build();
    }
 
@@ -454,7 +456,7 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
 
       final Request request = new Request.Builder()
          .url(makeUrl(ModelServerPathsV1.SERVER_CONFIGURE))
-         .put(RequestBody.create(config.toString(), MediaType.parse("application/json")))
+         .put(RequestBody.create(config.toString(), MediaType.parse(APPLICATION_JSON)))
          .build();
 
       return makeCallAndExpectSuccess(request);

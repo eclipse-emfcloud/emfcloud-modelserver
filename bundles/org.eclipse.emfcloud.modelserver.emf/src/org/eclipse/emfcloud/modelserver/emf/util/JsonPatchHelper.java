@@ -79,36 +79,8 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
     */
    public JsonNode diffModel(final JsonNode oldModel, final JsonNode newModel)
       throws EncodingException {
-      // TODO Support multiple resource patches
       return JsonDiff.asJson(oldModel, newModel);
    }
-
-   // public JsonNode getCurrentModel(final String modeluri, final Optional<ArrayNode> jsonPatch)
-   // throws EncodingException {
-   // Set<Resource> affectedResources = new HashSet<>();
-   // modelManager.loadResource(modeluri).ifPresent(affectedResources::add);
-   //
-   // // TODO Support multiple resource models
-   // // jsonPatch.ifPresent(patch -> {
-   // // // Determine the affected resources by looking at the path of each patch operation
-   // // for (JsonNode patchElement : patch) {
-   // // String element = patchElement.get("path").asText();
-   // // int index = element.indexOf('#');
-   // // if (index >= 0) {
-   // // String resourceURI = element.substring(0, index);
-   // // Resource resource = getResource(modeluri, URI.createURI(resourceURI));
-   // // affectedResources.add(resource);
-   // // }
-   // // }
-   // // });
-   // // if (affectedResources.size() > 1) {
-   // // System.err.println("!!Multiple resources affected by patch!!");
-   // // }
-   //
-   // Resource resource = affectedResources.iterator().next();
-   // Codec codec = new JsonCodecV2();
-   // return codec.encode(resource.getContents().get(0));
-   // }
 
    public JsonNode getCurrentModel(final EObject root) throws EncodingException {
       Codec codec = new JsonCodecV2();
@@ -116,6 +88,8 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    }
 
    public JsonNode getJsonPatch(final EObject root, final CCommandExecutionResult result) throws EncodingException {
+      // TODO Support multiple resource patches.
+      // See issue https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/159
       JsonNode newModel = getCurrentModel(root);
       ChangeDescription cd = (ChangeDescription) result.getChangeDescription();
       ModelServerEditingDomain editingDomain = modelManager.getEditingDomain(root.eResource().getResourceSet());
