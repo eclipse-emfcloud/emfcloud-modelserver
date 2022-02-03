@@ -200,7 +200,6 @@
 
 			<modules>
 				<module>features</module>
-				<module>libs</module>
 			</modules>
 
 			<build>
