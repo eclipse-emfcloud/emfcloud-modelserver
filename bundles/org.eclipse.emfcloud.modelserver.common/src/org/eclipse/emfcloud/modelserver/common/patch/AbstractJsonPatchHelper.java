@@ -9,15 +9,16 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.common.patch;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.apache.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.command.IdentityCommand;
-import org.eclipse.emf.common.command.UnexecutableCommand;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -30,10 +31,10 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.EStructuralFeature.Setting;
-import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.edit.command.AddCommand;
+import org.eclipse.emf.edit.command.CommandParameter;
 import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
@@ -48,14 +49,16 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
  */
 public abstract class AbstractJsonPatchHelper {
 
-   protected static final Logger LOG = Logger.getLogger(AbstractJsonPatchHelper.class.getSimpleName());
+   private static final Logger LOG = Logger.getLogger(AbstractJsonPatchHelper.class.getSimpleName());
 
-   private static final String TEST = "test";
-   private static final String MOVE = "move";
-   private static final String REMOVE = "remove";
-   private static final String ADD = "add";
-   private static final String OP = "op";
-   private static final String REPLACE = "replace";
+   static final String TEST = "test";
+   static final String MOVE = "move";
+   static final String REMOVE = "remove";
+   static final String ADD = "add";
+   static final String OP = "op";
+   static final String REPLACE = "replace";
+   static final String ANY_INDEX = "-";
+   static final int NO_INDEX = CommandParameter.NO_INDEX;
 
    /**
     * Return an EMF Command that is equivalent to the specified jsonPatch.
@@ -88,12 +91,29 @@ public abstract class AbstractJsonPatchHelper {
          // are not equivalent. Json Patch operations should be applied
          // sequentially. For this reason, we need to create a command, execute
          // it, and then create the next command. We use LazyCompoundCommand for this.
-         SimpleLazyCompoundCommand command = new SimpleLazyCompoundCommand(label);
+         LazyCompoundCommand command = createCompoundCommand(modelURI, label);
          for (JsonNode patchAction : jsonPatch) {
             command.append(() -> getCommand(modelURI, resourceSet, patchAction));
          }
          return command;
       }
+   }
+
+   /**
+    * <p>
+    * Return a new empty LazyCompoundCommand.
+    * </p>
+    *
+    * <p>
+    * Default implementation is not undoable. Subclasses should override.
+    * </p>
+    *
+    * @param modelURI
+    * @param label
+    * @return
+    */
+   protected LazyCompoundCommand createCompoundCommand(final String modelURI, final String label) {
+      return new SimpleLazyCompoundCommand(label);
    }
 
    protected Command getCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
@@ -124,52 +144,70 @@ public abstract class AbstractJsonPatchHelper {
    protected Command getRemoveCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
       throws JsonPatchException {
       JsonNode path = patchAction.get("path");
-      // If the last segment of the path is an integer, we remove a value from a list (modelURI#objectID/feature/index).
-      // Otherwise, we treat the path as an ObjectURI and remove this object from the model (modelURI#objectID).
       String jsonPath = path.asText();
-      int lastSegment = jsonPath.lastIndexOf('/');
-      Optional<Integer> index;
-      try {
-         index = Optional.of(Integer.parseInt(jsonPath.substring(lastSegment + 1)));
-      } catch (NumberFormatException ex) {
-         index = Optional.empty();
-      }
+      SettingValue setting = getSetting(modelURI, resourceSet, jsonPath);
 
-      if (index.isPresent()) {
-         String objectPath = jsonPath.substring(0, lastSegment);
-         EStructuralFeature.Setting setting = getSetting(modelURI, resourceSet, objectPath);
-         int intValue = index.get();
+      // If the index is present, we remove a value from a list
+      if (setting.getIndex().isPresent()) {
+         int index = setting.getIndex().get();
+         if (index == CommandParameter.NO_INDEX) {
+            // If the index is "-", remove the last value from the list
+            Object currentValue = setting.getEObject().eGet(setting.getFeature());
+            if (currentValue instanceof Collection) {
+               index = ((Collection<?>) currentValue).size() - 1;
+            }
+         }
          return RemoveCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-            setting.getEStructuralFeature(), intValue);
+            setting.getFeature(), index);
       }
 
-      URI objectURI = URI.createURI(jsonPath);
-      Resource resource = getResource(modelURI, objectURI.trimFragment());
-      EObject eObjectToDelete = resource.getEObject(objectURI.fragment());
-      if (eObjectToDelete == null) {
-         return UnexecutableCommand.INSTANCE;
+      // If the feature is present, but index is absent, we unset the value (i.e. set it to default value)
+      if (setting.getFeature() != null) {
+         Object defaultValue = getDefaultValue(setting.getFeature());
+         return SetCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(), setting.getFeature(),
+            defaultValue);
       }
 
+      // If neither the index nor the feature are present, we delete an Object
+      EObject eObjectToDelete = setting.getEObject();
       EObject parent = eObjectToDelete.eContainer();
       EStructuralFeature feature = eObjectToDelete.eContainingFeature();
       return RemoveCommand.create(getEditingDomain(eObjectToDelete), parent, feature,
          Collections.singleton(eObjectToDelete));
    }
 
+   protected Object getDefaultValue(final EStructuralFeature feature) {
+      Object defaultValue = feature.getDefaultValue();
+      if (defaultValue == null && feature.isMany()) {
+         // Special case for lists default value.
+         // If the feature represents a collection, and 'null' is specified as the default
+         // value, we need to use an empty collection instead. Otherwise, SetCommand(object, feature, null)
+         // will cause a NPE.
+         return Collections.emptyList();
+      }
+      return defaultValue;
+   }
+
    protected Command getAddCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
       throws JsonPatchException {
       JsonNode path = patchAction.get("path");
-      EStructuralFeature.Setting setting = getSetting(modelURI, resourceSet, path.asText());
+      String jsonPath = path.asText();
+      SettingValue setting = getSetting(modelURI, resourceSet, jsonPath);
+      if (setting.getFeature() == null) {
+         throw new JsonPatchException(
+            "Invalid operation: cannot add element without specifying a feature. Path: " + jsonPath);
+      }
+
       JsonNode value = patchAction.get("value");
       Command result = null;
-      if (setting.getEStructuralFeature() instanceof EReference) {
+      if (setting.getFeature() instanceof EReference) {
          // References
          EObject objectToAdd = getObjectToAdd(modelURI, resourceSet, value);
          if (objectToAdd == null) {
             throw new JsonPatchException("Invalid value specified for 'add' operation");
          }
 
-         EStructuralFeature feature = setting.getEStructuralFeature();
+         EStructuralFeature feature = setting.getFeature();
 
          if (feature instanceof EReference) {
             EReference reference = (EReference) feature;
@@ -184,13 +222,13 @@ public abstract class AbstractJsonPatchHelper {
          }
 
          Command create = AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-            setting.getEStructuralFeature(), Collections.singleton(objectToAdd));
+            setting.getFeature(), Collections.singleton(objectToAdd));
          result = result == null ? create : result.chain(create);
       } else {
          // Attributes
-         Object emfValue = getEMFValue(modelURI, resourceSet, setting.getEStructuralFeature(), value);
+         Object emfValue = getEMFValue(modelURI, resourceSet, setting.getFeature(), value);
          result = AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-            setting.getEStructuralFeature(), Collections.singleton(emfValue));
+            setting.getFeature(), Collections.singleton(emfValue));
       }
 
       return result;
@@ -260,10 +298,15 @@ public abstract class AbstractJsonPatchHelper {
       throws JsonPatchException {
       JsonNode path = patchAction.get("path");
       JsonNode value = patchAction.get("value");
-      EStructuralFeature.Setting setting = getSetting(modelURI, resourceSet, path.asText());
-      Object emfValue = getEMFValue(modelURI, resourceSet, setting.getEStructuralFeature(), value);
+      SettingValue setting = getSetting(modelURI, resourceSet, path.asText());
+      Object emfValue = getEMFValue(modelURI, resourceSet, setting.getFeature(), value);
+      if (setting.getIndex().isPresent()) {
+         // TODO Support replace in lists
+         // https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/162
+         throw new UnsupportedOperationException("Index-based 'replace' operations are not supported yet");
+      }
       Command command = SetCommand.create(getEditingDomain(setting.getEObject()),
-         setting.getEObject(), setting.getEStructuralFeature(), emfValue);
+         setting.getEObject(), setting.getFeature(), emfValue);
       return command;
    }
 
@@ -349,6 +392,37 @@ public abstract class AbstractJsonPatchHelper {
     * Remove the EMF {@link Setting} corresponding to the specified Json Path.
     * </p>
     * <p>
+    * This method supports custom Json path that include the EMF Resource and Object ID,
+    * as well as standard Json Pointers.
+    * </p>
+    *
+    * @param modelURI
+    * @param resourceSet
+    * @param jsonPath
+    *                       <ul>
+    *                       <li>Custom Format:
+    *                       <code>&lt;resource&gt;#&lt;objectfragment&gt;/&lt;featureName&gt;</code></li>
+    *                       <li>Standard Format: <code>path/to/object/featureName</code></li>
+    *                       </ul>
+    * @return
+    * @throws JsonPatchException
+    */
+   protected SettingValue getSetting(final String modelURI, final ResourceSet resourceSet,
+      final String jsonPath)
+      throws JsonPatchException {
+      if (jsonPath.contains("#")) {
+         // EMF-like Path
+         return getSettingFromCustomPath(modelURI, jsonPath);
+      }
+      // Json Pointer
+      return getSettingFromJsonPointer(modelURI, resourceSet, jsonPath);
+   }
+
+   /**
+    * <p>
+    * Remove the EMF {@link Setting} corresponding to the specified Json Path.
+    * </p>
+    * <p>
     * The Json Path should include the modelURI and the ObjectID (as specified
     * by the $id attribute in the Json model): <code>path/to/model#my/object/id/feature</code>.
     * </p>
@@ -363,38 +437,170 @@ public abstract class AbstractJsonPatchHelper {
     * @return
     * @throws JsonPatchException
     */
-   protected EStructuralFeature.Setting getSetting(final String modelURI, final ResourceSet resourceSet,
-      final String jsonPath)
+   protected SettingValue getSettingFromJsonPointer(final String modelURI, final ResourceSet resourceSet,
+      final String jsonPath) throws JsonPatchException {
+      String[] segments = jsonPath.split("/");
+
+      Resource resource = getResource(modelURI);
+
+      final EObject rootElement = resource.getContents().get(0);
+      Object currentValue = rootElement;
+      EStructuralFeature featureToEdit = null;
+      EObject eObjectToEdit = null;
+      int segmentCount = 0;
+      for (String segment : segments) {
+         segmentCount++;
+         if (segment.isBlank()) {
+            // We typically expect the first segment
+            // to be blank, and sometimes the last one as well (e.g. "/")
+            continue;
+         }
+
+         String featureName = null;
+         int index = -1;
+         if (ANY_INDEX.equals(segment)) {
+            index = CommandParameter.NO_INDEX;
+         } else {
+            try {
+               index = Integer.parseInt(segment);
+            } catch (NumberFormatException ex) {
+               // Not a number; ignore the exception and treat the value as a feature name
+               featureName = segment;
+            }
+         }
+
+         if (featureName == null) {
+            // Index-based value
+            if (currentValue instanceof List) {
+               if (index < 0 || ((List<?>) currentValue).size() > index) {
+                  if (index < 0 && segmentCount < segments.length) {
+                     throw new JsonPatchException(
+                        "Invalid Json Pointer: " + jsonPath + ". " + segment + " is not a valid index.");
+                  } else if (index >= 0) {
+                     currentValue = ((List<?>) currentValue).get(index);
+                  }
+               }
+            } else {
+               throw new JsonPatchException();
+            }
+         } else {
+            // Feature-based value
+            if (currentValue instanceof EObject) {
+               eObjectToEdit = (EObject) currentValue;
+               featureToEdit = eObjectToEdit.eClass().getEStructuralFeature(featureName);
+               if (featureToEdit == null) {
+                  throw new JsonPatchException();
+               }
+               currentValue = ((EObject) currentValue).eGet(featureToEdit);
+            } else {
+               throw new JsonPatchException();
+            }
+         }
+      }
+
+      String lastSegment = segments[segments.length - 1];
+      try {
+         int index = ANY_INDEX.equals(lastSegment) ? CommandParameter.NO_INDEX : Integer.parseInt(lastSegment);
+         return new SettingValue(eObjectToEdit, featureToEdit, index);
+      } catch (NumberFormatException ex) {
+         return new SettingValue(eObjectToEdit, featureToEdit);
+      }
+   }
+
+   /**
+    * <p>
+    * Remove the EMF {@link Setting} corresponding to the specified Json Path.
+    * </p>
+    * <p>
+    * The Json Path should include the modelURI and the ObjectID (as specified
+    * by the $id attribute in the Json model): <code>path/to/model#my/object/id/feature</code>.
+    * </p>
+    * <p>
+    * Standard Json Paths are currently not supported, but may be added in the future.
+    * </p>
+    *
+    * @param modelURI
+    * @param resourceSet
+    * @param jsonPath
+    *                       Format: &lt;resource&gt;#&lt;objectfragment&gt;/&lt;featureName&gt;[/&lt;index&gt;]
+    * @return
+    * @throws JsonPatchException
+    */
+   protected SettingValue getSettingFromCustomPath(final String modelURI, final String jsonPath)
       throws JsonPatchException {
-      int lastSegment = jsonPath.lastIndexOf('/');
-      if (lastSegment < 0 || lastSegment >= jsonPath.length()) {
+      int lastSegmentPos = jsonPath.lastIndexOf('/');
+      if (lastSegmentPos < 0 || lastSegmentPos >= jsonPath.length()) {
          throw new JsonPatchException("Failed to parse Json Path: " + jsonPath);
       }
+
       // XXX if the edited object is the root element, its positional URI will be '/'
       // Since we expect path as <id>/<feature>, the expected path in that case is
-      // "//feature" and not "/feature"
-      String objectURI = jsonPath.substring(0, lastSegment);
-      String featureName = jsonPath.substring(lastSegment + 1);
-      URI eObjectURI = URI.createURI(objectURI);
-      EObject eObject = null;
-      if (eObjectURI.isRelative()) {
-         URI resourceURI = eObjectURI.trimFragment();
-         Resource resource = getResource(modelURI, resourceURI);
-         eObject = resource.getEObject(eObjectURI.fragment());
+      // "//feature" and not "/feature" (Although "/feature" would be a valid Json Pointer path)
+
+      String lastSegment = jsonPath.substring(lastSegmentPos + 1);
+
+      // First, check if the path ends with an index.
+      Optional<Integer> index;
+      if (ANY_INDEX.equals(lastSegment)) {
+         index = Optional.of(CommandParameter.NO_INDEX);
+      } else {
+         try {
+            index = Optional.of(Integer.parseInt(lastSegment));
+         } catch (NumberFormatException ex) {
+            index = Optional.empty();
+         }
       }
+
+      final String objectURI, featureName;
+
+      EObject eObject = null;
+      if (index.isPresent()) {
+         // Index is present, the path is in the form modeluri#objectfragment/featureName/index
+         String objectAndFeaturePath = jsonPath.substring(0, lastSegmentPos);
+         lastSegmentPos = objectAndFeaturePath.lastIndexOf('/');
+         objectURI = objectAndFeaturePath.substring(0, lastSegmentPos);
+         featureName = objectAndFeaturePath.substring(lastSegmentPos + 1);
+      } else {
+         // Else: no index, we have either Object URI or Object + Feature
+         // First, try to resolve the full path as an Object URI
+         try {
+            URI eObjectURI = URI.createURI(jsonPath);
+            eObject = getEObject(modelURI, eObjectURI);
+         } catch (Exception ex) {
+            // The JsonPath doesn't represent an EObject: ignore and proceed.
+         }
+
+         if (eObject == null) {
+            // The full path is not an EObject; treat the last segment
+            // as a feature.
+            objectURI = jsonPath.substring(0, lastSegmentPos);
+            featureName = jsonPath.substring(lastSegmentPos + 1);
+         } else {
+            objectURI = jsonPath;
+            featureName = null;
+         }
+      }
+
+      if (eObject == null) {
+         URI eObjectURI = URI.createURI(objectURI);
+         eObject = getEObject(modelURI, eObjectURI);
+      }
+
       if (eObject == null) {
          throw new JsonPatchException("Invalid Object path: " + objectURI);
       }
-      EStructuralFeature feature = eObject.eClass().getEStructuralFeature(featureName);
-      if (feature == null) {
-         throw new JsonPatchException("Invalid Object property: " + featureName);
+
+      EStructuralFeature feature;
+      if (featureName != null) {
+         feature = eObject.eClass().getEStructuralFeature(featureName);
+         if (feature == null) {
+            throw new JsonPatchException("Invalid Object property: " + featureName);
+         }
+      } else {
+         feature = null;
       }
 
-      if (eObject instanceof InternalEObject) {
-         return ((InternalEObject) eObject).eSetting(feature);
-      }
-
-      throw new JsonPatchException();
+      return new SettingValue(eObject, feature, index);
    }
 
    protected EditingDomain getEditingDomain(final EObject eObject) {
@@ -422,4 +628,69 @@ public abstract class AbstractJsonPatchHelper {
       }
       return IdentityCommand.INSTANCE;
    }
+
+   /**
+    * Represents a value to edit, in the form EObject + Feature, with
+    * an optional Index for list items, or a referenced element (e.g.
+    * an EObject to remove, in which case there will be no Feature or Index)
+    */
+   public final class SettingValue {
+
+      private final EObject eObject;
+
+      private final EStructuralFeature feature;
+
+      private final Optional<Integer> index;
+
+      public SettingValue(final EObject eObject) {
+         this(eObject, null);
+      }
+
+      public SettingValue(final EObject eObject, final EStructuralFeature feature) {
+         this(eObject, feature, Optional.empty());
+      }
+
+      public SettingValue(final EObject eObject, final EStructuralFeature feature, final int index) {
+         this(eObject, feature, Optional.of(index));
+      }
+
+      public SettingValue(final EStructuralFeature.Setting setting) {
+         this(setting.getEObject(), setting.getEStructuralFeature());
+      }
+
+      public SettingValue(final EStructuralFeature.Setting setting, final int index) {
+         this(setting.getEObject(), setting.getEStructuralFeature(), index);
+      }
+
+      public SettingValue(final EObject eObject, final EStructuralFeature feature,
+         final Optional<Integer> index) {
+         if (eObject == null) {
+            throw new IllegalArgumentException("EObject must be specified");
+         }
+         this.eObject = eObject;
+         this.feature = feature;
+         this.index = index;
+      }
+
+      /**
+       * @return
+       *         The {@link EObject} represented by a JsonPointer path or
+       *         a custom EMF-based Json Path.
+       */
+      public EObject getEObject() { return eObject; }
+
+      /**
+       * @return
+       *         The {@link EStructuralFeature} to edit.
+       */
+      public EStructuralFeature getFeature() { return feature; }
+
+      /**
+       *
+       * @return
+       *         For list-operations, the index to edit.
+       */
+      public Optional<Integer> getIndex() { return index; }
+   }
+
 }

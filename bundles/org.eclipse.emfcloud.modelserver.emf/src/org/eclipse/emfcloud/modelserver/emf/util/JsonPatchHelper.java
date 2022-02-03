@@ -25,6 +25,7 @@ import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.patch.AbstractJsonPatchHelper;
+import org.eclipse.emfcloud.modelserver.common.patch.LazyCompoundCommand;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerEditingDomain;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
@@ -53,6 +54,13 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    protected TransactionalEditingDomain getEditingDomain(final EObject eObject) {
       ResourceSet resourceSet = eObject.eResource().getResourceSet();
       return modelManager.getEditingDomain(resourceSet);
+   }
+
+   @Override
+   protected LazyCompoundCommand createCompoundCommand(final String modelURI, final String label) {
+      ResourceSet resourceSet = getResource(modelURI).getResourceSet();
+      TransactionalEditingDomain domain = modelManager.getEditingDomain(resourceSet);
+      return new LazyTransactionalCompoundCommand(domain, label);
    }
 
    @Override
