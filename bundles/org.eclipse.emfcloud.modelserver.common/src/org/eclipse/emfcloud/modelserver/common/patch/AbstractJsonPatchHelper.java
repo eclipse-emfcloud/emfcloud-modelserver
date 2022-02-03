@@ -22,6 +22,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EEnumLiteral;
 import org.eclipse.emf.ecore.EFactory;
@@ -282,12 +283,16 @@ public abstract class AbstractJsonPatchHelper {
          // Attributes
          if (feature.getEType() instanceof EEnum) {
             EEnum enumType = (EEnum) feature.getEType();
-            EEnumLiteral literal = enumType.getEEnumLiteral(value.asText());
-            if (literal != null) {
-               return literal;
+            if (value.isTextual()) {
+               EEnumLiteral literal = enumType.getEEnumLiteral(value.asText());
+               if (literal != null) {
+                  return literal;
+               }
+            } else {
+               throw new JsonPatchException("Unexpected value for EEnum property: " + value.toString());
             }
          } else {
-            return getPrimitiveEMFValue(value);
+            return getPrimitiveEMFValue((EAttribute) feature, value);
          }
       } else {
          // References
@@ -299,12 +304,12 @@ public abstract class AbstractJsonPatchHelper {
          String objectId = refNode == null ? idNode.asText() : refNode.asText();
          return getEObject(modelURI, URI.createURI(objectId));
       }
-      // TODO Support datatypes?
-      // TODO Support multiple values? (value: [{value1}, {value2}] instead of value: {value1} )
+      // TODO Support custom datatypes & array-values. See
+      // https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/162
       return null;
    }
 
-   protected Object getPrimitiveEMFValue(final JsonNode value) {
+   protected Object getPrimitiveEMFValue(final EAttribute feature, final JsonNode value) {
       if (value == null || value.isNull()) {
          return null;
       } else if (value.isTextual()) {
@@ -312,7 +317,19 @@ public abstract class AbstractJsonPatchHelper {
       } else if (value.isBoolean()) {
          return value.asBoolean();
       } else if (value.isNumber()) {
-         return value.asInt();
+         if (feature.getEType() instanceof EDataType) {
+            EDataType eType = (EDataType) feature.getEType();
+            switch (eType.getInstanceTypeName()) {
+               case "int":
+                  return value.asInt();
+               case "long":
+                  return value.asLong();
+               case "float":
+                  return (float) value.asDouble();
+               case "double":
+                  return value.asDouble();
+            }
+         }
       }
       return null;
    }
