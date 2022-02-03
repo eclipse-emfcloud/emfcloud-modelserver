@@ -524,7 +524,7 @@ public class ModelServerClientV2Test {
       assertThat(expected.toString(), containsString("\"objectValues\":[{\"$type\":"));
 
       String editUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPathsV2.EDIT)
+         .addPathSegment(ModelServerPathsV2.MODEL_BASE_PATH)
          .addQueryParameter(ModelServerPathParametersV2.MODEL_URI, "SuperBrewer3000.json")
          .addQueryParameter(ModelServerPathParametersV2.FORMAT, ModelServerPathParametersV2.FORMAT_JSON_V2)
          .build().toString();
@@ -568,7 +568,7 @@ public class ModelServerClientV2Test {
          EcoreFactory.eINSTANCE.createEAttribute());
 
       String editUrl = baseHttpUrlBuilder
-         .addPathSegment(ModelServerPathsV2.EDIT)
+         .addPathSegment(ModelServerPathsV2.MODEL_BASE_PATH)
          .addQueryParameter(ModelServerPathParametersV2.MODEL_URI, "SuperBrewer3000.json")
          .addQueryParameter(ModelServerPathParametersV2.FORMAT, ModelServerPathParametersV2.FORMAT_JSON)
          .build().toString();

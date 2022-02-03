@@ -27,7 +27,6 @@ import org.eclipse.emfcloud.modelserver.client.ModelServerClientApi;
 import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.TransactionContext;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPaths;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
@@ -112,7 +111,7 @@ public class ModelServerClientV2 extends AbstractModelServerClient
       String checkedFormat = checkedFormat(format);
       final Request request = new Request.Builder()
          .url(
-            createHttpUrlBuilder(makeUrl(EDIT))
+            createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
                .addQueryParameter(ModelServerPathParametersV2.MODEL_URI, modelUri)
                .addQueryParameter(ModelServerPathParametersV2.FORMAT, checkedFormat)
                .build())
@@ -132,9 +131,9 @@ public class ModelServerClientV2 extends AbstractModelServerClient
       String checkedFormat = checkedFormat(format);
       final Request request = new Request.Builder()
          .url(
-            createHttpUrlBuilder(makeUrl(EDIT))
-               .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
-               .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
+            createHttpUrlBuilder(makeUrl(MODEL_BASE_PATH))
+               .addQueryParameter(ModelServerPathParametersV2.MODEL_URI, modelUri)
+               .addQueryParameter(ModelServerPathParametersV2.FORMAT, checkedFormat)
                .build())
          .patch(
             RequestBody.create(
@@ -157,7 +156,7 @@ public class ModelServerClientV2 extends AbstractModelServerClient
       }
 
       Request request = new Request.Builder()
-         .url(makeWsUrl(EDIT))
+         .url(makeWsUrl(MODEL_BASE_PATH))
          .build();
       result = new EditingContextImpl<>(this, ModelServerClientV2::encode);
 
@@ -175,7 +174,7 @@ public class ModelServerClientV2 extends AbstractModelServerClient
          .url(
             createHttpUrlBuilder(makeUrl(TRANSACTION))
                .addQueryParameter(ModelServerPathParametersV2.MODEL_URI, modelUri)
-               // .addQueryParameter(ModelServerPathParametersV1.FORMAT, checkedFormat)
+               // .addQueryParameter(ModelServerPathParametersV2.FORMAT, checkedFormat)
                .build())
          .post(
             RequestBody.create(

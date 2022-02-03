@@ -23,11 +23,6 @@ public interface ModelServerPathsV2 {
    String SUBSCRIPTION = "subscribe"; // accepts query parameter "modeluri"
    String CLOSE = "close"; // accepts query parameter "modeluri"
 
-   /**
-    * @deprecated since V2: use PATCH {@link #MODEL_BASE_PATH} instead of PATCH {@link #EDIT}.
-    */
-   @Deprecated
-   String EDIT = "edit"; // accepts query parameter "modeluri"
    String SAVE = "save"; // accepts query parameter "modeluri"
    String SAVE_ALL = "saveall";
    String UNDO = "undo"; // accepts query parameter "modeluri"

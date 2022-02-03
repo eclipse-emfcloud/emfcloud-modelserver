@@ -80,12 +80,14 @@ public abstract class AbstractJsonPatchHelper {
       } else if (jsonPatch.size() == 1) {
          return getCommand(modelURI, resourceSet, jsonPatch.get(0));
       } else {
+         // TODO support custom labels. See https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/160
+         String label = "Json Patch";
+
          // CompoundCommands and multi-operation Json Patches
          // are not equivalent. Json Patch operations should be applied
          // sequentially. For this reason, we need to create a command, execute
          // it, and then create the next command. We use LazyCompoundCommand for this.
-         SimpleLazyCompoundCommand command = new SimpleLazyCompoundCommand("Json Patch"); // TODO We should add a label
-                                                                                          // to Json Patches
+         SimpleLazyCompoundCommand command = new SimpleLazyCompoundCommand(label);
          for (JsonNode patchAction : jsonPatch) {
             command.append(() -> getCommand(modelURI, resourceSet, patchAction));
          }
@@ -114,8 +116,8 @@ public abstract class AbstractJsonPatchHelper {
 
    protected Command getMoveCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
       throws JsonPatchException {
-      // TODO Auto-generated method stub
-      return null;
+      throw new UnsupportedOperationException(
+         "JsonPatch 'move' Operation is not supported yet. Use 'remove' and 'add' instead");
    }
 
    protected Command getRemoveCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
@@ -370,6 +372,10 @@ public abstract class AbstractJsonPatchHelper {
 
    protected EditingDomain getEditingDomain(final EObject eObject) {
       return AdapterFactoryEditingDomain.getEditingDomainFor(eObject);
+   }
+
+   protected Resource getResource(final String modelURI) {
+      return getResource(modelURI, null);
    }
 
    protected abstract Resource getResource(String modelURI, URI resourceURI);
