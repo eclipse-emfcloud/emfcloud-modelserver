@@ -282,15 +282,7 @@ public abstract class AbstractJsonPatchHelper {
       if (feature instanceof EAttribute) {
          // Attributes
          if (feature.getEType() instanceof EEnum) {
-            EEnum enumType = (EEnum) feature.getEType();
-            if (value.isTextual()) {
-               EEnumLiteral literal = enumType.getEEnumLiteral(value.asText());
-               if (literal != null) {
-                  return literal;
-               }
-            } else {
-               throw new JsonPatchException("Unexpected value for EEnum property: " + value.toString());
-            }
+            getEMFEnumValue((EEnum) feature.getEType(), value);
          } else {
             return getPrimitiveEMFValue((EAttribute) feature, value);
          }
@@ -309,6 +301,17 @@ public abstract class AbstractJsonPatchHelper {
       return null;
    }
 
+   protected EEnumLiteral getEMFEnumValue(final EEnum enumType, final JsonNode value) throws JsonPatchException {
+      if (value.isTextual()) {
+         EEnumLiteral literal = enumType.getEEnumLiteral(value.asText());
+         if (literal != null) {
+            return literal;
+         }
+         throw new JsonPatchException("Invalid enum literal value for EEnum property: " + value.toString());
+      }
+      throw new JsonPatchException("Unexpected value for EEnum property: " + value.toString());
+   }
+
    protected Object getPrimitiveEMFValue(final EAttribute feature, final JsonNode value) {
       if (value == null || value.isNull()) {
          return null;
@@ -317,18 +320,25 @@ public abstract class AbstractJsonPatchHelper {
       } else if (value.isBoolean()) {
          return value.asBoolean();
       } else if (value.isNumber()) {
-         if (feature.getEType() instanceof EDataType) {
-            EDataType eType = (EDataType) feature.getEType();
-            switch (eType.getInstanceTypeName()) {
-               case "int":
-                  return value.asInt();
-               case "long":
-                  return value.asLong();
-               case "float":
-                  return (float) value.asDouble();
-               case "double":
-                  return value.asDouble();
-            }
+         return getJavaNumberValue(feature, value);
+      }
+      return null;
+   }
+
+   protected Object getJavaNumberValue(final EAttribute feature, final JsonNode value) {
+      if (feature.getEType() instanceof EDataType) {
+         EDataType eType = (EDataType) feature.getEType();
+         switch (eType.getInstanceTypeName()) {
+            case "int":
+               return value.asInt();
+            case "long":
+               return value.asLong();
+            case "float":
+               return (float) value.asDouble();
+            case "double":
+               return value.asDouble();
+            default:
+               return null;
          }
       }
       return null;
