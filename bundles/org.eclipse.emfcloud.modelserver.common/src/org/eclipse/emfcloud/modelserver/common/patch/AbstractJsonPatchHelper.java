@@ -199,31 +199,10 @@ public abstract class AbstractJsonPatchHelper {
       }
 
       JsonNode value = patchAction.get("value");
-      Command result = null;
+      Command result;
       if (setting.getFeature() instanceof EReference) {
          // References
-         EObject objectToAdd = getObjectToAdd(modelURI, resourceSet, value);
-         if (objectToAdd == null) {
-            throw new JsonPatchException("Invalid value specified for 'add' operation");
-         }
-
-         EStructuralFeature feature = setting.getFeature();
-
-         if (feature instanceof EReference) {
-            EReference reference = (EReference) feature;
-            if (reference.isContainment() && getResourceSet(objectToAdd) == resourceSet) {
-               // This is actually a move. First, remove the Object from its original parent.
-               // This is not required to actually apply the change (EMF will do it automatically),
-               // however this is necessary to properly undo the change.
-               result = RemoveCommand.create(getEditingDomain(objectToAdd), objectToAdd.eContainer(),
-                  objectToAdd.eContainingFeature(),
-                  objectToAdd);
-            }
-         }
-
-         Command create = AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-            setting.getFeature(), Collections.singleton(objectToAdd));
-         result = result == null ? create : result.chain(create);
+         result = getAddReferenceCommand(modelURI, resourceSet, setting, value);
       } else {
          // Attributes
          Object emfValue = getEMFValue(modelURI, resourceSet, setting.getFeature(), value);
@@ -231,6 +210,50 @@ public abstract class AbstractJsonPatchHelper {
             setting.getFeature(), Collections.singleton(emfValue));
       }
 
+      return result;
+   }
+
+   /**
+    * Create an Add Command for references.
+    *
+    * @param modelURI
+    *                       The URI of the model being edited.
+    * @param resourceSet
+    *                       The resourceSet containing the edited model.
+    * @param setting
+    *                       The setting representing the object/reference to edit.
+    * @param value
+    *                       The value to set.
+    * @return
+    *         The Add command to apply the changes to the model.
+    * @throws JsonPatchException
+    */
+   protected Command getAddReferenceCommand(final String modelURI, final ResourceSet resourceSet,
+      final SettingValue setting,
+      final JsonNode value) throws JsonPatchException {
+      EObject objectToAdd = getObjectToAdd(modelURI, resourceSet, value);
+      if (objectToAdd == null) {
+         throw new JsonPatchException("Invalid value specified for 'add' operation");
+      }
+
+      EStructuralFeature feature = setting.getFeature();
+
+      Command result = null;
+      if (feature instanceof EReference) {
+         EReference reference = (EReference) feature;
+         if (reference.isContainment() && getResourceSet(objectToAdd) == resourceSet) {
+            // This is actually a move. First, remove the Object from its original parent.
+            // This is not required to actually apply the change (EMF will do it automatically),
+            // however this is necessary to properly undo the change.
+            result = RemoveCommand.create(getEditingDomain(objectToAdd), objectToAdd.eContainer(),
+               objectToAdd.eContainingFeature(),
+               objectToAdd);
+         }
+      }
+
+      Command create = AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+         setting.getFeature(), Collections.singleton(objectToAdd));
+      result = result == null ? create : result.chain(create);
       return result;
    }
 
@@ -447,9 +470,7 @@ public abstract class AbstractJsonPatchHelper {
       Object currentValue = rootElement;
       EStructuralFeature featureToEdit = null;
       EObject eObjectToEdit = null;
-      int segmentCount = 0;
       for (String segment : segments) {
-         segmentCount++;
          if (segment.isBlank()) {
             // We typically expect the first segment
             // to be blank, and sometimes the last one as well (e.g. "/")
@@ -458,28 +479,15 @@ public abstract class AbstractJsonPatchHelper {
 
          String featureName = null;
          int index = -1;
-         if (ANY_INDEX.equals(segment)) {
-            index = CommandParameter.NO_INDEX;
-         } else {
-            try {
-               index = Integer.parseInt(segment);
-            } catch (NumberFormatException ex) {
-               // Not a number; ignore the exception and treat the value as a feature name
-               featureName = segment;
-            }
+         Optional<Integer> indexSegment = getIndexSegment(segment);
+         if (indexSegment.isEmpty()) {
+            featureName = segment;
          }
 
          if (featureName == null) {
             // Index-based value
             if (currentValue instanceof List) {
-               if (index < 0 || ((List<?>) currentValue).size() > index) {
-                  if (index < 0 && segmentCount < segments.length) {
-                     throw new JsonPatchException(
-                        "Invalid Json Pointer: " + jsonPath + ". " + segment + " is not a valid index.");
-                  } else if (index >= 0) {
-                     currentValue = ((List<?>) currentValue).get(index);
-                  }
-               }
+               currentValue = getValueFromList(jsonPath, segments, (List<?>) currentValue, index);
             } else {
                throw new JsonPatchException();
             }
@@ -489,7 +497,7 @@ public abstract class AbstractJsonPatchHelper {
                eObjectToEdit = (EObject) currentValue;
                featureToEdit = eObjectToEdit.eClass().getEStructuralFeature(featureName);
                if (featureToEdit == null) {
-                  throw new JsonPatchException();
+                  throw new JsonPatchException("Invalid feature for Object " + eObjectToEdit + ": " + featureName);
                }
                currentValue = ((EObject) currentValue).eGet(featureToEdit);
             } else {
@@ -500,11 +508,41 @@ public abstract class AbstractJsonPatchHelper {
 
       String lastSegment = segments[segments.length - 1];
       try {
-         int index = ANY_INDEX.equals(lastSegment) ? CommandParameter.NO_INDEX : Integer.parseInt(lastSegment);
+         Optional<Integer> index = getIndexSegment(lastSegment);
          return new SettingValue(eObjectToEdit, featureToEdit, index);
       } catch (NumberFormatException ex) {
          return new SettingValue(eObjectToEdit, featureToEdit);
       }
+   }
+
+   /**
+    * Parse a Json Path segment, and return the corresponding Integer value if it is
+    * valid, or {@link Optional#empty()} if the segment doesn't represent an index
+    * value.
+    *
+    * @param jsonPathSegment
+    *                           The Json Path segment to parse.
+    * @return
+    */
+   protected Optional<Integer> getIndexSegment(final String jsonPathSegment) {
+      if (ANY_INDEX.equals(jsonPathSegment)) {
+         return Optional.of(CommandParameter.NO_INDEX);
+      }
+      try {
+         int index = Integer.parseInt(jsonPathSegment);
+         return Optional.of(index);
+      } catch (NumberFormatException ex) {
+         // Not a number; ignore the exception and return an empty index
+         return Optional.empty();
+      }
+   }
+
+   protected Object getValueFromList(final String jsonPath, final String[] segments, final List<?> currentValue,
+      final int index) throws JsonPatchException {
+      if (index == NO_INDEX) {
+         return currentValue.get(currentValue.size() - 1);
+      }
+      return currentValue.get(index);
    }
 
    /**
@@ -540,16 +578,7 @@ public abstract class AbstractJsonPatchHelper {
       String lastSegment = jsonPath.substring(lastSegmentPos + 1);
 
       // First, check if the path ends with an index.
-      Optional<Integer> index;
-      if (ANY_INDEX.equals(lastSegment)) {
-         index = Optional.of(CommandParameter.NO_INDEX);
-      } else {
-         try {
-            index = Optional.of(Integer.parseInt(lastSegment));
-         } catch (NumberFormatException ex) {
-            index = Optional.empty();
-         }
-      }
+      Optional<Integer> index = getIndexSegment(lastSegment);
 
       final String objectURI, featureName;
 
@@ -563,12 +592,8 @@ public abstract class AbstractJsonPatchHelper {
       } else {
          // Else: no index, we have either Object URI or Object + Feature
          // First, try to resolve the full path as an Object URI
-         try {
-            URI eObjectURI = URI.createURI(jsonPath);
-            eObject = getEObject(modelURI, eObjectURI);
-         } catch (Exception ex) {
-            // The JsonPath doesn't represent an EObject: ignore and proceed.
-         }
+         URI eObjectURI = URI.createURI(jsonPath);
+         eObject = getEObject(modelURI, eObjectURI);
 
          if (eObject == null) {
             // The full path is not an EObject; treat the last segment
@@ -613,9 +638,19 @@ public abstract class AbstractJsonPatchHelper {
 
    protected abstract Resource getResource(String modelURI, URI resourceURI);
 
+   @SuppressWarnings("checkstyle:IllegalExceptionCatch")
    protected EObject getEObject(final String modelURI, final URI eObjectURI) {
       Resource resource = getResource(modelURI, eObjectURI.trimFragment());
-      return resource.getEObject(eObjectURI.fragment());
+      if (resource == null) {
+         return null;
+      }
+      try {
+         return resource.getEObject(eObjectURI.fragment());
+      } catch (Exception ex) {
+         // The object URI is not valid. Ignore the exception and
+         // return null.
+         return null;
+      }
    }
 
    protected Command testAction(final ResourceSet resourceSet, final JsonNode patchAction)
