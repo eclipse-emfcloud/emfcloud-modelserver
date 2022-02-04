@@ -507,12 +507,8 @@ public abstract class AbstractJsonPatchHelper {
       }
 
       String lastSegment = segments[segments.length - 1];
-      try {
-         Optional<Integer> index = getIndexSegment(lastSegment);
-         return new SettingValue(eObjectToEdit, featureToEdit, index);
-      } catch (NumberFormatException ex) {
-         return new SettingValue(eObjectToEdit, featureToEdit);
-      }
+      Optional<Integer> index = getIndexSegment(lastSegment);
+      return new SettingValue(eObjectToEdit, featureToEdit, index);
    }
 
    /**
@@ -571,6 +567,13 @@ public abstract class AbstractJsonPatchHelper {
          throw new JsonPatchException("Failed to parse Json Path: " + jsonPath);
       }
 
+      // The path may represent an EObject (without feature or index). In that case,
+      // directly return it.
+      EObject eObject = getEObject(modelURI, URI.createURI(jsonPath));
+      if (eObject != null) {
+         return new SettingValue(eObject);
+      }
+
       // XXX if the edited object is the root element, its positional URI will be '/'
       // Since we expect path as <id>/<feature>, the expected path in that case is
       // "//feature" and not "/feature" (Although "/feature" would be a valid Json Pointer path)
@@ -582,7 +585,6 @@ public abstract class AbstractJsonPatchHelper {
 
       final String objectURI, featureName;
 
-      EObject eObject = null;
       if (index.isPresent()) {
          // Index is present, the path is in the form modeluri#objectfragment/featureName/index
          String objectAndFeaturePath = jsonPath.substring(0, lastSegmentPos);
@@ -590,39 +592,24 @@ public abstract class AbstractJsonPatchHelper {
          objectURI = objectAndFeaturePath.substring(0, lastSegmentPos);
          featureName = objectAndFeaturePath.substring(lastSegmentPos + 1);
       } else {
-         // Else: no index, we have either Object URI or Object + Feature
-         // First, try to resolve the full path as an Object URI
-         URI eObjectURI = URI.createURI(jsonPath);
-         eObject = getEObject(modelURI, eObjectURI);
-
-         if (eObject == null) {
-            // The full path is not an EObject; treat the last segment
-            // as a feature.
-            objectURI = jsonPath.substring(0, lastSegmentPos);
-            featureName = jsonPath.substring(lastSegmentPos + 1);
-         } else {
-            objectURI = jsonPath;
-            featureName = null;
-         }
+         // Else: no index, we have a path representing Object + Feature
+         objectURI = jsonPath.substring(0, lastSegmentPos);
+         featureName = jsonPath.substring(lastSegmentPos + 1);
       }
 
-      if (eObject == null) {
-         URI eObjectURI = URI.createURI(objectURI);
-         eObject = getEObject(modelURI, eObjectURI);
-      }
+      URI eObjectURI = URI.createURI(objectURI);
+      eObject = getEObject(modelURI, eObjectURI);
 
       if (eObject == null) {
          throw new JsonPatchException("Invalid Object path: " + objectURI);
       }
 
-      EStructuralFeature feature;
+      EStructuralFeature feature = null;
       if (featureName != null) {
          feature = eObject.eClass().getEStructuralFeature(featureName);
          if (feature == null) {
             throw new JsonPatchException("Invalid Object property: " + featureName);
          }
-      } else {
-         feature = null;
       }
 
       return new SettingValue(eObject, feature, index);
