@@ -477,22 +477,17 @@ public abstract class AbstractJsonPatchHelper {
             continue;
          }
 
-         String featureName = null;
-         int index = -1;
          Optional<Integer> indexSegment = getIndexSegment(segment);
-         if (indexSegment.isEmpty()) {
-            featureName = segment;
-         }
-
-         if (featureName == null) {
+         if (indexSegment.isPresent()) {
             // Index-based value
             if (currentValue instanceof List) {
-               currentValue = getValueFromList(jsonPath, segments, (List<?>) currentValue, index);
+               currentValue = getValueFromList(jsonPath, segments, (List<?>) currentValue, indexSegment.get());
             } else {
                throw new JsonPatchException();
             }
          } else {
             // Feature-based value
+            String featureName = segment;
             if (currentValue instanceof EObject) {
                eObjectToEdit = (EObject) currentValue;
                featureToEdit = getFeature(eObjectToEdit, featureName);
