@@ -495,11 +495,8 @@ public abstract class AbstractJsonPatchHelper {
             // Feature-based value
             if (currentValue instanceof EObject) {
                eObjectToEdit = (EObject) currentValue;
-               featureToEdit = eObjectToEdit.eClass().getEStructuralFeature(featureName);
-               if (featureToEdit == null) {
-                  throw new JsonPatchException("Invalid feature for Object " + eObjectToEdit + ": " + featureName);
-               }
-               currentValue = ((EObject) currentValue).eGet(featureToEdit);
+               featureToEdit = getFeature(eObjectToEdit, featureName);
+               currentValue = eObjectToEdit.eGet(featureToEdit);
             } else {
                throw new JsonPatchException();
             }
@@ -606,13 +603,18 @@ public abstract class AbstractJsonPatchHelper {
 
       EStructuralFeature feature = null;
       if (featureName != null) {
-         feature = eObject.eClass().getEStructuralFeature(featureName);
-         if (feature == null) {
-            throw new JsonPatchException("Invalid Object property: " + featureName);
-         }
+         feature = getFeature(eObject, featureName);
       }
 
       return new SettingValue(eObject, feature, index);
+   }
+
+   protected EStructuralFeature getFeature(final EObject eObject, final String featureName) throws JsonPatchException {
+      EStructuralFeature feature = eObject.eClass().getEStructuralFeature(featureName);
+      if (feature == null) {
+         throw new JsonPatchException("Invalid Object property: " + featureName);
+      }
+      return feature;
    }
 
    protected EditingDomain getEditingDomain(final EObject eObject) {
