@@ -130,17 +130,7 @@ public final class ContextRequest {
    public static Optional<String> readMessageType(final WsMessageContext ctx) {
       try {
          JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.message());
-         if (!json.has(JsonResponseMember.TYPE)) {
-            error(ctx, "Missing message type");
-            return Optional.empty();
-         }
-         JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
-         String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : null;
-         if (jsonType == null) {
-            error(ctx, "Invalid message type");
-            return Optional.empty();
-         }
-         return Optional.of(jsonType);
+         return readMessageType(ctx, json);
       } catch (IOException exception) {
          error(ctx, "Invalid JSON", exception);
       }
@@ -150,15 +140,8 @@ public final class ContextRequest {
    public static Optional<Message<String>> readMessage(final WsMessageContext ctx) {
       try {
          JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.message());
-         if (!json.has(JsonResponseMember.TYPE)) {
-            error(ctx, "Missing message type");
-            return Optional.empty();
-         }
-
-         JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
-         String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : null;
-         if (jsonType == null) {
-            error(ctx, "Invalid message type");
+         Optional<String> jsonType = readMessageType(ctx, json);
+         if (jsonType.isEmpty()) {
             return Optional.empty();
          }
 
@@ -169,11 +152,26 @@ public final class ContextRequest {
             jsonData = jsonDataNode.getNodeType() == JsonNodeType.STRING ? jsonDataNode.asText()
                : jsonDataNode.toString();
          }
-         return Optional.of(new Message<>(jsonType, jsonData));
+         return Optional.of(new Message<>(jsonType.get(), jsonData));
       } catch (IOException exception) {
          error(ctx, "Invalid JSON", exception);
          return Optional.empty();
       }
+   }
+
+   private static Optional<String> readMessageType(final WsMessageContext ctx, final JsonNode json) {
+      if (!json.has(JsonResponseMember.TYPE)) {
+         error(ctx, "Missing message type");
+         return Optional.empty();
+      }
+
+      JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
+      String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : null;
+      if (jsonType == null) {
+         error(ctx, "Invalid message type");
+         return Optional.empty();
+      }
+      return Optional.of(jsonType);
    }
 
 }
