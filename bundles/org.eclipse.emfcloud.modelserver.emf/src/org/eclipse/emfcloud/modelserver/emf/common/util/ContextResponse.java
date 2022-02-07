@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 EclipseSource and others.
+ * Copyright (c) 2021-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -12,7 +12,8 @@ package org.eclipse.emfcloud.modelserver.emf.common.util;
 
 import java.net.HttpURLConnection;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponse;
@@ -23,7 +24,7 @@ import io.javalin.http.Context;
 import io.javalin.websocket.WsContext;
 
 public final class ContextResponse {
-   private static final Logger LOG = Logger.getLogger(ContextResponse.class.getSimpleName());
+   private static final Logger LOG = LogManager.getLogger(ContextResponse.class);
 
    private ContextResponse() {}
 

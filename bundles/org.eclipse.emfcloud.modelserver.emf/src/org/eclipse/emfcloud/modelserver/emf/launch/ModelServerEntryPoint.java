@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,8 @@ package org.eclipse.emfcloud.modelserver.emf.launch;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 
@@ -24,7 +25,7 @@ import io.javalin.Javalin;
 public class ModelServerEntryPoint implements AppEntryPoint {
 
    private final Javalin app;
-   private static final Logger LOG = Logger.getLogger(ModelServerEntryPoint.class.getSimpleName());
+   private static final Logger LOG = LogManager.getLogger(ModelServerEntryPoint.class);
 
    @Inject(optional = true)
    private final Set<Routing> routes = Collections.emptySet();

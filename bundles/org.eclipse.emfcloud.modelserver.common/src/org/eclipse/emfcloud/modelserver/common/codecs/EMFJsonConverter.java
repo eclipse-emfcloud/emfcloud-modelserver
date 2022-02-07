@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -16,7 +16,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.TimeZone;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.jackson.module.EMFModule;
 
@@ -26,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class EMFJsonConverter {
-   private static Logger LOG = Logger.getLogger(EMFJsonConverter.class.getSimpleName());
+   private static Logger LOG = LogManager.getLogger(EMFJsonConverter.class);
 
    public static ObjectMapper setupDefaultMapper() {
       return EMFJsonConverter.setupDefaultMapper(null);

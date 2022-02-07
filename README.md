@@ -3,16 +3,18 @@
 For more information, please visit the [EMF.cloud Website](https://www.eclipse.org/emfcloud/). If you have questions, contact us on our [discussions page](https://github.com/eclipse-emfcloud/emfcloud/discussions) and have a look at our [communication and support options](https://www.eclipse.org/emfcloud/contact/).
 
 ## Build
+
 To build the model server as standalone JAR and execute all component tests execute the following maven goal in the root directory:
-```bash
-mvn clean install
-```
+
+    mvn clean install
 
 ### Maven Repositories [![build-status-server](https://img.shields.io/jenkins/build?jobUrl=https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-m2/&label=publish)](https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-m2/)
-- <i>Snapshots: </i> https://oss.sonatype.org/content/repositories/snapshots/org/eclipse/emfcloud/modelserver/
+
+- Snapshots: <https://oss.sonatype.org/content/repositories/snapshots/org/eclipse/emfcloud/modelserver/>
 
 ### P2 Update Sites [![build-status-server](https://img.shields.io/jenkins/build?jobUrl=https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-p2/&label=publish)](https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-p2/)
-- <i>Snapshots: </i> https://download.eclipse.org/emfcloud/modelserver/p2/nightly/
+
+- Snapshots: <https://download.eclipse.org/emfcloud/modelserver/p2/nightly/>
 
 ### Code Coverage
 
@@ -23,44 +25,87 @@ The code coverage report is generated with [JaCoCo](https://www.eclemma.org/jaco
 When executing the Maven build locally, the detailed results are computed and can be investigated in more detail.
 
 ## Run
+
 ### Execute from IDE
+
 To run the example model server within an IDE, run the main method of `ExampleServerLauncher.java` as a Java Application, located in the module `org.eclipse.emfcloud.modelserver.example`.
 
-
 ### Execute Standalone JAR
+
 To run the model server standalone JAR, run this command in your terminal:
-```bash
-cd  examples/org.eclipse.emfcloud.modelserver.example/target/
-java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar
-```
+
+    cd  examples/org.eclipse.emfcloud.modelserver.example/target/
+    java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar
 
 #### Usage
-```
-usage: java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar
-       [-e] [-h] [-p <arg>] [-r <arg>] [-u <arg>]
 
-options:
- -e,--errorsOnly          Only log errors
- -h,--help                Display usage information about ModelServer
- -p,--port <arg>          Set server port, otherwise default port 8081 is used
- -r,--root <arg>          Set workspace root
- -u,--uiSchemaUri <arg>   Set UI schema folder uri
-```
+    usage: java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar
+           [-e] [-h] [-l <arg>] [-p <arg>] [-r <arg>] [-u <arg>]
+    
+    options:
+     -e,--enableDevLogging    Enable Javalin dev logging (extensive request/response logging
+                               meant for development)
+     -h,--help                Display usage information about ModelServer
+     -l,--logConfig <arg>     Set path to Log4j configuration file (*.xml)
+     -p,--port <arg>          Set server port, otherwise a default port is used
+     -r,--root <arg>          Set workspace root
+     -u,--uiSchemaUri <arg>   Set UI schema folder uri
+
+### Logging
+
+The default logging configuration `log4j2.xml` for Log4j 2 is located in `org.eclipse.emfcloud.modelserver.emf/resources`. It is automatically recognized by Log4j 2 as it is added to the classpath. To use a custom configuration file simply add a configuration to your classpath, e.g. for the `ExampleServerLauncher` it is located in `examples/org.eclipse.emfcloud.modelserver.example/src/main/resources`. To set the path to a custom configuration file (without adding it to the classpath) you can use the CLI argument `-l,--logConfig`.
+
+The default log level is set to `INFO` for the Log4j 2 logger itself and to `DEBUG` for the Model Server application logging. `Level.FATAL` and `Level.ERROR` write to `stderr`, all levels above write to `stdout`. The `ExampleServerLauncher` configuration adds a file logger and additionally writes the logs to the log file `output.log`.
+
+For more information on the Log4j 2 configuration please visit [the Log4j 2 manual](https://logging.apache.org/log4j/2.x/manual/configuration.html).
+
+#### Development logging
+
+To enable extensive development logging in Javalin for `http` and `websocket` requests, you can use the CLI argument `-e,--enableDevLogging`.
+
+It will output details for each request/response similar to the following snippet:
+
+    2022-01-01 00:00:00,000000000 [JettyServerThreadPool-25] INFO Javalin - JAVALIN REQUEST DEBUG LOG:
+    Request: GET [/api/v1/models]
+        Matching endpoint-handlers: [BEFORE=*, BEFORE=/api/v1/*, GET=/api/v1/models]
+        Headers: {Accept=*/*, User-Agent=PostmanRuntime/7.28.4, Connection=keep-alive, Postman-Token=..., Host=localhost:8081, Accept-Encoding=gzip, deflate, br}
+        Cookies: {}
+        Body: 
+        QueryString: modeluri=SuperBrewer3000.coffee
+        QueryParams: {modeluri=[SuperBrewer3000.coffee]}
+        FormParams: {}
+    Response: [200], execution took 5.84 ms
+        Headers: {Date=Fri, 01 Jan 2022 00:00:00 GMT, Content-Type=application/json}
+        Body is 1015 bytes (starts on next line):
+        {
+      "type" : "success",
+      "data" : {
+        "eClass" : "http://www.eclipsesource.com/modelserver/example/coffeemodel#//Machine",
+        "children" : [ {
+          ...
+        } ],
+        "name" : "Super Brewer 3000",
+        "workflows" : [ {
+          "name" : "Simple Workflow",
+          ...
+        } ]
+      }
+    }
 
 ## Model Server API
 
 ### Parameters
+
 - The query parameter `?modeluri=` accepts files in the loaded workspace as well as absolute file paths.
 - Parameters in brackets `[]` are optional.
   - If no format is specified, the default format is JSON.
   - [WebSocket] The parameter `livevalidation` defaults to false. If set to true the websocket will recieve validation results automatically on model changes.
 
-<br/>
-
 ### HTTP Endpoints
+
 If the model server is up and running, you can access the model server API via `http://localhost:8081/api/v1/*`.
 
-The following table shows the current HTTP endpoints: 
+The following table shows the current HTTP endpoints:
 
 |Category|Description|HTTP method|Path|Input
 |-|-|:-:|-|-
@@ -85,33 +130,26 @@ The following table shows the current HTTP endpoints:
 |__Model Validation__|Validate Model|__GET__|`/validation`| query parameter: `?modeluri=...`
 | |Get list of constraints|__GET__|`/validation/constraints`|query parameter: `?modeluri=...`
 
-<br/>
-
 #### Server Configuration
+
 Per default, updating the server configuration (`/server/configure`) with a new workspaceRoot, enables queueing of further incoming requests until configuration is completed.
 Please see `ModelServerRouting` for details.
-
-<br/>
 
 ### WebSocket Endpoints
 
 Subscriptions are implemented via websockets `ws://localhost:8081/api/v1/*`.
 
-The following table shows the current WS endpoints: 
+The following table shows the current WS endpoints:
 
 |Description|Path|Input|Returns
 |-|-|-|-
 |Subscribe to model changes|`/subscribe`|query parameter: `?modeluri=...[&format=...][&timeout=...][&livevalidation=-...]`|`sessionId`
-
-<br/>
 
 The following table shows accepted messages from a valid WS connection:
 
 |Type|Description|Example message
 |-|-|-
 `keepAlive`|Keep WS connection alive if timeout is defined|`{ type: 'keepAlive', data: '' }`
-
-<br/>
 
 ## Java Client API
 
@@ -200,7 +238,6 @@ public interface ModelServerClientApiV1<A> {
 }
 ```
 
-
 ### REST API Example
 
 ```Java
@@ -244,44 +281,44 @@ of the workflow in the example *Super Brewer 3000* model and to add another task
 to it:
 
 ```json
-{
+  {
     "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//CompoundCommand",
     "type": "compound",
     "commands": [
-        {
-            "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
-            "type": "set",
-            "owner": {
-                "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
-                "$ref":"SuperBrewer3000.json#//@workflows.0"
-          },
-          "feature": "name",
-          "dataValues": [ "Auto Brew" ]
+      {
+        "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
+        "type": "set",
+        "owner": {
+          "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+          "$ref":"SuperBrewer3000.json#//@workflows.0"
         },
-        {
-            "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
-            "type": "add",
-            "owner": {
-                "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
-                "$ref":"SuperBrewer3000.json#//@workflows.0"
-            },
-            "feature": "nodes",
-            "objectValues": [
-                {
-                    "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
-                    "$ref":"//@commands.1/@objectsToAdd.0"
-                }
-            ],
-            "objectsToAdd": [
-                {
-                    "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
-                    "name":"Brew"
-                }
-            ],
-            "indices": [ 1 ]
-        }
+        "feature": "name",
+        "dataValues": [ "Auto Brew" ]
+      },
+      {
+        "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
+        "type": "add",
+        "owner": {
+          "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+          "$ref":"SuperBrewer3000.json#//@workflows.0"
+        },
+        "feature": "nodes",
+        "objectValues": [
+          {
+            "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+            "$ref":"//@commands.1/@objectsToAdd.0"
+          }
+        ],
+        "objectsToAdd": [
+          {
+            "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+            "name":"Brew"
+          }
+        ],
+        "indices": [ 1 ]
+      }
     ]
-}
+  }
 ```
 
 This is a JSON representation of an EMF `CompoundCommand` containing two commands, a
@@ -300,19 +337,17 @@ and so those would be cross-document references and the `objectsToAdd` is unused
 
 To execute this command, issue a `PATCH` request to the `edit` endpoint like:
 
-```
     PATCH http://localhost:8081/api/v1/edit?modeluri=SuperBrewer3000.json
     Content-type: application/json
     { "data" : <payload> }
-```
 
 The model server project already provides a default set of commands but it is also possible to plug in your custom metamodel-specific commands by providing `CommandContributions` specified with your model server module.
 
-All commands are executed on a transactional command stack within an **EMF transactional editing domain**. The use of an EMF transactional editing domain on the server side provides a more reliable way of executing commands through transactions and therefore making a clear separation between the end user's operations. In addition, it enables us to make use of `RecordingCommands` which record the changes made to objects via the custom metamodel's API and therefore provide automatic undo/redo support for custom commands.
+All commands are executed on a transactional command stack within an __EMF transactional editing domain__. The use of an EMF transactional editing domain on the server side provides a more reliable way of executing commands through transactions and therefore making a clear separation between the end user's operations. In addition, it enables us to make use of `RecordingCommands` which record the changes made to objects via the custom metamodel's API and therefore provide automatic undo/redo support for custom commands.
 
 ### WebSocket Subscriptions Example
 
-If you want to be notified about any changes happening on a certain model, 
+If you want to be notified about any changes happening on a certain model,
 you can subscribe with a `SubscriptionListener` and define a format for the responses, which is TypedSubscriptionListener for `xmi` in this example.
 
 Please also see a basic running example in `org.eclipse.emfcloud.modelserver.example.client`.
@@ -384,34 +419,42 @@ client.unsubscribe(subscriptionId);
 The kind of message received depends on the operation. For an `update` call (`PUT` request on the model), the message is the new content of the model (`onFullUpdate`).  For an incremental update applied by a `PATCH` request with an edit command (see above), the message is the result of the command that was executed (`onIncrementalUpdate`). The command execution result consists of the original client command, an execution type (e.g., 'execute', 'undo', 'redo'), the affected objects from the executed command and any recorded changes.
 
 ## Contributing
+
 All involved code must adhere to the provided codestyle and checkstyle settings.
 
 ### Eclipse IDE Setup
 
 #### Requirements
+
 - Please make sure your Eclipse workspace uses a JRE of Java 9 or higher.
 - Install the Eclipse Checkstyle Plug-in via its update site `https://checkstyle.org/eclipse-cs/#!/install`.
 
 #### Configure Checkstyle
+
 This project uses the common checkstyle ruleset from EMF.cloud. Please follow the [instructions for usage in Eclipse](https://github.com/eclipse-emfcloud/emfcloud/tree/master/codestyle#usage-in-eclipse-ide) to configure this ruleset for a new project.
 To configure Checkstyle for a new project in the same workspace your can also right click on the project, choose `Checkstyle > Configure project(s) from blueprint...` and select `org.eclipse.emfcloud.modelserver.common` as blueprint project.
 Run `Checkstyle > Check Code with Checkstyle` to make sure Checkstyle is activated correctly.
 
 #### Import Existing Projects
+
 Import all maven projects via `File > Import... > Existing Maven Projects > Root directory: $REPO_LOCATION`.
 
 Please also import the codestyle project via `File > Import... > Existing Projects into Workspace > Root directory: $REPO_LOCATION/releng > org.eclipse.emfcloud.modelserver.codestyle`.
 
 #### Create New Project
+
 When a new project is needed, please stick to the following instructions to guarantee your code will be conform to the existing code conventions.
 
 ##### Project-Specific settings
+
 Upon project creation the settings file `org.eclipse.resources.prefs` is created automatically and usually needs no further adjustment.
 Please copy and replace (if applicable) the following preferences files from `org.eclipse.emfcloud.modelserver.common` before you start coding:
+
 - `org.eclipse.jdt.core.prefs`
 - `org.eclipse.jdt.launching.prefs`
 - `org.eclipse.jdt.ui.prefs`
 - `org.eclipse.m2e.core.prefs`
 
 #### Commit Changes
+
 Please make sure to include the `.settings` folder as well as the `.checkstyle` settings file to the repository in your initial commit.

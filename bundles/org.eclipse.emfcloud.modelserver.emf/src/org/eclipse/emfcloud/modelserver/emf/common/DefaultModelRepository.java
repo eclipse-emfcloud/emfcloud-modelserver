@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -18,7 +18,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -36,7 +37,7 @@ import com.google.inject.Inject;
  *
  */
 public class DefaultModelRepository implements ModelRepository {
-   protected static Logger LOG = Logger.getLogger(DefaultModelRepository.class.getSimpleName());
+   protected static Logger LOG = LogManager.getLogger(DefaultModelRepository.class);
 
    @Inject
    private final ServerConfiguration serverConfiguration;

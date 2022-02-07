@@ -1,33 +1,33 @@
 target "EMF.cloud Model Server Targetplatform" with source, requirements
 
-location "http://download.eclipse.org/releases/2021-06" {
-	org.eclipse.platform.feature.group
-	org.eclipse.emf.transaction.feature.group
-	org.eclipse.emf.sdk.feature.group
+location "http://download.eclipse.org/releases/2021-12" {
+	org.eclipse.platform.feature.group [4.22.0,5.0.0)
+	org.eclipse.emf.transaction.feature.group [1.12.0,2.0.0)
+	org.eclipse.emf.sdk.feature.group [2.28.0,3.0.0)
 }
 
-location "https://download.eclipse.org/tools/orbit/downloads/drops/R20210602031627/repository" {
-	org.apache.log4j [1.2.15,2.0.0)
-	com.google.gson [2.8.6,3.0.0)
+location "https://download.eclipse.org/tools/orbit/downloads/drops/I20220131095416/repository" {
+	org.apache.logging.log4j [2.17.1,3.0.0)
+	com.google.gson [2.8.9,3.0.0)
 	com.google.inject [5.0.1,6.0.0)
 	com.google.guava [30.1.0,31.0.0)
-	org.apache.commons.io [2.6.0,3.0.0)
+	org.apache.commons.io [2.8.0,3.0.0)
 	org.mockito [2.23.0,3.0.0)
 	net.bytebuddy.byte-buddy [1.9.0,2.0.0)
 	net.bytebuddy.byte-buddy-agent [1.9.0,2.0.0)
 	org.objenesis [2.6.0,3.0.0)
 	org.hamcrest [1.1.0,2.0.0)
-	com.fasterxml.jackson.core.jackson-annotations [2.10.3,3.0.0)
-	com.fasterxml.jackson.core.jackson-core [2.10.3,3.0.0)
-	com.fasterxml.jackson.core.jackson-databind [2.10.3,3.0.0)
-	org.junit [4.12.0,5.0.0)
+	com.fasterxml.jackson.core.jackson-annotations [2.12.1,3.0.0)
+	com.fasterxml.jackson.core.jackson-core [2.12.1,3.0.0)
+	com.fasterxml.jackson.core.jackson-databind [2.12.1,3.0.0)
+	org.junit [4.13.2,5.0.0)
 	javax.servlet [3.1.0,4.0.0)
 	org.aopalliance [1.0.0,2.0.0)
 }
 
 // EMF-JSON
-location "https://download.eclipse.org/emfcloud/emfjson-jackson/p2/nightly/1.3/1.3.1.202109010859" {
-	org.eclipse.emfcloud.emfjson-jackson lazy
+location "https://download.eclipse.org/emfcloud/emfjson-jackson/p2/releases/2.0.0/" {
+	org.eclipse.emfcloud.emfjson-jackson [2.0.0,3.0.0)
 }
 
 location "https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/9.4.44.v20210927/" {

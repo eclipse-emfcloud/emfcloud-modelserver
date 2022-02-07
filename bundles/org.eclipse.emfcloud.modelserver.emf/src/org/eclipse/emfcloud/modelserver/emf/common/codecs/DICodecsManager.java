@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -103,7 +103,11 @@ public class DICodecsManager implements CodecsManager {
 
    @Override
    public String findFormat(final WsContext context) {
-      return context.queryParam(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_JSON);
+      String format = context.queryParam(ModelServerPathParametersV1.FORMAT);
+      if (format != null) {
+         return format;
+      }
+      return ModelServerPathParametersV1.FORMAT_JSON;
    }
 
    protected Codec findFormat(final Map<String, List<String>> queryParams) {

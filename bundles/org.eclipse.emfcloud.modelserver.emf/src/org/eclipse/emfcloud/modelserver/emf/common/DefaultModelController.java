@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -24,7 +24,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -39,16 +40,13 @@ import org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 import io.javalin.http.Context;
-import io.javalin.plugin.json.JavalinJackson;
 
 public class DefaultModelController implements ModelController {
-   protected static Logger LOG = Logger.getLogger(DefaultModelController.class.getSimpleName());
+   protected static Logger LOG = LogManager.getLogger(DefaultModelController.class);
 
    protected final ModelRepository modelRepository;
    protected final SessionController sessionController;
@@ -58,9 +56,7 @@ public class DefaultModelController implements ModelController {
 
    @Inject
    public DefaultModelController(final ModelRepository modelRepository, final SessionController sessionController,
-      final ServerConfiguration serverConfiguration, final CodecsManager codecs, final ModelValidator modelValidator,
-      final Provider<ObjectMapper> objectMapperProvider) {
-      JavalinJackson.configure(objectMapperProvider.get());
+      final ServerConfiguration serverConfiguration, final CodecsManager codecs, final ModelValidator modelValidator) {
       this.modelRepository = modelRepository;
       this.sessionController = sessionController;
       this.serverConfiguration = serverConfiguration;
