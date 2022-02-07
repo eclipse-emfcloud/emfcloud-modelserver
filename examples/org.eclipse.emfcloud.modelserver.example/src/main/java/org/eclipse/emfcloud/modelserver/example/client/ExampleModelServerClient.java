@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 EclipseSource and others.
+ * Copyright (c) 2020-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -157,14 +157,16 @@ public final class ExampleModelServerClient {
 
    private static void handleGetAll(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException, IOException {
-      String format = commandAndArgs.length > 1 ? commandAndArgs[1] : "json";
-      if (format.contentEquals("json")) {
+      String format = commandAndArgs.length > 1 ? commandAndArgs[1] : null;
+      if (format == null) {
+         // use getAll without parameters and expect String values (json)
          Response<List<Model<String>>> response = client.getAll().join();
          System.out.println(response.body().size() + " models");
          for (Model<String> model : response.body()) {
             System.out.println("- " + model.getModelUri() + ": " + model.getContent());
          }
       } else {
+         // use getAll with format (json or xmi) and expect EObject
          Response<List<Model<EObject>>> response = client.getAll(format).join();
          System.out.println(response.body().size() + " models");
          for (Model<EObject> model : response.body()) {
