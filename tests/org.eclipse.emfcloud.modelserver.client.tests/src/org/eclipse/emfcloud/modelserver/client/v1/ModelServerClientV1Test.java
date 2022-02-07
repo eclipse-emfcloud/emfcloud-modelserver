@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -59,7 +60,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 
@@ -155,9 +155,7 @@ public class ModelServerClientV1Test {
    public void getAll() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       String modelUri = "http://fake-model.com";
       final JsonNode content = jsonCodec.encode(eClass);
-      ObjectNode model = Json.object(Json.prop("modeluri", Json.text(modelUri)),
-         Json.prop("content", content));
-      ArrayNode allModels = Json.array(model);
+      ObjectNode allModels = Json.object(Map.of(modelUri, content));
 
       String getAllUrl = baseHttpUrlBuilder
          .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
@@ -177,6 +175,8 @@ public class ModelServerClientV1Test {
    public void getAllXmi() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       String modelUri = "http://fake-model.com";
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
+      JsonNode content = new XmiCodec().encode(eClass);
+      ObjectNode allModels = Json.object(Map.of(modelUri, content));
 
       String getAllXmiUrl = baseHttpUrlBuilder
          .addPathSegment(ModelServerPathsV1.MODEL_BASE_PATH)
@@ -185,9 +185,7 @@ public class ModelServerClientV1Test {
       interceptor.addRule()
          .get()
          .url(getAllXmiUrl)
-         .respond(JsonResponse.success(JsonCodec
-            .encode(Collections.singletonList(new Model<>(modelUri, new XmiCodec().encode(eClass)))))
-            .toString());
+         .respond(JsonResponse.success(allModels).toString());
       ModelServerClientV1 client = createClient();
 
       final CompletableFuture<Response<List<Model<EObject>>>> f = client.getAll(ModelServerPathParametersV1.FORMAT_XMI);
