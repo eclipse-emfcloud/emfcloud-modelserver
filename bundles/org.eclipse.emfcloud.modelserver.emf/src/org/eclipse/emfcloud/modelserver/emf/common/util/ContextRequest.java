@@ -135,7 +135,7 @@ public final class ContextRequest {
             return Optional.empty();
          }
          JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
-         String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.isEmpty() ? jsonTypeNode.asText() : null;
+         String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : null;
          if (jsonType == null) {
             error(ctx, "Invalid message type");
             return Optional.empty();
@@ -156,7 +156,7 @@ public final class ContextRequest {
          }
 
          JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
-         String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.isEmpty() ? jsonTypeNode.asText() : null;
+         String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : null;
          if (jsonType == null) {
             error(ctx, "Invalid message type");
             return Optional.empty();
