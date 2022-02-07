@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 EclipseSource and others.
+ * Copyright (c) 2020-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -12,11 +12,14 @@ package org.eclipse.emfcloud.modelserver.example.client;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emfcloud.modelserver.client.Model;
 import org.eclipse.emfcloud.modelserver.client.ModelServerClient;
 import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
@@ -38,6 +41,7 @@ public final class ExampleModelServerClient {
    private static final String CMD_RENAME_WORKFLOW = "rename-workflow";
    private static final String CMD_UPDATE_TASKS = "update-tasks";
    private static final String CMD_GET = "get";
+   private static final String CMD_GET_ALL = "getAll";
    private static final String CMD_UNSUBSCRIBE = "unsubscribe";
    private static final String CMD_SUBSCRIBE = "subscribe";
 
@@ -90,6 +94,8 @@ public final class ExampleModelServerClient {
                   handleUnsubscribe(client, commandAndArgs);
                } else if (command.contentEquals(CMD_GET)) {
                   handleGet(client, commandAndArgs);
+               } else if (command.contentEquals(CMD_GET_ALL)) {
+                  handleGetAll(client, commandAndArgs);
                } else if (command.contentEquals(CMD_UPDATE_TASKS)) {
                   handleUpdateTasks(client, commandAndArgs);
                } else if (command.contentEquals(CMD_UNDO)) {
@@ -149,6 +155,26 @@ public final class ExampleModelServerClient {
       System.out.println(Json.parse(response.body()).toPrettyString());
    }
 
+   private static void handleGetAll(final ModelServerClient client, final String[] commandAndArgs)
+      throws InterruptedException, ExecutionException, TimeoutException, IOException {
+      String format = commandAndArgs.length > 1 ? commandAndArgs[1] : null;
+      if (format == null) {
+         // use getAll without parameters and expect String values (json)
+         Response<List<Model<String>>> response = client.getAll().join();
+         System.out.println(response.body().size() + " models");
+         for (Model<String> model : response.body()) {
+            System.out.println("- " + model.getModelUri() + ": " + model.getContent());
+         }
+      } else {
+         // use getAll with format (json or xmi) and expect EObject
+         Response<List<Model<EObject>>> response = client.getAll(format).join();
+         System.out.println(response.body().size() + " models");
+         for (Model<EObject> model : response.body()) {
+            System.out.println("- " + model.getModelUri() + ": " + model.getContent().eClass());
+         }
+      }
+   }
+
    private static void handleSubscribe(final ModelServerClient client, final String[] command)
       throws InterruptedException {
       String modelUri = command.length > 1 ? command[1] : "";
@@ -172,6 +198,7 @@ public final class ExampleModelServerClient {
       System.out.println("- " + CMD_SUBSCRIBE + " <modelUri> <format>");
       System.out.println("- " + CMD_UNSUBSCRIBE + " <modelUri>");
       System.out.println("- " + CMD_GET + " <modelUri>");
+      System.out.println("- " + CMD_GET_ALL + "<format>");
       System.out.println("- " + CMD_UPDATE_TASKS + " <name> // adapts all task names in SuperBrewer3000.json (custom)");
       System.out.println("- " + CMD_UNDO + " <modelUri>");
       System.out.println("- " + CMD_REDO + " <modelUri>");

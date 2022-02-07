@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -45,7 +46,9 @@ import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Strings;
@@ -62,13 +65,14 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
 public class ModelServerClient implements ModelServerClientApi<EObject>, ModelServerPaths, AutoCloseable {
-
    public static final Set<String> DEFAULT_SUPPORTED_FORMATS = ImmutableSet.of(ModelServerPathParameters.FORMAT_JSON,
       ModelServerPathParameters.FORMAT_XMI);
    public static final String PATCH = "PATCH";
    public static final String POST = "POST";
 
    protected static Logger LOG = Logger.getLogger(ModelServerClient.class.getSimpleName());
+
+   private static final TypeReference<Map<String, JsonNode>> MODEL_MAP_TYPE = new TypeReference<>() {};
 
    protected final OkHttpClient client;
    protected final String baseUrl;
@@ -151,15 +155,8 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .thenApply(response -> response.mapBody(body -> {
             List<Model<String>> models = new ArrayList<>();
             try {
-               for (JsonNode modelNode : Json.parse(body)) {
-                  Optional<String> modelUri = getJsonField(modelNode, ModelServerPathParametersV1.MODEL_URI);
-                  Optional<String> content = getJsonField(modelNode, "content");
-                  if (modelUri.isPresent() && content.isPresent()) {
-                     models.add(new Model<>(modelUri.get(), content.get()));
-                  } else {
-                     LOG.warn("Incomplete Model: " + modelNode);
-                  }
-               }
+               Map<String, JsonNode> uriToContent = new ObjectMapper().readValue(body, MODEL_MAP_TYPE);
+               uriToContent.forEach((uri, content) -> models.add(new Model<>(uri, content.toString())));
                return models;
             } catch (IOException e) {
                throw new CompletionException(e);
@@ -183,14 +180,16 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
          .thenApply(response -> response.mapBody(body -> {
             List<Model<EObject>> models = new ArrayList<>();
             try {
-               for (JsonNode modelNode : Json.parse(body)) {
-                  Optional<String> modelUri = getJsonField(modelNode, "modelUri");
-                  Optional<EObject> content = getJsonField(modelNode, "content")
-                     .flatMap(contentText -> decode(contentText, checkedFormat));
-                  if (modelUri.isPresent() && content.isPresent()) {
-                     models.add(new Model<>(modelUri.get(), content.get()));
+               Map<String, JsonNode> uriToContent = new ObjectMapper().readValue(body, MODEL_MAP_TYPE);
+               for (Entry<String, JsonNode> entry : uriToContent.entrySet()) {
+                  JsonNode node = entry.getValue();
+                  Optional<EObject> model = node.isTextual()
+                     ? decode(node.textValue(), checkedFormat)
+                     : decode(node.toString(), checkedFormat);
+                  if (model.isPresent()) {
+                     models.add(new Model<>(entry.getKey(), model.get()));
                   } else {
-                     LOG.warn("Incomplete Model: " + modelNode);
+                     LOG.warn("Incomplete Model: " + entry.getKey());
                   }
                }
                return models;
