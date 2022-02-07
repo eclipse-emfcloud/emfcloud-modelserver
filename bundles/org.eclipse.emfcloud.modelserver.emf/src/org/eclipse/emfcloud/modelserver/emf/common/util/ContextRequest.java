@@ -131,13 +131,13 @@ public final class ContextRequest {
       try {
          JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.message());
          if (!json.has(JsonResponseMember.TYPE)) {
-            error(ctx, "Empty JSON");
+            error(ctx, "Missing message type");
             return Optional.empty();
          }
          JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
-         String jsonType = !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : jsonTypeNode.toString();
-         if (jsonType.equals("{}")) {
-            error(ctx, "Empty JSON");
+         String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.isEmpty() ? jsonTypeNode.asText() : null;
+         if (jsonType == null) {
+            error(ctx, "Invalid message type");
             return Optional.empty();
          }
          return Optional.of(jsonType);
@@ -156,9 +156,9 @@ public final class ContextRequest {
          }
 
          JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
-         String jsonType = !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : jsonTypeNode.toString();
-         if (jsonType.equals("{}")) {
-            error(ctx, "Empty message type");
+         String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.isEmpty() ? jsonTypeNode.asText() : null;
+         if (jsonType == null) {
+            error(ctx, "Invalid message type");
             return Optional.empty();
          }
 

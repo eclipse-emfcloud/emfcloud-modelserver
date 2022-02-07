@@ -247,9 +247,6 @@ public class DefaultSessionController implements SessionController {
    }
 
    protected void broadcastIncrementalUpdatesV2(final String modeluri, final JsonNode jsonPatch) {
-      // TODO Properly specify the message format. Currently reusing the same signature as V1,
-      // but with different data (Atm, the client is responsible and should know if he requested V1 Updates or V2
-      // Updates).
       getOpenSessionsV2(modeluri).forEach(session -> session.send(JsonResponse.incrementalUpdate(jsonPatch)));
    }
 

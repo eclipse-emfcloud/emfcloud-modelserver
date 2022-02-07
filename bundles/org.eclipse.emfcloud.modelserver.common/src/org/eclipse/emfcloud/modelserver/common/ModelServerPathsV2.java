@@ -37,8 +37,6 @@ public interface ModelServerPathsV2 {
    String SERVER_CONFIGURE = "server/configure";
    String SERVER_PING = "server/ping";
 
-   // TODO(v2): New paths for new v2 APIs
-
    /**
     * <p>
     * Endpoint on which to POST to open a transaction, returning the transaction's URI.

@@ -70,6 +70,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
       // but for cross-resources models, they might differ.
       // Currently, trying to access a resource from a different resourceSet will cause
       // a write transaction exception
+      // Issue: https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/159
       URI uri = resourceURI == null ? URI.createURI(modelURI) : resourceURI;
       if (uri.isRelative()) {
          uri = uri.resolve(serverConfiguration.getWorkspaceRootURI());

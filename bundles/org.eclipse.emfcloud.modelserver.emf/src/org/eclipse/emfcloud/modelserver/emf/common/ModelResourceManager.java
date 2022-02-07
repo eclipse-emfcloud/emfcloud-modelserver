@@ -99,6 +99,20 @@ public interface ModelResourceManager {
       return uri.toString();
    }
 
+   /**
+    * Execute a command on the specified model. The command is specified using
+    * the Json Patch syntax (A list of Operations).
+    *
+    * @param modeluri
+    *                     The URI of the model on which the command should be executed
+    * @param jsonPatch
+    *                     The command (Json Patch) to execute
+    * @return the command execution result
+    * @throws JsonPatchException
+    *                                   If an issue occurred when interpreting the Json Patch
+    * @throws JsonPatchTestException
+    *                                   If the Json Patch contains an unsuccessful 'test' operation
+    */
    default CCommandExecutionResult execute(final String modeluri, final ArrayNode jsonPatch)
       throws JsonPatchTestException, JsonPatchException {
       throw new UnsupportedOperationException("V2 API is not supported by this implementation");

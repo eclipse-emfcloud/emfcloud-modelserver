@@ -55,7 +55,6 @@ public class ModelServerRoutingV2 extends AbstractModelServerRouting {
 
       put(ModelServerPathsV2.MODEL_BASE_PATH, this::setModel); // Was PATCH in V1
 
-      // PATCH /edit removed in V2; replaced with PATCH /models TODO
       patch(ModelServerPathsV2.MODEL_BASE_PATH, this::executeCommand); // Was PATCH /edit in V1
 
       post(ModelServerPathsV2.TRANSACTION, this::createTransaction);
@@ -92,8 +91,6 @@ public class ModelServerRoutingV2 extends AbstractModelServerRouting {
 
    @Override
    protected void executeCommand(final Context ctx) {
-      // TODO: this was rewired from PATCH /edit to PATCH /models
-      // Consider handling V1 "PATCH /models" as V2 "PUT /models".
       getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
          param -> modelController.executeCommandV2(ctx, param),
          () -> missingParameter(ctx, MODEL_URI));
