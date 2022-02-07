@@ -180,6 +180,32 @@ public final class ContextResponse {
       context.send(JsonResponse.success(response));
    }
 
+   public static void success(final WsContext context, final String messageFormat, final Object... args) {
+      success(context, String.format(messageFormat, args));
+   }
+
+   /**
+    * Send a 'success' response to the client, containing the specified formatted message and Json Patch.
+    *
+    * @param context
+    *                         The Context representing the client connection.
+    * @param patch
+    *                         The Json Patch node, showing the diff between the previous state of the model,
+    *                         and the new state (e.g. after a model operation, or undo/redo).
+    * @param messageFormat
+    *                         The message to be attached to the result. Follows {@link String#format(String, Object...)}
+    *                         syntax.
+    * @param args
+    *                         The arguments for the formatted message.
+    */
+   public static void successPatch(final WsContext context, final JsonNode patch, final String messageFormat,
+      final Object... args) {
+      JsonNode patchAndMessage = Json.object(
+         Json.prop("message", Json.text(String.format(messageFormat, args))),
+         Json.prop("patch", patch));
+      success(context, patchAndMessage);
+   }
+
    public static void dirtyState(final WsContext context, final boolean dirty) {
       context.send(JsonResponse.dirtyState(dirty));
    }

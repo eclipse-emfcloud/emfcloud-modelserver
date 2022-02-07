@@ -12,10 +12,10 @@ package org.eclipse.emfcloud.modelserver.emf.common;
 
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.conflict;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.decodingError;
-import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.encodingError;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.error;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.modelNotFound;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.success;
+import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.successPatch;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -296,11 +296,14 @@ public class DefaultTransactionController implements TransactionController {
       private void execute(final WsMessageContext ctx, final CCommand command) {
          try {
             CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, command);
-            JsonNode response = codecs.encode(ctx, execution);
+            JsonNode response = getJSONPatchUpdate(execution);
             executions.add(execution);
-            success(ctx, response);
-         } catch (EncodingException exception) {
-            encodingError(ctx, exception);
+
+            if (response == null) {
+               success(ctx, "Model '%s' successfully updated", modelURI);
+            } else {
+               successPatch(ctx, response, "Model '%s' successfully updated", modelURI);
+            }
          } catch (DecodingException exception) {
             decodingError(ctx, exception);
          }
@@ -317,7 +320,7 @@ public class DefaultTransactionController implements TransactionController {
             }
 
             executions.add(execution);
-            success(ctx, response);
+            successPatch(ctx, response, "Model '%s' successfully updated", modelURI);
          } catch (JsonPatchException | JsonPatchTestException exception) {
             error(ctx, "Inapplicable JSON patch", exception);
          }
