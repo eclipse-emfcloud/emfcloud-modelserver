@@ -297,7 +297,7 @@
 									<groupId>org.eclipse.emfcloud.modelserver</groupId>
 									<artifactId>org.eclipse.emfcloud.modelserver.parent</artifactId>
 									<classifier>releng/org.eclipse.emfcloud.modelserver.releng.target/targetplatform</classifier>
-									<version>0.7.0-SNAPSHOT</version>
+									<version>${project.version}</version>
 								</artifact>
 							</target>
 						</configuration>
