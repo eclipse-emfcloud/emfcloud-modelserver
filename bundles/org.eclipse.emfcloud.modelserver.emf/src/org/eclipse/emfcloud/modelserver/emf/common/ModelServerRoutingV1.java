@@ -44,6 +44,11 @@ public class ModelServerRoutingV1 implements Routing {
          serverController, sessionController, ModelServerPathsV1.BASE_PATH);
    }
 
+   @Inject
+   public void setModelURIConverter(final ModelURIConverter uriConverter) {
+      this.delegate.setModelURIConverter(uriConverter);
+   }
+
    @Override
    public void bindRoutes() {
       delegate.bindRoutes(this::endpoints);

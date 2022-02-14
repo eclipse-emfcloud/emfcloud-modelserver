@@ -28,14 +28,19 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.util.EcoreAdapterFactory;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
+import org.eclipse.emfcloud.modelserver.common.di.AbstractModuleWithInitializers;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultResourceSetFactory;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.ResourceSetFactory;
 import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatchersManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
@@ -48,9 +53,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.google.common.collect.Lists;
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Scopes;
+import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -75,13 +80,15 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
    public void beforeTests() throws DecodingException {
       when(serverConfig.getWorkspaceRootURI())
          .thenReturn(URI.createFileURI(getCWD().getAbsolutePath() + "/" + RESOURCE_PATH));
-      modelResourceManager = Guice.createInjector(new AbstractModule() {
+      modelResourceManager = Guice.createInjector(new AbstractModuleWithInitializers() {
 
          private Multibinder<EPackageConfiguration> ePackageConfigurationBinder;
          private ArrayList<Class<? extends EPackageConfiguration>> ePackageConfigurations;
 
          @Override
          protected void configure() {
+            super.configure();
+
             ePackageConfigurations = Lists.newArrayList(
                EcorePackageConfiguration.class,
                CommandPackageConfiguration.class);
@@ -94,6 +101,8 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
             bind(AdapterFactory.class).toInstance(new EcoreAdapterFactory());
             bind(ModelRepository.class).to(DefaultModelRepository.class).in(Scopes.SINGLETON);
             bind(ModelResourceManager.class).to(DefaultModelResourceManager.class).in(Scopes.SINGLETON);
+            bind(ResourceSetFactory.class).to(DefaultResourceSetFactory.class).in(Scopes.SINGLETON);
+            bind(URIConverter.class).to(DefaultModelURIConverter.class).in(Singleton.class);
          }
       }).getInstance(DefaultModelResourceManager.class);
    }

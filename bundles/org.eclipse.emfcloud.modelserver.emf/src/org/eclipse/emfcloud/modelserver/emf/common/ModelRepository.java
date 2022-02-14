@@ -31,6 +31,10 @@ public interface ModelRepository {
 
    Optional<Resource> loadResource(String modeluri);
 
+   /**
+    * @deprecated deresolution of model URIs is the responsibility of the {@link ModelURIConverter} service
+    */
+   @Deprecated
    Set<String> getRelativeModelUris();
 
    Set<String> getAbsoluteModelUris();

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -72,6 +72,7 @@ public class DefaultModelRepositoryTest extends AbstractResourceTest {
       resultMap.keySet().equals(expectedModelUriSet);
    }
 
+   @SuppressWarnings("deprecation")
    @Test
    public void getAllModelUris() throws DecodingException, IOException {
       Set<String> expectedModelUriSet = new HashSet<>();

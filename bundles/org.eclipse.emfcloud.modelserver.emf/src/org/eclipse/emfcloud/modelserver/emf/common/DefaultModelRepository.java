@@ -182,6 +182,7 @@ public class DefaultModelRepository implements ModelRepository {
       return modelResourceManager.redo(modeluri);
    }
 
+   @Deprecated
    @Override
    public Set<String> getRelativeModelUris() {
       Set<String> modeluris = new HashSet<>();

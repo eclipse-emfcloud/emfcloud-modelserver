@@ -18,9 +18,7 @@ import static io.javalin.apibuilder.ApiBuilder.patch;
 import static io.javalin.apibuilder.ApiBuilder.post;
 import static io.javalin.apibuilder.ApiBuilder.put;
 import static io.javalin.apibuilder.ApiBuilder.ws;
-import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.MODEL_URI;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.error;
-import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.missingParameter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,7 +41,10 @@ public class ModelServerRoutingV2 implements Routing {
    protected final SessionController sessionController;
    protected final TransactionController transactionController;
 
+   protected ModelURIConverter uriConverter;
+
    @Inject
+   @SuppressWarnings("checkstyle:ParameterNumber")
    public ModelServerRoutingV2(final Javalin javalin, final ModelResourceManager resourceManager,
       final ModelController modelController, final SchemaController schemaController,
       final ServerController serverController, final SessionController sessionController,
@@ -58,6 +59,12 @@ public class ModelServerRoutingV2 implements Routing {
       this.modelController = modelController;
       this.sessionController = sessionController;
       this.transactionController = transactionController;
+   }
+
+   @Inject
+   public void setModelURIConverter(final ModelURIConverter uriConverter) {
+      this.uriConverter = uriConverter;
+      this.delegate.setModelURIConverter(uriConverter);
    }
 
    @Override
@@ -115,9 +122,7 @@ public class ModelServerRoutingV2 implements Routing {
    }
 
    protected void createTransaction(final Context ctx) {
-      delegate.getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> transactionController.create(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, modeluri -> transactionController.create(ctx, modeluri));
    }
 
    protected void openTransaction(final WsConfig wsConfig) {
@@ -128,8 +133,6 @@ public class ModelServerRoutingV2 implements Routing {
    }
 
    protected void executeCommand(final Context ctx) {
-      delegate.getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.executeCommandV2(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, modeluri -> modelController.executeCommandV2(ctx, modeluri));
    }
 }

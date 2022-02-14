@@ -14,20 +14,22 @@ import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.emfcloud.modelserver.common.di.AbstractModuleWithInitializers;
 import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
 import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerStartup;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 
-public abstract class ModelServerModule extends AbstractModule {
+public abstract class ModelServerModule extends AbstractModuleWithInitializers {
 
    protected static final Logger LOG = LogManager.getLogger(ModelServerModule.class);
 
    @Override
    protected void configure() {
+      super.configure();
+
       // minimal setup
       bind(ModelServerStartup.class).to(bindModelServerStartup()).in(Singleton.class);
       bind(ServerConfiguration.class).to(bindServerConfiguration()).in(Singleton.class);

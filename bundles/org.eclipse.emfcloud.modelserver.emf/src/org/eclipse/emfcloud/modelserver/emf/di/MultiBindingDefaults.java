@@ -12,7 +12,12 @@ package org.eclipse.emfcloud.modelserver.emf.di;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emfcloud.modelserver.common.APIVersion;
+import org.eclipse.emfcloud.modelserver.common.APIVersionRange;
 import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
@@ -27,6 +32,7 @@ import org.eclipse.emfcloud.modelserver.edit.command.CompoundCommandContribution
 import org.eclipse.emfcloud.modelserver.edit.command.RemoveCommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.command.SetCommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRoutingV1;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRoutingV2;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
@@ -66,4 +72,15 @@ public final class MultiBindingDefaults {
 
    public static final List<Class<? extends ModelWatcher.Factory>> DEFAULT_MODEL_WATCHER_FACTORIES = List.of(
       FileModelWatcher.Factory.class);
+
+   public static final Map<APIVersionRange, Class<? extends Function<? super URI, Optional<URI>>>> DEFAULT_MODEL_URI_RESOLVERS = Map
+      .of(
+         APIVersion.ZERO.range(APIVersion.of(2)), DefaultModelURIConverter.APIV1Resolver.class,
+         APIVersion.of(2).range(), DefaultModelURIConverter.APIV2Resolver.class);
+
+   public static final Map<APIVersionRange, Class<? extends Function<? super URI, URI>>> DEFAULT_MODEL_URI_DERESOLVERS = Map
+      .of(
+         APIVersion.ZERO.range(APIVersion.of(2)), DefaultModelURIConverter.APIV1Deresolver.class,
+         APIVersion.of(2).range(), DefaultModelURIConverter.APIV2Deresolver.class);
+
 }
