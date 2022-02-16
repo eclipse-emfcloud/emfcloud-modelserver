@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -12,14 +12,18 @@ package org.eclipse.emfcloud.modelserver.emf.launch;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.UnrecognizedOptionException;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.di.ModelServerModule;
+import org.eclipse.emfcloud.modelserver.emf.di.ProviderDefaults;
 
 import com.google.inject.Injector;
 
 public class CLIBasedModelServerLauncher extends ModelServerLauncher {
+
+   protected static final Logger LOG = LogManager.getLogger(CLIBasedModelServerLauncher.class);
+
    protected final CLIParser parser;
 
    public CLIBasedModelServerLauncher(final CLIParser parser, final ModelServerModule modelServerModule) {
@@ -29,13 +33,27 @@ public class CLIBasedModelServerLauncher extends ModelServerLauncher {
 
    @Override
    public void run() {
-      if (parser.optionExists(CLIParser.OPTION_HELP)) {
+      try {
+         if (parser.optionExists(CLIParser.OPTION_HELP)) {
+            parser.printHelp();
+            return;
+         }
+         if (parser.optionExists(CLIParser.OPTION_LOG_CONFIGURATION)) {
+            parser.parseLogConfigurationPath().ifPresent(ModelServerLauncher::configureLogger);
+         }
+         if (parser.optionExists(CLIParser.OPTION_ENABLE_DEV_LOGGING)) {
+            ProviderDefaults.enableDevLogging();
+         }
+      } catch (UnrecognizedOptionException e) {
+         LOG.error("Unrecognized command line argument(s) used!\n");
+         parser.printHelp();
+         return;
+      } catch (ParseException e) {
+         LOG.error(e.getMessage(), e);
          parser.printHelp();
          return;
       }
-      if (parser.optionExists(CLIParser.OPTION_LOG_ERRORS_ONLY)) {
-         Logger.getRootLogger().setLevel(Level.ERROR);
-      }
+
       super.run();
    }
 

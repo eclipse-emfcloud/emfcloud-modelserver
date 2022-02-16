@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.BasicConfigurator;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EEnumLiteral;
 import org.eclipse.emf.ecore.ENamedElement;
@@ -45,7 +46,7 @@ public class EMFJsonConverterTest extends AbstractResourceTest {
 
    @BeforeClass
    public static void beforeClass() {
-      BasicConfigurator.configure();
+      Configurator.initialize(new DefaultConfiguration());
    }
 
    @Before

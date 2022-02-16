@@ -85,10 +85,10 @@
 
 		<!-- Dependency Versions: Version of dependencies provided by the target 
 			platform in p2. We try to match the p2-version if possible. -->
-		<slf4j.log4j12.version>1.7.30</slf4j.log4j12.version>
+		<apache.logging.log4j.version>2.17.1</apache.logging.log4j.version>
 		<google.guice.version>3.0</google.guice.version>
-		<google.guava.version>27.1-jre</google.guava.version>
-		<jackson.databind.version>2.10.5.1</jackson.databind.version>
+		<google.guava.version>30.1-jre</google.guava.version>
+		<jackson.databind.version>2.12.1</jackson.databind.version>
 		<eclipse.core.runtime.version>3.7.0</eclipse.core.runtime.version>
 		<eclipse.core.resources.version>3.7.100</eclipse.core.resources.version>
 		<emf.common.version>2.23.0</emf.common.version>
@@ -96,14 +96,13 @@
 		<emf.ecore.change.version>2.14.0</emf.ecore.change.version>
 		<emf.ecore.xmi.version>2.16.0</emf.ecore.xmi.version>
 		<emf.edit.version>2.16.0</emf.edit.version>
-		<emf.transaction.version>1.4.0.201306111400</emf.transaction.version>
+		<emf.transaction.version>1.8.0.201405281451</emf.transaction.version>
 		<emf.validation.version>1.8.0.201405281429</emf.validation.version>
-		<emfjson.jackson.version>1.3.1-SNAPSHOT</emfjson.jackson.version>
-		<commons.io.version>2.6</commons.io.version>
-		<junit.version>4.13.1</junit.version>
+		<emfjson.jackson.version>2.0.0</emfjson.jackson.version>
+		<commons.io.version>2.8.0</commons.io.version>
+		<junit.version>4.13.2</junit.version>
 		<mockito.core.version>2.23.0</mockito.core.version>
 		<hamcrest.core.version>1.3</hamcrest.core.version>
-		<maven.jar.version>3.2.0</maven.jar.version>
 		<maven.dependency.version>3.2.0</maven.dependency.version>
 
 		<!-- External Dependency Versions: Versions of dependencies that are not 
@@ -112,12 +111,12 @@
 		<commons.cli.version>1.4</commons.cli.version>
 		<kotlin.stdlib.version>1.4.10</kotlin.stdlib.version>
 		<kotlin.stdlib.common.version>1.4.10</kotlin.stdlib.common.version>
-		<squareup.okhttp.version>4.9.0</squareup.okhttp.version>
+		<squareup.okhttp.version>4.9.1</squareup.okhttp.version>
 		<squareup.okio.version>2.10.0</squareup.okio.version>
-		<jetty.websocket.version>9.4.43.v20210629</jetty.websocket.version>
-		<javalin.version>4.0.0.ALPHA0</javalin.version> <!-- similar to latest 3.x version but with mockito fixes: https://javalin.io/news/2021/02/17/javalin-4.0.0-alpha.html -->
-		<mockito.inline.version>2.23.0</mockito.inline.version>
-		<gmazzo.okhttp.mock.version>1.4.1</gmazzo.okhttp.mock.version>
+		<jetty.websocket.version>9.4.44.v20210927</jetty.websocket.version>
+		<javalin.version>4.3.0</javalin.version>
+		<mockito.inline.version>3.2.4</mockito.inline.version>
+		<gmazzo.okhttp.mock.version>1.5.0</gmazzo.okhttp.mock.version>
 
 		<!-- Release Dependencies for M2 -->
 		<nexus.maven.version>1.6.8</nexus.maven.version>
@@ -383,9 +382,19 @@
 				in p2 -->
 			<dependencies>
 				<dependency>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-					<version>${slf4j.log4j12.version}</version>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-slf4j-impl</artifactId>
+					<version>${apache.logging.log4j.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-core</artifactId>
+					<version>${apache.logging.log4j.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-web</artifactId>
+					<version>${apache.logging.log4j.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>com.google.inject</groupId>

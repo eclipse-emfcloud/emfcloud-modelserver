@@ -25,7 +25,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
@@ -70,7 +71,7 @@ public class ModelServerClient implements ModelServerClientApi<EObject>, ModelSe
    public static final String PATCH = "PATCH";
    public static final String POST = "POST";
 
-   protected static Logger LOG = Logger.getLogger(ModelServerClient.class.getSimpleName());
+   protected static Logger LOG = LogManager.getLogger(ModelServerClient.class);
 
    private static final TypeReference<Map<String, JsonNode>> MODEL_MAP_TYPE = new TypeReference<>() {};
 
