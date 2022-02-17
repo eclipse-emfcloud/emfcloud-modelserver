@@ -59,7 +59,7 @@ public class ModelServerRoutingV2 extends AbstractModelServerRouting {
       patch(ModelServerPathsV2.MODEL_BASE_PATH, this::executeCommand); // Was PATCH /edit in V1
 
       post(ModelServerPathsV2.TRANSACTION, this::createTransaction);
-      ws(ModelServerPathsV2.TRANSACTION + "/:id", this::openTransaction);
+      ws(ModelServerPathsV2.TRANSACTION + "/{id}", this::openTransaction);
    }
 
    @Override
