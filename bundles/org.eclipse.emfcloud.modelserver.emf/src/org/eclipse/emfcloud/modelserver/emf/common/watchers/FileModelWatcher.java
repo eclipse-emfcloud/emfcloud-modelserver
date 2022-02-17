@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 EclipseSource and others.
+ * Copyright (c) 2021-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -22,7 +22,8 @@ import java.nio.file.WatchService;
 import java.text.MessageFormat;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -64,7 +65,7 @@ public class FileModelWatcher extends AbstractModelWatcher {
    }
 
    /** Logger. */
-   protected static final Logger LOG = Logger.getLogger(FileModelWatcher.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(FileModelWatcher.class);
 
    /** The file to watch for. */
    private File fileToWatch;

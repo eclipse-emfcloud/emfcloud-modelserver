@@ -13,7 +13,8 @@ package org.eclipse.emfcloud.modelserver.internal.client;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emfcloud.modelserver.client.TransactionContext;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
@@ -30,7 +31,7 @@ import okhttp3.WebSocket;
  */
 public class TransactionContextImpl<CLIENT> extends EditingContextImpl<CLIENT> implements TransactionContext {
 
-   protected static Logger LOG = Logger.getLogger(TransactionContextImpl.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(TransactionContextImpl.class);
 
    private final String clientID;
    private final Consumer<? super TransactionContextImpl<? extends CLIENT>> onCloseCallback;

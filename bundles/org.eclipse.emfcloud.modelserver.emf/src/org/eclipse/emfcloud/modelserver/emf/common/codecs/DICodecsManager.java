@@ -112,7 +112,11 @@ public class DICodecsManager implements CodecsManager {
 
    @Override
    public String findFormat(final WsContext context) {
-      return context.queryParam(ModelServerPathParametersV1.FORMAT, ModelServerPathParametersV1.FORMAT_JSON);
+      String format = context.queryParam(ModelServerPathParametersV1.FORMAT);
+      if (format != null) {
+         return format;
+      }
+      return ModelServerPathParametersV1.FORMAT_JSON;
    }
 
    @Override

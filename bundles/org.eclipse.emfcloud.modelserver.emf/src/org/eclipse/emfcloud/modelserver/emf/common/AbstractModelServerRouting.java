@@ -32,7 +32,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 
@@ -41,13 +42,13 @@ import com.google.inject.Inject;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.websocket.WsCloseContext;
+import io.javalin.websocket.WsConfig;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsErrorContext;
-import io.javalin.websocket.WsHandler;
 import io.javalin.websocket.WsMessageContext;
 
 public abstract class AbstractModelServerRouting implements Routing {
-   protected static final Logger LOG = Logger.getLogger(AbstractModelServerRouting.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(AbstractModelServerRouting.class);
 
    protected final Javalin javalin;
    protected final ModelResourceManager resourceManager;
@@ -268,11 +269,11 @@ public abstract class AbstractModelServerRouting implements Routing {
          () -> missingParameter(ctx, MODEL_URI));
    }
 
-   protected void subscribe(final WsHandler wsHandler) {
-      wsHandler.onConnect(this::onSubscriptionConnect);
-      wsHandler.onClose(this::onSubscriptionClose);
-      wsHandler.onError(this::onSubscriptionError);
-      wsHandler.onMessage(this::onSubscriptionMessage);
+   protected void subscribe(final WsConfig wsConfig) {
+      wsConfig.onConnect(this::onSubscriptionConnect);
+      wsConfig.onClose(this::onSubscriptionClose);
+      wsConfig.onError(this::onSubscriptionError);
+      wsConfig.onMessage(this::onSubscriptionMessage);
    }
 
    protected void onSubscriptionConnect(final WsConnectContext ctx) {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,10 +13,9 @@ package org.eclipse.emfcloud.modelserver.emf.launch;
 import java.util.Collection;
 import java.util.Set;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -30,11 +29,7 @@ import com.google.inject.Module;
 import com.google.inject.multibindings.Multibinder;
 
 public class ModelServerLauncher implements Runnable {
-   protected static final Logger LOG = Logger.getLogger(ModelServerLauncher.class.getSimpleName());
-
-   static {
-      configureLogger();
-   }
+   protected static final Logger LOG = LogManager.getLogger(ModelServerLauncher.class);
 
    protected final Set<Module> modules;
    protected Injector injector;
@@ -109,11 +104,7 @@ public class ModelServerLauncher implements Runnable {
       });
    }
 
-   public static void configureLogger() {
-      Logger root = Logger.getRootLogger();
-      if (!root.getAllAppenders().hasMoreElements()) {
-         root.addAppender(new ConsoleAppender(new PatternLayout(PatternLayout.TTCC_CONVERSION_PATTERN)));
-      }
-      root.setLevel(Level.DEBUG);
+   public static void configureLogger(final String configurationFilePath) {
+      Configurator.initialize(null, configurationFilePath);
    }
 }

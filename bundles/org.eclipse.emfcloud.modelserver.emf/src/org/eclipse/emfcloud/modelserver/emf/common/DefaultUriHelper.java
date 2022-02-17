@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 EclipseSource and others.
+ * Copyright (c) 2021-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -16,11 +16,12 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.Optional;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 
 public class DefaultUriHelper implements UriHelper {
-   protected static Logger LOG = Logger.getLogger(DefaultUriHelper.class.getSimpleName());
+   protected static Logger LOG = LogManager.getLogger(DefaultUriHelper.class);
 
    @Override
    public String toUriString(final java.net.URI uri) {

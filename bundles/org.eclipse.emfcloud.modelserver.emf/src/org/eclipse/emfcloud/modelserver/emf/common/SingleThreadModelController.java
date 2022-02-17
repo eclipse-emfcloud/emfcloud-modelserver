@@ -18,7 +18,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -40,7 +41,7 @@ public class SingleThreadModelController implements ModelController {
     */
    public static final String MODEL_CONTROLLER_DELEGATE = "ModelControllerDelegate";
 
-   private static final Logger LOG = Logger.getLogger(SingleThreadModelController.class);
+   private static final Logger LOG = LogManager.getLogger(SingleThreadModelController.class);
 
    private static final AtomicInteger COUNT = new AtomicInteger(0);
 

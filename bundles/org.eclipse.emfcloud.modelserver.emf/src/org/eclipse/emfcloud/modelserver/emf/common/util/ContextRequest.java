@@ -18,19 +18,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
+import org.eclipse.emfcloud.modelserver.emf.di.ProviderDefaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 import io.javalin.http.Context;
-import io.javalin.plugin.json.JavalinJackson;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
 public final class ContextRequest {
-   protected static final Logger LOG = Logger.getLogger(ContextRequest.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(ContextRequest.class.getSimpleName());
 
    private ContextRequest() {}
 
@@ -105,7 +106,7 @@ public final class ContextRequest {
             badRequest(ctx, "Empty Body");
             return Optional.empty();
          }
-         JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.body());
+         JsonNode json = ProviderDefaults.provideObjectMapper().readTree(ctx.body());
          if (!json.has(JsonResponseMember.DATA)) {
             badRequest(ctx, "Empty JSON");
             return Optional.empty();
@@ -129,7 +130,7 @@ public final class ContextRequest {
 
    public static Optional<String> readMessageType(final WsMessageContext ctx) {
       try {
-         JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.message());
+         JsonNode json = ProviderDefaults.provideObjectMapper().readTree(ctx.message());
          return readMessageType(ctx, json);
       } catch (IOException exception) {
          error(ctx, "Invalid JSON", exception);
@@ -139,7 +140,7 @@ public final class ContextRequest {
 
    public static Optional<Message<String>> readMessage(final WsMessageContext ctx) {
       try {
-         JsonNode json = JavalinJackson.getObjectMapper().readTree(ctx.message());
+         JsonNode json = ProviderDefaults.provideObjectMapper().readTree(ctx.message());
          Optional<String> jsonType = readMessageType(ctx, json);
          if (jsonType.isEmpty()) {
             return Optional.empty();

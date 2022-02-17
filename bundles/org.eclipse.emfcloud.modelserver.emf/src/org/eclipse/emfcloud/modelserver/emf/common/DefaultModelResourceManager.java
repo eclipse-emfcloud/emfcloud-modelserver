@@ -20,7 +20,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emf.common.util.URI;
@@ -52,7 +53,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 public class DefaultModelResourceManager implements ModelResourceManager {
-   protected static final Logger LOG = Logger.getLogger(DefaultModelResourceManager.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(DefaultModelResourceManager.class);
 
    @Inject
    protected CommandCodec commandCodec;

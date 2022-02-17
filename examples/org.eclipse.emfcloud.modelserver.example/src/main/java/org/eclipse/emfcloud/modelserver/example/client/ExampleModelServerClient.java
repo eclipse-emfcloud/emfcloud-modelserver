@@ -36,6 +36,7 @@ public final class ExampleModelServerClient {
 
    private static final String CMD_QUIT = "quit";
    private static final String CMD_HELP = "help";
+   private static final String CMD_PING = "ping";
    private static final String CMD_REDO = "redo";
    private static final String CMD_UNDO = "undo";
    private static final String CMD_RENAME_WORKFLOW = "rename-workflow";
@@ -102,6 +103,8 @@ public final class ExampleModelServerClient {
                   handleUndo(client, commandAndArgs);
                } else if (command.contentEquals(CMD_REDO)) {
                   handleRedo(client, commandAndArgs);
+               } else if (command.contentEquals(CMD_PING)) {
+                  handlePing(client);
                } else if (command.contentEquals(CMD_HELP)) {
                   printHelp();
                } else {
@@ -193,6 +196,11 @@ public final class ExampleModelServerClient {
       System.out.println("< OK");
    }
 
+   private static void handlePing(final ModelServerClientV1 client)
+      throws InterruptedException {
+      client.ping().thenAccept(response -> System.out.println("< " + response.body()));
+   }
+
    private static void printHelp() {
       System.out.println("Supported commands:");
       System.out.println("- " + CMD_SUBSCRIBE + " <modelUri> <format>");
@@ -202,6 +210,7 @@ public final class ExampleModelServerClient {
       System.out.println("- " + CMD_UPDATE_TASKS + " <name> // adapts all task names in SuperBrewer3000.json (custom)");
       System.out.println("- " + CMD_UNDO + " <modelUri>");
       System.out.println("- " + CMD_REDO + " <modelUri>");
+      System.out.println("- " + CMD_PING);
       System.out.println("- " + CMD_HELP);
       System.out.println("- " + CMD_QUIT);
       System.out.println();

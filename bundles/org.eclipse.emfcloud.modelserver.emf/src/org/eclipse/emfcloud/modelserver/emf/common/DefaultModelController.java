@@ -29,7 +29,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -62,13 +63,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 
 import io.javalin.http.Context;
-import io.javalin.plugin.json.JavalinJackson;
 
 public class DefaultModelController implements ModelController {
-   protected static final Logger LOG = Logger.getLogger(DefaultModelController.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(DefaultModelController.class);
 
    protected final ModelRepository modelRepository;
    protected final SessionController sessionController;
@@ -82,9 +81,8 @@ public class DefaultModelController implements ModelController {
    @SuppressWarnings("checkstyle:ParameterNumber")
    public DefaultModelController(final ModelRepository modelRepository, final SessionController sessionController,
       final ServerConfiguration serverConfiguration, final CodecsManager codecs, final ModelValidator modelValidator,
-      final Provider<ObjectMapper> objectMapperProvider, final PatchCommandHandler.Registry commandHandlerRegistry,
-      final ModelResourceManager resourceManager, final JsonPatchHelper jsonPatchHelper) {
-      JavalinJackson.configure(objectMapperProvider.get());
+      final PatchCommandHandler.Registry commandHandlerRegistry, final ModelResourceManager resourceManager,
+      final JsonPatchHelper jsonPatchHelper) {
       this.modelRepository = modelRepository;
       this.sessionController = sessionController;
       this.serverConfiguration = serverConfiguration;

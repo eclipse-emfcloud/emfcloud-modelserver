@@ -130,8 +130,7 @@ public class DefaultModelControllerTest {
       modelValidator = new DefaultModelValidator(modelRepository, new DefaultFacetConfig(),
          EMFModule::setupDefaultMapper);
       modelController = new DefaultModelController(modelRepository, sessionController, serverConfiguration, codecs,
-         modelValidator, EMFModule::setupDefaultMapper, new PatchCommandHandler.RegistryImpl(), modelResourceManager,
-         jsonPatchHelper);
+         modelValidator, new PatchCommandHandler.RegistryImpl(), modelResourceManager, jsonPatchHelper);
    }
 
    @Test

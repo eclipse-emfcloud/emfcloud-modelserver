@@ -25,7 +25,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
@@ -76,7 +77,7 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
    public static final String PATCH = "PATCH";
    public static final String POST = "POST";
 
-   protected static Logger LOG = Logger.getLogger(AbstractModelServerClient.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(AbstractModelServerClient.class);
 
    private static final TypeReference<Map<String, JsonNode>> MODEL_MAP_TYPE = new TypeReference<>() {};
 

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,9 +14,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.emf.launch.CLIBasedModelServerLauncher;
 import org.eclipse.emfcloud.modelserver.emf.launch.CLIParser;
 import org.eclipse.emfcloud.modelserver.example.util.ResourceUtil;
@@ -42,30 +42,30 @@ public final class ExampleServerLauncher {
    private static final String UISCHEMA_WEIGHTEDFLOW_FILE = "weightedflow.json";
    private static final String PROCESS_NAME = "java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar";
 
-   private static Logger LOG = Logger.getLogger(ExampleServerLauncher.class.getSimpleName());
+   private static Logger LOG = LogManager.getLogger(ExampleServerLauncher.class);
 
    private ExampleServerLauncher() {}
 
-   public static void main(final String[] args) throws ParseException {
+   public static void main(final String[] args) {
       final CLIBasedModelServerLauncher launcher = new CLIBasedModelServerLauncher(
          createCLIParser(args),
          new ExampleServerModule());
       launcher.run();
    }
 
-   protected static CLIParser createCLIParser(final String[] args) throws ParseException {
+   protected static CLIParser createCLIParser(final String[] args) {
       CLIParser parser = new CLIParser(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME, 8081);
       ensureWorkspaceRoot(parser);
       return parser;
    }
 
-   protected static void ensureWorkspaceRoot(final CLIParser parser) throws ParseException {
+   protected static void ensureWorkspaceRoot(final CLIParser parser) {
       if (!parser.optionExists(CLIParser.OPTION_WORKSPACE_ROOT)) {
          // No workspace root was specified, use test workspace
          final File workspaceRoot = new File(TEMP_DIR + "/" + WORKSPACE_ROOT);
          if (!setupTempTestWorkspace(workspaceRoot)) {
             LOG.error("Could not setup test workspace");
-            System.exit(0);
+            System.exit(1);
          }
          Runtime.getRuntime().addShutdownHook(new Thread(() -> cleanupTempTestWorkspace(workspaceRoot)));
          parser.setOption(CLIParser.OPTION_WORKSPACE_ROOT, workspaceRoot.toURI());
@@ -74,7 +74,7 @@ public final class ExampleServerLauncher {
       }
    }
 
-   protected static void ensureUISchemaFolder(final CLIParser parser) throws ParseException {
+   protected static void ensureUISchemaFolder(final CLIParser parser) {
       if (!parser.optionExists(CLIParser.OPTION_UI_SCHEMA_ROOT)) {
          URI uiSchemaRoot = new File(TEMP_DIR + "/" + WORKSPACE_UISCHEMA_FOLDER).toURI();
          parser.setOption(CLIParser.OPTION_UI_SCHEMA_ROOT, uiSchemaRoot);

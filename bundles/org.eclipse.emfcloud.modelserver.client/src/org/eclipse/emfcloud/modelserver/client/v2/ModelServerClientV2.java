@@ -19,7 +19,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.client.AbstractModelServerClient;
 import org.eclipse.emfcloud.modelserver.client.EditingContext;
@@ -59,7 +60,7 @@ public class ModelServerClientV2 extends AbstractModelServerClient
    public static final String PATCH = "PATCH";
    public static final String POST = "POST";
 
-   protected static Logger LOG = Logger.getLogger(ModelServerClientV2.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(ModelServerClientV2.class);
 
    protected final Map<TransactionContextImpl<?>, WebSocket> openTransactionSockets = new LinkedHashMap<>();
 

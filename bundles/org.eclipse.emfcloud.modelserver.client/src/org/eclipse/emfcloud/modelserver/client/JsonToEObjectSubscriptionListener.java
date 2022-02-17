@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -12,13 +12,14 @@ package org.eclipse.emfcloud.modelserver.client;
 
 import java.util.Optional;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 
 public class JsonToEObjectSubscriptionListener extends TypedSubscriptionListener<EObject> {
-   private static Logger LOG = Logger.getLogger(JsonToEObjectSubscriptionListener.class.getSimpleName());
+   private static Logger LOG = LogManager.getLogger(JsonToEObjectSubscriptionListener.class);
 
    public JsonToEObjectSubscriptionListener() {
       super(JsonToEObjectSubscriptionListener::decode);

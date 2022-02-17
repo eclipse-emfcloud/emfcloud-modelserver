@@ -13,7 +13,8 @@ package org.eclipse.emfcloud.modelserver.emf.common.util;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
@@ -29,7 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public final class Message<T> {
 
-   protected static Logger LOG = Logger.getLogger(Message.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(Message.class);
 
    private final String type;
    private final T data;

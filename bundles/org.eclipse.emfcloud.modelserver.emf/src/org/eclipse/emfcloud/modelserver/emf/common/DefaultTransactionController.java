@@ -25,7 +25,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
@@ -59,7 +60,7 @@ import io.javalin.websocket.WsErrorContext;
 import io.javalin.websocket.WsMessageContext;
 
 public class DefaultTransactionController implements TransactionController {
-   protected static Logger LOG = Logger.getLogger(DefaultTransactionController.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(DefaultTransactionController.class);
 
    private static final Supplier<String> TRANSACTION_ID_FACTORY = () -> UUID.randomUUID().toString();
 

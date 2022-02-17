@@ -16,7 +16,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.command.IdentityCommand;
 import org.eclipse.emf.common.util.URI;
@@ -49,7 +50,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
  */
 public abstract class AbstractJsonPatchHelper {
 
-   private static final Logger LOG = Logger.getLogger(AbstractJsonPatchHelper.class.getSimpleName());
+   private static final Logger LOG = LogManager.getLogger(AbstractJsonPatchHelper.class);
 
    static final String TEST = "test";
    static final String MOVE = "move";

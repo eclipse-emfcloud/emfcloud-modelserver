@@ -95,7 +95,7 @@ public class DefaultModelServerModule extends ModelServerModule {
       bind(TransactionController.class).to(bindTransactionController()).in(Singleton.class);
 
       // Configure instance bindings
-      bind(ObjectMapper.class).toProvider(this::provideObjectMapper);
+      bind(ObjectMapper.class).toProvider(this::provideObjectMapper).in(Singleton.class);
       bind(Javalin.class).toProvider(this::provideJavalin).in(Singleton.class);
       bind(AdapterFactory.class).toProvider(this::provideAdapterFactory).in(Singleton.class);
 

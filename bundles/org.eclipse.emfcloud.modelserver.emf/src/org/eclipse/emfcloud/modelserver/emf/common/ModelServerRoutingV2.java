@@ -20,18 +20,19 @@ import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.m
 
 import java.util.Optional;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV2;
 
 import com.google.inject.Inject;
 
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.websocket.WsConfig;
 import io.javalin.websocket.WsConnectContext;
-import io.javalin.websocket.WsHandler;
 
 public class ModelServerRoutingV2 extends AbstractModelServerRouting {
-   protected static final Logger LOG = Logger.getLogger(ModelServerRoutingV2.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(ModelServerRoutingV2.class);
 
    protected final TransactionController transactionController;
 
@@ -82,11 +83,11 @@ public class ModelServerRoutingV2 extends AbstractModelServerRouting {
          () -> missingParameter(ctx, MODEL_URI));
    }
 
-   protected void openTransaction(final WsHandler wsHandler) {
-      wsHandler.onConnect(transactionController::onOpen);
-      wsHandler.onClose(transactionController::onClose);
-      wsHandler.onError(transactionController::onError);
-      wsHandler.onMessage(transactionController::onMessage);
+   protected void openTransaction(final WsConfig wsConfig) {
+      wsConfig.onConnect(transactionController::onOpen);
+      wsConfig.onClose(transactionController::onClose);
+      wsConfig.onError(transactionController::onError);
+      wsConfig.onMessage(transactionController::onMessage);
    }
 
    @Override

@@ -32,7 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
@@ -49,7 +50,7 @@ import io.javalin.websocket.WsMessageContext;
 
 public class DefaultSessionController implements SessionController {
 
-   protected static Logger LOG = Logger.getLogger(DefaultSessionController.class.getSimpleName());
+   protected static Logger LOG = LogManager.getLogger(DefaultSessionController.class);
 
    protected final Map<String, Set<WsContext>> modelUrisToClients = Maps.newConcurrentMap();
    protected final Map<String, Set<WsContext>> modelUrisToClientsV2 = Maps.newConcurrentMap();

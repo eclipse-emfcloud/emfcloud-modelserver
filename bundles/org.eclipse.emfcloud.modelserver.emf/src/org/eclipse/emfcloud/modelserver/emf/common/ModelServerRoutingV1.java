@@ -12,7 +12,8 @@ package org.eclipse.emfcloud.modelserver.emf.common;
 
 import static io.javalin.apibuilder.ApiBuilder.patch;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
 
 import com.google.inject.Inject;
@@ -20,7 +21,7 @@ import com.google.inject.Inject;
 import io.javalin.Javalin;
 
 public class ModelServerRoutingV1 extends AbstractModelServerRouting {
-   protected static final Logger LOG = Logger.getLogger(ModelServerRoutingV1.class.getSimpleName());
+   protected static final Logger LOG = LogManager.getLogger(ModelServerRoutingV1.class);
 
    @Inject
    public ModelServerRoutingV1(final Javalin javalin, final ModelResourceManager resourceManager,
