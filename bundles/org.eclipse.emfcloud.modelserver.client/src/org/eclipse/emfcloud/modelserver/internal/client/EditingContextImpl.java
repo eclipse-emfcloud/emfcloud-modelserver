@@ -11,8 +11,6 @@
 
 package org.eclipse.emfcloud.modelserver.internal.client;
 
-import java.util.function.BiFunction;
-
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emfcloud.modelserver.client.EditingContext;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
@@ -32,27 +30,29 @@ import okhttp3.WebSocketListener;
 public class EditingContextImpl<CLIENT> extends WebSocketListener implements EditingContext {
 
    private final CLIENT owner;
-   private final BiFunction<? super CLIENT, ? super CCommand, String> encoder;
+   private final MessageEncoder<? super CLIENT> encoder;
    private final CommandCodec codec = new EMFCommandCodec();
    private WebSocket socket;
    private int referenceCount = 1;
+   private final String format;
 
    /**
     * Initializes me.
     *
     * @param owner ModelServerClient which owns this EditingContext.
     */
-   public EditingContextImpl(final CLIENT owner, final BiFunction<? super CLIENT, ? super CCommand, String> encoder) {
+   public EditingContextImpl(final CLIENT owner, final MessageEncoder<? super CLIENT> encoder, final String format) {
       super();
 
       this.owner = owner;
       this.encoder = encoder;
+      this.format = format;
    }
 
    @Override
    public boolean execute(final Command command) throws EncodingException {
       CCommand serializable = codec.serverToClient(command);
-      String message = encoder.apply(owner, serializable);
+      String message = encoder.encode(owner, serializable, format);
       return execute(message);
    }
 
@@ -106,6 +106,24 @@ public class EditingContextImpl<CLIENT> extends WebSocketListener implements Edi
    public boolean release() {
       referenceCount = referenceCount - 1;
       return referenceCount <= 0;
+   }
+
+   //
+   // Nested types
+   //
+
+   @FunctionalInterface
+   public interface MessageEncoder<CLIENT> {
+      /**
+       * Encode a {@code command} in some {@code format} on behalf of a {@code client}.
+       *
+       * @param client  the client instance
+       * @param command a command to encode
+       * @param format  the format in which to encode the {@code command}
+       *
+       * @return the encoded {@code command}
+       */
+      String encode(CLIENT client, CCommand command, String format);
    }
 
 }

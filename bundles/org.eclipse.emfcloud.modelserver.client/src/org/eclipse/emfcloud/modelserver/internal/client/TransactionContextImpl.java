@@ -10,14 +10,12 @@
 
 package org.eclipse.emfcloud.modelserver.internal.client;
 
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emfcloud.modelserver.client.TransactionContext;
-import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonRequest;
@@ -42,10 +40,10 @@ public class TransactionContextImpl<CLIENT> extends EditingContextImpl<CLIENT> i
     * @param owner ModelServerClient which owns this EditingContext.
     */
    public TransactionContextImpl(final CLIENT owner, final String clientID,
-      final BiFunction<? super CLIENT, ? super CCommand, String> encoder,
+      final MessageEncoder<? super CLIENT> encoder, final String format,
       final Consumer<? super TransactionContextImpl<? extends CLIENT>> onCloseCallback) {
 
-      super(owner, encoder);
+      super(owner, encoder, format);
 
       this.clientID = clientID;
       this.onCloseCallback = onCloseCallback;

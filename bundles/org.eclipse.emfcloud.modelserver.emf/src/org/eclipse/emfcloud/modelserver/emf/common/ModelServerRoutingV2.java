@@ -10,6 +10,10 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import static io.javalin.apibuilder.ApiBuilder.after;
+import static io.javalin.apibuilder.ApiBuilder.before;
+import static io.javalin.apibuilder.ApiBuilder.delete;
+import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.patch;
 import static io.javalin.apibuilder.ApiBuilder.post;
 import static io.javalin.apibuilder.ApiBuilder.put;
@@ -18,11 +22,10 @@ import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.error;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.missingParameter;
 
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV2;
+import org.eclipse.emfcloud.modelserver.common.Routing;
 
 import com.google.inject.Inject;
 
@@ -31,9 +34,13 @@ import io.javalin.http.Context;
 import io.javalin.websocket.WsConfig;
 import io.javalin.websocket.WsConnectContext;
 
-public class ModelServerRoutingV2 extends AbstractModelServerRouting {
+public class ModelServerRoutingV2 implements Routing {
    protected static final Logger LOG = LogManager.getLogger(ModelServerRoutingV2.class);
 
+   protected final ModelServerRoutingDelegate delegate;
+
+   protected final ModelController modelController;
+   protected final SessionController sessionController;
    protected final TransactionController transactionController;
 
    @Inject
@@ -42,19 +49,57 @@ public class ModelServerRoutingV2 extends AbstractModelServerRouting {
       final ServerController serverController, final SessionController sessionController,
       final TransactionController transactionController) {
 
-      super(javalin, resourceManager, modelController, schemaController, serverController, sessionController);
+      super();
 
+      this.delegate = new ModelServerRoutingDelegate(javalin, resourceManager, modelController, schemaController,
+         serverController, sessionController, ModelServerPathsV2.BASE_PATH);
+      delegate.setSubscriptionConnectionHandler(this::connectSubscription);
+
+      this.modelController = modelController;
+      this.sessionController = sessionController;
       this.transactionController = transactionController;
    }
 
    @Override
-   protected String getBasePath() { return ModelServerPathsV2.BASE_PATH; }
+   public void bindRoutes() {
+      delegate.bindRoutes(this::endpoints);
+   }
 
-   @Override
-   protected void apiEndpoints() {
-      super.apiEndpoints();
+   private void endpoints() {
+      before(delegate::waitForPrecondition);
 
-      put(ModelServerPathsV2.MODEL_BASE_PATH, this::setModel); // Was PATCH in V1
+      get(ModelServerPathsV2.MODEL_BASE_PATH, delegate::getModel);
+      post(ModelServerPathsV2.MODEL_BASE_PATH, delegate::createModel);
+      delete(ModelServerPathsV2.MODEL_BASE_PATH, delegate::deleteModel);
+
+      post(ModelServerPathsV2.CLOSE, delegate::closeModel);
+
+      get(ModelServerPathsV2.UNDO, delegate::undoCommand);
+      get(ModelServerPathsV2.REDO, delegate::redoCommand);
+
+      get(ModelServerPathsV2.MODEL_ELEMENT, delegate::getModelElement);
+
+      get(ModelServerPathsV2.SAVE, delegate::saveModel);
+      get(ModelServerPathsV2.SAVE_ALL, delegate::saveAllModels);
+
+      get(ModelServerPathsV2.MODEL_URIS, delegate::getModelUris);
+
+      get(ModelServerPathsV2.TYPE_SCHEMA, delegate::getTypeSchema);
+
+      get(ModelServerPathsV2.UI_SCHEMA, delegate::getUiSchema);
+
+      before(ModelServerPathsV2.SERVER_CONFIGURE, delegate::beforeServerConfigure);
+      put(ModelServerPathsV2.SERVER_CONFIGURE, delegate::serverConfigure);
+      after(ModelServerPathsV2.SERVER_CONFIGURE, delegate::afterServerConfigure);
+
+      get(ModelServerPathsV2.SERVER_PING, delegate::serverPing);
+
+      get(ModelServerPathsV2.VALIDATION, delegate::validateModel);
+      get(ModelServerPathsV2.VALIDATION_CONSTRAINTS, delegate::getValidationConstraints);
+
+      ws(ModelServerPathsV2.SUBSCRIPTION, delegate::subscribe);
+
+      put(ModelServerPathsV2.MODEL_BASE_PATH, delegate::setModel); // Was PATCH in V1
 
       patch(ModelServerPathsV2.MODEL_BASE_PATH, this::executeCommand); // Was PATCH /edit in V1
 
@@ -62,23 +107,15 @@ public class ModelServerRoutingV2 extends AbstractModelServerRouting {
       ws(ModelServerPathsV2.TRANSACTION + "/{id}", this::openTransaction);
    }
 
-   @Override
-   protected void onSubscriptionConnect(final WsConnectContext ctx) {
-      Optional<String> modelUri = getResolvedFileUri(ctx.queryParamMap(), MODEL_URI);
-      if (modelUri.isEmpty()) {
-         missingParameter(ctx, MODEL_URI);
-         ctx.session.close();
-         return;
-      }
-
-      if (!sessionController.subscribeV2(ctx, modelUri.get())) {
-         error(ctx, "Cannot subscribe to '%s': modeluri is not a valid model resource", modelUri.get());
+   protected void connectSubscription(final WsConnectContext ctx, final String modelUri) {
+      if (!sessionController.subscribeV2(ctx, modelUri)) {
+         error(ctx, "Cannot subscribe to '%s': modeluri is not a valid model resource", modelUri);
          ctx.session.close();
       }
    }
 
    protected void createTransaction(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
+      delegate.getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
          param -> transactionController.create(ctx, param),
          () -> missingParameter(ctx, MODEL_URI));
    }
@@ -90,9 +127,8 @@ public class ModelServerRoutingV2 extends AbstractModelServerRouting {
       wsConfig.onMessage(transactionController::onMessage);
    }
 
-   @Override
    protected void executeCommand(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
+      delegate.getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
          param -> modelController.executeCommandV2(ctx, param),
          () -> missingParameter(ctx, MODEL_URI));
    }

@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR MIT
  ********************************************************************************/
-package org.eclipse.emfcloud.modelserver.client;
+package org.eclipse.emfcloud.modelserver.internal.client;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,6 +28,12 @@ import java.util.concurrent.CompletionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emfcloud.modelserver.client.EditingContext;
+import org.eclipse.emfcloud.modelserver.client.Model;
+import org.eclipse.emfcloud.modelserver.client.ModelServerNotification;
+import org.eclipse.emfcloud.modelserver.client.Response;
+import org.eclipse.emfcloud.modelserver.client.ServerConfiguration;
+import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
@@ -41,7 +47,6 @@ import org.eclipse.emfcloud.modelserver.emf.configuration.ChangePackageConfigura
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
-import org.eclipse.emfcloud.modelserver.internal.client.EditingContextImpl;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -65,9 +70,9 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
 /**
- * Implementation of the model server client API that is common to multiple versions.
+ * Implementation of behaviours common to multiple API versions of the client.
  */
-public abstract class AbstractModelServerClient implements AutoCloseable {
+public class ModelServerClientDelegate implements AutoCloseable {
 
    public static final String APPLICATION_JSON = "application/json";
 
@@ -77,7 +82,7 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
    public static final String PATCH = "PATCH";
    public static final String POST = "POST";
 
-   protected static final Logger LOG = LogManager.getLogger(AbstractModelServerClient.class);
+   protected static final Logger LOG = LogManager.getLogger(ModelServerClientDelegate.class);
 
    private static final TypeReference<Map<String, JsonNode>> MODEL_MAP_TYPE = new TypeReference<>() {};
 
@@ -88,20 +93,26 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
    protected final Map<EditingContextImpl<?>, WebSocket> openEditingSockets = new LinkedHashMap<>();
    protected final EPackageConfiguration[] configurations;
 
-   protected AbstractModelServerClient(final String baseUrl, final String defaultFormat,
-      final EPackageConfiguration... configurations)
+   private final Set<String> supportedFormats;
+
+   public ModelServerClientDelegate(final String baseUrl, final String defaultFormat,
+      final Iterable<String> supportedFormats, final EPackageConfiguration... configurations)
       throws MalformedURLException {
 
-      this(new OkHttpClient(), baseUrl, defaultFormat, configurations);
+      this(new OkHttpClient(), baseUrl, defaultFormat, supportedFormats, configurations);
    }
 
-   public AbstractModelServerClient(final OkHttpClient client, final String baseUrl,
-      final String defaultFormat, final EPackageConfiguration... configurations) throws MalformedURLException {
+   public ModelServerClientDelegate(final OkHttpClient client, final String baseUrl, final String defaultFormat,
+      final Iterable<String> supportedFormats, final EPackageConfiguration... configurations)
+      throws MalformedURLException {
+
+      super();
 
       this.client = client;
       this.baseUrl = new URL(baseUrl).toString();
       this.defaultFormat = defaultFormat;
       this.configurations = configurations;
+      this.supportedFormats = ImmutableSet.copyOf(supportedFormats);
       this.init();
    }
 
@@ -122,7 +133,9 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
    @Override
    public void close() {
       openSockets.keySet().forEach(this::unsubscribe);
+      openSockets.clear();
       openEditingSockets.keySet().forEach(this::close);
+      openEditingSockets.clear();
       client.dispatcher().executorService().shutdown();
       client.connectionPool().evictAll();
    }
@@ -364,7 +377,7 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
       return createOrUpdateModel(modelUri, updatedModel, format, PATCH);
    }
 
-   protected String checkedFormat(final String format) {
+   public String checkedFormat(final String format) {
       if (Strings.isNullOrEmpty(format)) {
          return getDefaultFormat();
       }
@@ -379,14 +392,13 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
    }
 
    /**
-    * Test whether format is supported. You may override this method if your model server has specific format and codecs
-    * configuration.
+    * Test whether format is supported.
     *
     * @param format the format to test.
     * @return true when supported.
     */
-   protected boolean isSupportedFormat(final String format) {
-      return DEFAULT_SUPPORTED_FORMATS.contains(format);
+   public boolean isSupportedFormat(final String format) {
+      return supportedFormats.contains(format);
    }
 
    /**
@@ -608,8 +620,8 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
 
          @Override
          public void onMessage(@NotNull final WebSocket webSocket, @NotNull final String text) {
-            Optional<String> type = AbstractModelServerClient.this.parseJsonField(text, JsonResponseMember.TYPE);
-            Optional<String> data = AbstractModelServerClient.this.parseJsonField(text, JsonResponseMember.DATA);
+            Optional<String> type = ModelServerClientDelegate.this.parseJsonField(text, JsonResponseMember.TYPE);
+            Optional<String> data = ModelServerClientDelegate.this.parseJsonField(text, JsonResponseMember.DATA);
             subscriptionListener.onNotification(new ModelServerNotification(type.orElse("unknown"), data));
          }
 
@@ -652,15 +664,15 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
       return false;
    }
 
-   protected String makeWsUrl(final String path) {
+   public String makeWsUrl(final String path) {
       return path.replaceFirst("http:", "ws:");
    }
 
-   protected String makeUrl(final String path) {
+   public String makeUrl(final String path) {
       return baseUrl + path;
    }
 
-   protected HttpUrl.Builder createHttpUrlBuilder(final String path) {
+   public HttpUrl.Builder createHttpUrlBuilder(final String path) {
       return Objects.requireNonNull(HttpUrl.parse(path)).newBuilder();
    }
 
@@ -790,7 +802,7 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
 
    }
 
-   protected CompletableFuture<Response<Boolean>> makeCallAndExpectSuccess(final Request request) {
+   public CompletableFuture<Response<Boolean>> makeCallAndExpectSuccess(final Request request) {
       return makeCall(request)
          .thenApply(response -> parseField(response, JsonResponseMember.TYPE))
          .thenApply(this::getBodyOrThrow)
@@ -802,9 +814,44 @@ public abstract class AbstractModelServerClient implements AutoCloseable {
          .thenApply(response -> parseField(response, JsonResponseMember.DATA));
    }
 
-   protected CompletableFuture<Response<String>> makeCallAndGetDataBody(final Request request) {
+   public CompletableFuture<Response<String>> makeCallAndGetDataBody(final Request request) {
       return makeCallAndParseDataField(request)
          .thenApply(this::getBodyOrThrow);
+   }
+
+   /**
+    * Delegator for the {@code edit} API endpoint's websocket editing context.
+    *
+    * @param owner    the client on which behalf the editing context will operate
+    * @param endpoint the possibly version-specific endpoint name
+    * @param encoder  the possibly version-specific edit message encoder
+    *
+    * @return the websocket editing context
+    */
+   public <CLIENT> EditingContext edit(final CLIENT owner, final String endpoint,
+      final EditingContextImpl.MessageEncoder<? super CLIENT> encoder) {
+
+      EditingContextImpl<?> result;
+
+      if (!openEditingSockets.isEmpty()) {
+         result = openEditingSockets.keySet().iterator().next();
+         result.retain();
+         return result;
+      }
+
+      Request request = new Request.Builder()
+         .url(makeWsUrl(endpoint))
+         .build();
+      result = new EditingContextImpl<>(owner, encoder, getDefaultFormat());
+
+      final WebSocket socket = client.newWebSocket(request, result);
+      openEditingSockets.put(result, socket);
+
+      return result;
+   }
+
+   public WebSocket createWebSocket(final Request request, final WebSocketListener listener) {
+      return client.newWebSocket(request, listener);
    }
 
 }
