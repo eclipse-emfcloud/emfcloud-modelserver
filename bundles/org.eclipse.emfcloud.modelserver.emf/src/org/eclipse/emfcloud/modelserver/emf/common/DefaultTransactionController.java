@@ -40,7 +40,6 @@ import org.eclipse.emfcloud.modelserver.edit.util.CommandUtil;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest;
 import org.eclipse.emfcloud.modelserver.emf.common.util.Message;
-import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.patch.PatchCommandHandler;
 import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
@@ -66,7 +65,6 @@ public class DefaultTransactionController implements TransactionController {
 
    protected final ModelRepository modelRepository;
    protected final SessionController sessionController;
-   protected final ServerConfiguration serverConfiguration;
    protected final ModelResourceManager modelResourceManager;
    protected final ObjectMapper objectMapper;
    protected final CodecsManager codecs;
@@ -78,18 +76,16 @@ public class DefaultTransactionController implements TransactionController {
 
    @Inject
    public DefaultTransactionController(final ModelRepository modelRepository, final SessionController sessionController,
-      final ServerConfiguration serverConfiguration, final ModelResourceManager modelResourceManager,
-      final CodecsManager codecs, final ObjectMapper objectMapper,
-      final PatchCommandHandler.Registry patchCommandHandlerRegistry) {
+      final ModelResourceManager modelResourceManager, final CodecsManager codecs, final ObjectMapper objectMapper,
+      final PatchCommandHandler.Registry patchCommandHandlerRegistry, final JsonPatchHelper jsonPatchHelper) {
 
       this.modelRepository = modelRepository;
       this.sessionController = sessionController;
-      this.serverConfiguration = serverConfiguration;
       this.modelResourceManager = modelResourceManager;
       this.codecs = codecs;
       this.objectMapper = objectMapper;
       this.patchCommandHandlerRegistry = patchCommandHandlerRegistry;
-      this.jsonPatchHelper = new JsonPatchHelper(modelResourceManager, serverConfiguration);
+      this.jsonPatchHelper = jsonPatchHelper;
    }
 
    @Override

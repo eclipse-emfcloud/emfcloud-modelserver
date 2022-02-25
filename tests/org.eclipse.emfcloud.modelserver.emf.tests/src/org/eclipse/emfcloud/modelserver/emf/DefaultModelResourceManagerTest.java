@@ -14,11 +14,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.emf.common.notify.AdapterFactory;
@@ -28,9 +32,12 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreAdapterFactory;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchTestException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
@@ -41,12 +48,16 @@ import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfigur
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
+import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Lists;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -66,6 +77,9 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
 
    @Mock
    private ServerConfiguration serverConfig;
+
+   @Mock(answer = Answers.RETURNS_MOCKS)
+   private JsonPatchHelper jsonPatchHelper;
 
    public DefaultModelResourceManagerTest() {
       super();
@@ -94,6 +108,7 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
             bind(AdapterFactory.class).toInstance(new EcoreAdapterFactory());
             bind(ModelRepository.class).to(DefaultModelRepository.class).in(Scopes.SINGLETON);
             bind(ModelResourceManager.class).to(DefaultModelResourceManager.class).in(Scopes.SINGLETON);
+            bind(JsonPatchHelper.class).toInstance(jsonPatchHelper);
          }
       }).getInstance(DefaultModelResourceManager.class);
    }
@@ -191,6 +206,21 @@ public class DefaultModelResourceManagerTest extends AbstractResourceTest {
             assertTrue(((EPackage) result).getEClassifiers().size() == 2);
          },
          () -> assertTrue("Model not found in repository", false));
+   }
+
+   // The JsonPatchHelper is injected via a Provider because the base implementation
+   // has a dependency on the ModelResourceManager (mutually dependent)
+   @Test
+   public void jsonPatchHelperInjection() throws IOException, JsonPatchException, JsonPatchTestException {
+      String modelURI = adaptModelUri("Coffee.ecore");
+      modelResourceManager.loadResource(modelURI);
+      ArrayNode jsonPatch = Json.array(Json.object(Map.of(
+         "op", Json.text("replace"),
+         "path", Json.text("/name"),
+         "value", Json.text("joe"))));
+      modelResourceManager.execute(modelURI, jsonPatch);
+
+      verify(jsonPatchHelper).getCommand(eq(modelURI), any(ResourceSet.class), eq(jsonPatch));
    }
 
    // Test framework

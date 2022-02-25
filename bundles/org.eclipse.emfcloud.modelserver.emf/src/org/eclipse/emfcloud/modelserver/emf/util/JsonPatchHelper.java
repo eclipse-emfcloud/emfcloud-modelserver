@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.util;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +26,8 @@ import org.eclipse.emf.transaction.Transaction;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.impl.InternalTransaction;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
-import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
+import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.patch.AbstractJsonPatchHelper;
 import org.eclipse.emfcloud.modelserver.common.patch.LazyCompoundCommand;
@@ -34,7 +37,6 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.diff.JsonDiff;
 
 /**
@@ -46,11 +48,16 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
 
    private final ModelResourceManager modelManager;
    private final ServerConfiguration serverConfiguration;
+   private final Map<String, Codec> codecs;
+   private final Codec fallback = new JsonCodecV2();
 
    @Inject
-   public JsonPatchHelper(final ModelResourceManager modelManager, final ServerConfiguration serverConfiguration) {
+   public JsonPatchHelper(final ModelResourceManager modelManager, final ServerConfiguration serverConfiguration,
+      final Map<String, Codec> codecs) {
+
       this.modelManager = modelManager;
       this.serverConfiguration = serverConfiguration;
+      this.codecs = Map.copyOf(codecs);
    }
 
    @Override
@@ -98,14 +105,14 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    }
 
    public JsonNode getCurrentModel(final EObject root) throws EncodingException {
-      class PatchCodec extends JsonCodecV2 {
-         @Override
-         protected ObjectMapper getObjectMapper() { return super.getObjectMapper(); }
+      Codec codec = codecs.getOrDefault(ModelServerPathParametersV2.FORMAT_JSON_V2, fallback);
+
+      if (codec instanceof Codec.Internal) {
+         // Do not make a copy in a one-off resource for serialization as Codec.encode(EObject) does
+         return ((Codec.Internal) codec).basicEncode(root);
       }
 
-      // Do not make a copy in a one-off resource for serialization as Codec.encode(EObject) does
-      PatchCodec codec = new PatchCodec();
-      return DefaultJsonCodec.encode(root, codec.getObjectMapper());
+      return codec.encode(root);
    }
 
    public JsonNode getJsonPatch(final EObject root, final CCommandExecutionResult result) throws EncodingException {

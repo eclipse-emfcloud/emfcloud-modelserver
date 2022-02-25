@@ -25,7 +25,7 @@ import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class DefaultJsonCodec implements Codec {
+public class DefaultJsonCodec implements Codec.Internal {
 
    private final EMFJsonConverter emfJsonConverter;
 
@@ -47,7 +47,12 @@ public class DefaultJsonCodec implements Codec {
       JsonResource resource = new JsonResource(URI.createURI("$marshall.res"), getObjectMapper());
       resource.getContents().add(EcoreUtil.copy(obj));
 
-      return encode(resource.getContents().get(0), getObjectMapper());
+      return basicEncode(resource.getContents().get(0));
+   }
+
+   @Override
+   public final JsonNode basicEncode(final EObject obj) throws EncodingException {
+      return encode(obj, getObjectMapper());
    }
 
    @Override
