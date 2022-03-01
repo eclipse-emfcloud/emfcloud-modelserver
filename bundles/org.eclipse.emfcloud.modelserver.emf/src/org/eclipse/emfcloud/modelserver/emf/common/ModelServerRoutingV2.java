@@ -32,6 +32,12 @@ import io.javalin.websocket.WsConfig;
 import io.javalin.websocket.WsConnectContext;
 
 public class ModelServerRoutingV2 extends AbstractModelServerRouting {
+   /**
+    * This is not declared in the {@link ModelServerPathsV2} namespace because it is an
+    * internal endpoint intended for use only by other model server instances.
+    */
+   protected static final String TRANSACTION_ENDPOINT = "transaction";
+
    protected static final Logger LOG = LogManager.getLogger(ModelServerRoutingV2.class);
 
    protected final TransactionController transactionController;
@@ -58,8 +64,8 @@ public class ModelServerRoutingV2 extends AbstractModelServerRouting {
 
       patch(ModelServerPathsV2.MODEL_BASE_PATH, this::executeCommand); // Was PATCH /edit in V1
 
-      post(ModelServerPathsV2.TRANSACTION, this::createTransaction);
-      ws(ModelServerPathsV2.TRANSACTION + "/{id}", this::openTransaction);
+      post(TRANSACTION_ENDPOINT, this::createTransaction);
+      ws(TRANSACTION_ENDPOINT + "/{id}", this::openTransaction);
    }
 
    @Override

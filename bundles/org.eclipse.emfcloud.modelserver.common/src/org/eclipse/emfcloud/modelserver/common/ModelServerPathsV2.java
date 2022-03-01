@@ -10,8 +10,6 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.common;
 
-import org.eclipse.emf.common.util.Diagnostic;
-
 public interface ModelServerPathsV2 {
    String BASE_PATH = "api/v2";
 
@@ -36,25 +34,5 @@ public interface ModelServerPathsV2 {
 
    String SERVER_CONFIGURE = "server/configure";
    String SERVER_PING = "server/ping";
-
-   /**
-    * <p>
-    * Endpoint on which to POST to open a transaction, returning the transaction's URI.
-    * Make PATCH requests on the returned URI to execute commands in the context of the transaction
-    * and PUT an error {@link Diagnostic} to roll back. Otherwise, DELETE the transaction resource URI
-    * to close it.
-    * </p>
-    * <p>
-    * Parameters:
-    * </p>
-    * <dl>
-    * <dt>modeluri</dt>
-    * <dd>(required) the model resource on which to open a transaction</dd>
-    * <dt>timeout</dt>
-    * <dd>(required) milliseconds after the last request on the resource at which to automatically roll back and delete
-    * the transaction</dd>
-    * </dl>
-    */
-   String TRANSACTION = "transaction"; // accepts query parameters "modeluri" and "timeout"
 
 }

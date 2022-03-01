@@ -14,9 +14,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -116,52 +114,6 @@ public final class CommandUtil {
       EObject eObject = EcoreUtil.create(eClass);
       ((InternalEObject) eObject).eSetProxyURI(URI.createURI(uri));
       return eObject;
-   }
-
-   public static Optional<CCommandExecutionResult> aggregateExecutionResults(
-      final List<? extends CCommandExecutionResult> executionResults) {
-      if (executionResults.isEmpty()) {
-         return Optional.empty();
-      }
-
-      CCommandExecutionResult proto = executionResults.get(0);
-      if (executionResults.size() == 1) {
-         return Optional.of(proto);
-      }
-
-      // Compose the source command
-      Optional<CCommand> composed = executionResults.stream().map(CCommandExecutionResult::getSource)
-         .reduce(CommandUtil::compose);
-
-      CCommandExecutionResult result = CCommandFactory.eINSTANCE.createCommandExecutionResult();
-
-      result.setType(proto.getType());
-      composed.ifPresent(result::setSource);
-      executionResults.stream().map(CCommandExecutionResult::getAffectedObjects)
-         .forEach(result.getAffectedObjects()::addAll);
-      executionResults.stream().map(CCommandExecutionResult::getDetails).forEach(result.getDetails()::putAll);
-
-      ChangeDescription changes = ChangeFactory.eINSTANCE.createChangeDescription();
-      result.setChangeDescription(changes);
-      executionResults.stream().map(CCommandExecutionResult::getChangeDescription)
-         .filter(ChangeDescription.class::isInstance).map(ChangeDescription.class::cast).forEach(change -> {
-            // It's OK to steal resource changes, objects to attach/detach, and feature changes
-            // from the source change descriptions because those source change descriptions
-            // will be discarded when we've finished here
-            changes.getResourceChanges().addAll(change.getResourceChanges());
-            changes.getObjectsToAttach().addAll(change.getObjectsToAttach());
-            changes.getObjectsToDetach().addAll(change.getObjectsToDetach());
-
-            change.getObjectChanges().forEach(entry -> {
-               if (!changes.getObjectChanges().containsKey(entry.getKey())) {
-                  changes.getObjectChanges()
-                     .add(ChangeFactory.eINSTANCE.createEObjectToChangesMapEntry(entry.getKey()));
-               }
-               changes.getObjectChanges().get(entry.getKey()).addAll(entry.getValue());
-            });
-         });
-
-      return Optional.of(result);
    }
 
    public static CCommandExecutionResult compose(final CCommandExecutionResult result1,

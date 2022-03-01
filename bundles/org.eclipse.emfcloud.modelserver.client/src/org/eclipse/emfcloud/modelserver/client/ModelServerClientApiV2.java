@@ -98,14 +98,4 @@ public interface ModelServerClientApiV2<A> {
 
    CompletableFuture<Response<Boolean>> redo(String modelUri);
 
-   /**
-    * Create and open a new transaction on the given model. Fails with <tt>409 Conflict</tt> if the model already
-    * has a transaction open.
-    *
-    * @param modelUri the URI of the model resource on which to open a transaction
-    *
-    * @return the new open transaction, or an error if none
-    */
-   CompletableFuture<Response<TransactionContext>> createTransaction(String modelUri);
-
 }

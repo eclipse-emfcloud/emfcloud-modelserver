@@ -166,6 +166,7 @@ The following table shows the current HTTP endpoints (v2):
 | |Update server configuration|__PUT__|`/server/configure`|application/json
 |__Model Validation__|Validate Model|__GET__|`/validation`| query parameter: `?modeluri=...`
 | |Get list of constraints|__GET__|`/validation/constraints`|query parameter: `?modeluri=...`
+|__Internal__|Create a transaction for auto-composing edits on a model with intermediate results. Returns the ID of the transaction for a websocket (see below)|__POST__|`/transaction`|query parameter: `?modeluri=...`<br/>No body content required
 
 <br/>
 
@@ -178,17 +179,39 @@ Please see `ModelServerRouting` for details.
 
 Subscriptions are implemented via websockets. For v1, `ws://localhost:8081/api/v1/*`. For v2, `ws://localhost:8081/api/v2/*`.
 
-The following table shows the current WS endpoints:
+The following table shows the current WS endpoints common to both v1 and v2 APIs:
 
 |Description|Path|Input|Returns
 |-|-|-|-
 |Subscribe to model changes|`/subscribe`|query parameter: `?modeluri=...[&format=...][&timeout=...][&livevalidation=-...]`|`sessionId`
 
-The following table shows accepted messages from a valid WS connection:
+The following table shows messages accepted from a client on valid WS `/subscribe` connection:
 
 |Type|Description|Example message
 |-|-|-
 `keepAlive`|Keep WS connection alive if timeout is defined|`{ type: 'keepAlive', data: '' }`
+
+#### Websocket Endpoints — v2
+
+The following table shows the WS endpoints added in the v2 API:
+
+|Description|Path|Input
+|-|-|-
+|[Internal] Incremental edits with intermediate results|`/transaction/:id`|`id` returned from `POST` request on `/transaction`</br>query parameter: `?modeluri=...[&format=...]`
+
+The following table shows messages accepted from a client on the `transaction/:id` endpoint in the v2 API:
+
+|Type|Description|Example message
+|-|-|-
+`execute`|Execute an edit on the model, via EMF command or JSON Patch|`{ "type": "execute", "data": { "type": "modelserver.patch" ...}" }`
+`close`|Close the transaction, putting summary of all changes on the undo stack|`{ "type": "close" }`
+`roll-back`|Cancel the transaction, discarding all changes|`{ "type": "roll-back", "message": "Unexpected opening date for course enrollment." }`
+
+And messages from the server that clients will receive on the `transaction/:id` endpoint:
+
+|Type|Description|Example message
+|-|-|-
+`success`|Successful execution of command or JSON Patch|`{ "type": "success", "data": { "message": "Model successfully updated.", "patch": [ { "op": "add", ... }, ... ] } }`
 
 ## Java Client API
 

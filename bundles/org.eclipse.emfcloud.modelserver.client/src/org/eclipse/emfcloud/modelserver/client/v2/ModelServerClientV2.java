@@ -11,13 +11,9 @@
 package org.eclipse.emfcloud.modelserver.client.v2;
 
 import java.net.MalformedURLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,18 +22,15 @@ import org.eclipse.emfcloud.modelserver.client.AbstractModelServerClient;
 import org.eclipse.emfcloud.modelserver.client.EditingContext;
 import org.eclipse.emfcloud.modelserver.client.ModelServerClientApi;
 import org.eclipse.emfcloud.modelserver.client.Response;
-import org.eclipse.emfcloud.modelserver.client.TransactionContext;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPaths;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
-import org.eclipse.emfcloud.modelserver.emf.common.JsonRequestMember;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.internal.client.EditingContextImpl;
-import org.eclipse.emfcloud.modelserver.internal.client.TransactionContextImpl;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -61,8 +54,6 @@ public class ModelServerClientV2 extends AbstractModelServerClient
    public static final String POST = "POST";
 
    protected static final Logger LOG = LogManager.getLogger(ModelServerClientV2.class);
-
-   protected final Map<TransactionContextImpl<?>, WebSocket> openTransactionSockets = new LinkedHashMap<>();
 
    public ModelServerClientV2(final String baseUrl, final EPackageConfiguration... configurations)
       throws MalformedURLException {
@@ -163,51 +154,6 @@ public class ModelServerClientV2 extends AbstractModelServerClient
 
       final WebSocket socket = client.newWebSocket(request, result);
       openEditingSockets.put(result, socket);
-
-      return result;
-   }
-
-   @Override
-   public CompletableFuture<Response<TransactionContext>> createTransaction(final String modelUri) {
-      // String checkedFormat = checkedFormat(format);
-      final String clientID = UUID.randomUUID().toString();
-      final Request request = new Request.Builder()
-         .url(
-            createHttpUrlBuilder(makeUrl(TRANSACTION))
-               .addQueryParameter(ModelServerPathParametersV2.MODEL_URI, modelUri)
-               // .addQueryParameter(ModelServerPathParametersV2.FORMAT, checkedFormat)
-               .build())
-         .post(
-            RequestBody.create(
-               Json.object(
-                  Json.prop(JsonRequestMember.DATA, Json.text(clientID)))
-                  .toString(),
-               MediaType.parse("application/json")))
-         .build();
-
-      return makeCallAndGetDataBody(request).thenApply(response -> {
-         return response.mapBody(transactionURI -> openTransaction(transactionURI, clientID));
-      });
-   }
-
-   protected TransactionContext openTransaction(final String transactionURI, final String clientID) {
-      final Consumer<? super TransactionContextImpl<? extends ModelServerClientV2>> closeCallback = tc -> {
-         final WebSocket webSocket = openTransactionSockets.remove(tc);
-         if (webSocket != null) {
-            webSocket.close(1000, "Websocket closed by client.");
-         }
-      };
-
-      final TransactionContextImpl<?> result = new TransactionContextImpl<>(this, clientID,
-         ModelServerClientV2::encode,
-         closeCallback);
-
-      Request request = new Request.Builder()
-         .url(makeWsUrl(transactionURI))
-         .build();
-
-      final WebSocket socket = client.newWebSocket(request, result);
-      openTransactionSockets.put(result, socket);
 
       return result;
    }
