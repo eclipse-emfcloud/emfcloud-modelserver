@@ -10,6 +10,9 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.example.client;
 
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_JSON_V2;
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_XMI;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
@@ -76,11 +79,11 @@ public final class ExampleModelServerClient {
                String[] commandAndArgs = input.split(" ");
                String command = commandAndArgs[0];
                if (command.contentEquals("1")) {
-                  handleSubscribe(client, new String[] { CMD_SUBSCRIBE, SUPER_BREWER_3000_COFFEE, "json" });
+                  handleSubscribe(client, new String[] { CMD_SUBSCRIBE, SUPER_BREWER_3000_COFFEE, FORMAT_JSON_V2 });
                } else if (command.contentEquals("2")) {
-                  handleSubscribe(client, new String[] { CMD_SUBSCRIBE, SUPER_BREWER_3000_JSON, "json" });
+                  handleSubscribe(client, new String[] { CMD_SUBSCRIBE, SUPER_BREWER_3000_JSON, FORMAT_JSON_V2 });
                } else if (command.contentEquals("3")) {
-                  handleSubscribe(client, new String[] { CMD_SUBSCRIBE, COFFEE_ECORE, "xmi" });
+                  handleSubscribe(client, new String[] { CMD_SUBSCRIBE, COFFEE_ECORE, FORMAT_XMI });
                } else if (command.contentEquals("4")) {
                   handleUnsubscribe(client, new String[] { CMD_UNSUBSCRIBE, SUPER_BREWER_3000_COFFEE });
                } else if (command.contentEquals("5")) {
@@ -140,14 +143,14 @@ public final class ExampleModelServerClient {
          CommandUtil.createProxy(CoffeePackage.Literals.WORKFLOW, "SuperBrewer3000.coffee#//@workflows.0"),
          EcorePackage.Literals.ENAMED_ELEMENT__NAME,
          commandAndArgs[1]);
-      Response<Boolean> response = client.edit(SUPER_BREWER_3000_COFFEE, command, null).join();
+      Response<Boolean> response = client.edit(SUPER_BREWER_3000_COFFEE, command, FORMAT_JSON_V2).join();
       System.out.println("< " + toString(response));
    }
 
    private static void handleUpdateTasks(final ModelServerClientV1 client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException {
       CCommand command = UpdateTaskNameCommandContribution.clientCommand(commandAndArgs[1]);
-      Response<Boolean> response = client.edit(SUPER_BREWER_3000_JSON, command, null).join();
+      Response<Boolean> response = client.edit(SUPER_BREWER_3000_JSON, command, FORMAT_JSON_V2).join();
       System.out.println("< " + toString(response));
    }
 

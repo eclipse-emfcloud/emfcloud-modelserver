@@ -20,7 +20,7 @@ import okhttp3.OkHttpClient;
 
 public class ModelServerClient extends ModelServerClientV2 {
 
-   public static final Set<String> DEFAULT_SUPPORTED_FORMATS = ModelServerClientV2.DEFAULT_SUPPORTED_FORMATS;
+   public static final Set<String> DEFAULT_SUPPORTED_FORMATS = ModelServerClientV2.SUPPORTED_FORMATS;
    public static final String PATCH = ModelServerClientV2.PATCH;
    public static final String POST = ModelServerClientV2.POST;
 
