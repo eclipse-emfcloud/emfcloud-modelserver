@@ -24,7 +24,7 @@ import org.eclipse.emf.transaction.Transaction;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
 import org.eclipse.emf.transaction.impl.InternalTransaction;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
-import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
+import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.patch.AbstractJsonPatchHelper;
 import org.eclipse.emfcloud.modelserver.common.patch.LazyCompoundCommand;
@@ -34,6 +34,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.diff.JsonDiff;
 
 /**
@@ -97,8 +98,14 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    }
 
    public JsonNode getCurrentModel(final EObject root) throws EncodingException {
-      Codec codec = new JsonCodecV2();
-      return codec.encode(root);
+      class PatchCodec extends JsonCodecV2 {
+         @Override
+         protected ObjectMapper getObjectMapper() { return super.getObjectMapper(); }
+      }
+
+      // Do not make a copy in a one-off resource for serialization as Codec.encode(EObject) does
+      PatchCodec codec = new PatchCodec();
+      return DefaultJsonCodec.encode(root, codec.getObjectMapper());
    }
 
    public JsonNode getJsonPatch(final EObject root, final CCommandExecutionResult result) throws EncodingException {

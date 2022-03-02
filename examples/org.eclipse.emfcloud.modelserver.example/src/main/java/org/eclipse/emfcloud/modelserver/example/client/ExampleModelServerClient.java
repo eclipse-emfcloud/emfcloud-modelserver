@@ -23,9 +23,9 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emfcloud.modelserver.client.Model;
+import org.eclipse.emfcloud.modelserver.client.ModelServerClient;
 import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
-import org.eclipse.emfcloud.modelserver.client.v1.ModelServerClientV1;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.CoffeePackage;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.edit.command.SetCommandContribution;
@@ -57,7 +57,7 @@ public final class ExampleModelServerClient {
 
    public static void main(final String[] args) {
       try (
-         ModelServerClientV1 client = new ModelServerClientV1("http://localhost:8081/api/v1/",
+         ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v2/",
             new CoffeePackageConfiguration());
          Scanner userInput = new Scanner(System.in)) {
          System.out.println("Simple Model Server Client Interface");
@@ -125,19 +125,19 @@ public final class ExampleModelServerClient {
 
    }
 
-   private static void handleRedo(final ModelServerClientV1 client, final String[] commandAndArgs)
+   private static void handleRedo(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException {
       Response<Boolean> response = client.redo(commandAndArgs[1]).join();
       System.out.println("< " + toString(response));
    }
 
-   private static void handleUndo(final ModelServerClientV1 client, final String[] commandAndArgs)
+   private static void handleUndo(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException {
       Response<Boolean> response = client.undo(commandAndArgs[1]).join();
       System.out.println("< " + toString(response));
    }
 
-   private static void handleRenameWorkflow(final ModelServerClientV1 client, final String[] commandAndArgs)
+   private static void handleRenameWorkflow(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException {
       CCommand command = SetCommandContribution.clientCommand(
          CommandUtil.createProxy(CoffeePackage.Literals.WORKFLOW, "SuperBrewer3000.coffee#//@workflows.0"),
@@ -147,21 +147,21 @@ public final class ExampleModelServerClient {
       System.out.println("< " + toString(response));
    }
 
-   private static void handleUpdateTasks(final ModelServerClientV1 client, final String[] commandAndArgs)
+   private static void handleUpdateTasks(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException {
       CCommand command = UpdateTaskNameCommandContribution.clientCommand(commandAndArgs[1]);
       Response<Boolean> response = client.edit(SUPER_BREWER_3000_JSON, command, FORMAT_JSON_V2).join();
       System.out.println("< " + toString(response));
    }
 
-   private static void handleGet(final ModelServerClientV1 client, final String[] commandAndArgs)
+   private static void handleGet(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException, IOException {
       Response<String> response = client.get(commandAndArgs[1]).join();
       System.out.println("< " + commandAndArgs[1]);
       System.out.println(Json.parse(response.body()).toPrettyString());
    }
 
-   private static void handleGetAll(final ModelServerClientV1 client, final String[] commandAndArgs)
+   private static void handleGetAll(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException, IOException {
       String format = commandAndArgs.length > 1 ? commandAndArgs[1] : null;
       if (format == null) {
@@ -181,25 +181,25 @@ public final class ExampleModelServerClient {
       }
    }
 
-   private static void handleSubscribe(final ModelServerClientV1 client, final String[] command)
+   private static void handleSubscribe(final ModelServerClient client, final String[] command)
       throws InterruptedException {
       String modelUri = command.length > 1 ? command[1] : "";
-      String format = command.length > 2 ? command[2] : "json";
-      SubscriptionListener listener = format.contentEquals("json")
-         ? new ExampleJsonStringSubscriptionListener(modelUri)
-         : new ExampleXMISubscriptionListener(modelUri);
+      String format = command.length > 2 ? command[2] : FORMAT_JSON_V2;
+      SubscriptionListener listener = format.contentEquals(FORMAT_XMI)
+         ? new ExampleXMISubscriptionListener(modelUri)
+         : new ExampleJsonStringSubscriptionListener(modelUri);
       client.subscribe(modelUri, listener, format);
       System.out.println("< OK");
    }
 
-   private static void handleUnsubscribe(final ModelServerClientV1 client, final String[] command)
+   private static void handleUnsubscribe(final ModelServerClient client, final String[] command)
       throws InterruptedException {
       String modelUri = command.length >= 1 ? command[1] : "";
       client.unsubscribe(modelUri);
       System.out.println("< OK");
    }
 
-   private static void handlePing(final ModelServerClientV1 client)
+   private static void handlePing(final ModelServerClient client)
       throws InterruptedException {
       client.ping().thenAccept(response -> System.out.println("< " + response.body()));
    }
