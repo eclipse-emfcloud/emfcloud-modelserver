@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 EclipseSource and others.
+ * Copyright (c) 2021-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -21,6 +21,10 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchTestException;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public interface ModelRepository {
    void initialize();
@@ -70,6 +74,25 @@ public interface ModelRepository {
    Optional<Resource> updateModel(String modeluri, EObject model);
 
    CCommandExecutionResult executeCommand(String modeluri, CCommand command) throws DecodingException;
+
+   /**
+    * Execute a command on the specified model. The command is specified using
+    * the Json Patch syntax (A list of Operations).
+    *
+    * @param modeluri
+    *                     The URI of the model on which the command should be executed
+    * @param jsonPatch
+    *                     The command (Json Patch) to execute
+    * @return the command execution result
+    * @throws JsonPatchException
+    *                                   If an issue occurred when interpreting the Json Patch
+    * @throws JsonPatchTestException
+    *                                   If the Json Patch contains an unsuccessful 'test' operation
+    */
+   default CCommandExecutionResult executeCommand(final String modeluri, final ArrayNode jsonPatch)
+      throws JsonPatchTestException, JsonPatchException {
+      throw new UnsupportedOperationException("V2 API is not supported by this implementation");
+   }
 
    Optional<CCommandExecutionResult> undo(String modeluri);
 

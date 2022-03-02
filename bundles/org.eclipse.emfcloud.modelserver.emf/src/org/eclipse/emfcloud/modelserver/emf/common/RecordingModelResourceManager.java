@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 EclipseSource and others.
+ * Copyright (c) 2020-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -58,7 +58,7 @@ public class RecordingModelResourceManager extends DefaultModelResourceManager {
    @Override
    protected Optional<CommandExecutionContext> undoCommand(final ModelServerEditingDomain domain,
       final Command serverCommand,
-      final CCommand clientCommand) {
+      final Optional<CCommand> clientCommand) {
       ChangeRecorder recorder = new ChangeRecorder(domain.getResourceSet());
       Optional<CommandExecutionContext> context = super.undoCommand(domain, serverCommand, clientCommand);
       ChangeDescription recording = recorder.endRecording();
@@ -69,7 +69,7 @@ public class RecordingModelResourceManager extends DefaultModelResourceManager {
    @Override
    protected Optional<CommandExecutionContext> redoCommand(final ModelServerEditingDomain domain,
       final Command serverCommand,
-      final CCommand clientCommand) {
+      final Optional<CCommand> clientCommand) {
       ChangeRecorder recorder = new ChangeRecorder(domain.getResourceSet());
       Optional<CommandExecutionContext> context = super.redoCommand(domain, serverCommand, clientCommand);
       ChangeDescription recording = recorder.endRecording();

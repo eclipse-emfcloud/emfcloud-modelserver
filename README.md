@@ -103,9 +103,15 @@ It will output details for each request/response similar to the following snippe
 
 ### HTTP Endpoints
 
-If the model server is up and running, you can access the model server API via `http://localhost:8081/api/v1/*`.
+The Model Server supports two versions of the API (v1 and v2). If the model server is up and running, you can access the model server v1 API via `http://localhost:8081/api/v1/*`,
+and the v2 API via `http://localhost:8081/api/v2/*`
 
-The following table shows the current HTTP endpoints:
+#### HTTP Endpoints - V1
+
+<details>
+	<summary>HTTP Endpoints - V1</summary>
+	
+The following table shows the current HTTP endpoints (v1):
 
 |Category|Description|HTTP method|Path|Input
 |-|-|:-:|-|-
@@ -130,6 +136,40 @@ The following table shows the current HTTP endpoints:
 |__Model Validation__|Validate Model|__GET__|`/validation`| query parameter: `?modeluri=...`
 | |Get list of constraints|__GET__|`/validation/constraints`|query parameter: `?modeluri=...`
 
+<br/>
+	
+</details>
+
+#### HTTP Endpoints - V2
+
+The following table shows the current HTTP endpoints (v2): 
+
+|Category|Description|HTTP method|Path|Input
+|-|-|:-:|-|-
+|__Models__|Get all available models in the workspace|__GET__|`/models`|query parameter: `[?format=...]`
+| |Get model|__GET__|`/models`|query parameter: `?modeluri=...[&format=...]`
+| |Create new model|__POST__|`/models`|query parameter: `?modeluri=...[&format=...]` <br> application/json
+| |Execute commands|__PATCH__|`/models`|query parameter: `?modeluri=...[&format=...]` <br> application/json
+| |Replace model|__PUT__|`/models`|query parameter: `?modeluri=...[&format=...]` <br> application/json
+| |Delete model|__DELETE__|`/models`|query parameter: `?modeluri=...`
+| |Close model|__POST__|`/close`|query parameter: `?modeluri=...`
+| |Save|__GET__|`/save`|query parameter: `?modeluri=...`
+| |SaveAll|__GET__|`/saveall`| -
+| |Undo|__GET__|`/undo`|query parameter: `?modeluri=...`
+| |Redo|__GET__|`/redo`|query parameter: `?modeluri=...`
+| |Get all available model URIs in the workspace|__GET__|`/modeluris`| -
+| |Get model element by id|__GET__|`/modelelement`|query parameter: `?modeluri=...&elementid=...[&format=...]`
+| |Get model element by name <br> (Returns the first element that matches the given `elementname`)|__GET__|`/modelelement`|query parameter: `?modeluri=...&elementname=...[&format=...]`
+|__JSON schema__ |Get the type schema of a model as a JSON schema|__GET__|`/typeschema`|query parameter: `?modeluri=...`
+| |Get the UI schema of a certain view element|__GET__|`/uischema`|query parameter: `?schemaname=...`
+|__Server actions__|Ping server|__GET__|`/server/ping`| -
+| |Update server configuration|__PUT__|`/server/configure`|application/json
+|__Model Validation__|Validate Model|__GET__|`/validation`| query parameter: `?modeluri=...`
+| |Get list of constraints|__GET__|`/validation/constraints`|query parameter: `?modeluri=...`
+|__Internal__|Create a transaction for auto-composing edits on a model with intermediate results. Returns the ID of the transaction for a websocket (see below)|__POST__|`/transaction`|query parameter: `?modeluri=...`<br/>No body content required
+
+<br/>
+
 #### Server Configuration
 
 Per default, updating the server configuration (`/server/configure`) with a new workspaceRoot, enables queueing of further incoming requests until configuration is completed.
@@ -137,24 +177,48 @@ Please see `ModelServerRouting` for details.
 
 ### WebSocket Endpoints
 
-Subscriptions are implemented via websockets `ws://localhost:8081/api/v1/*`.
+Subscriptions are implemented via websockets. For v1, `ws://localhost:8081/api/v1/*`. For v2, `ws://localhost:8081/api/v2/*`.
 
-The following table shows the current WS endpoints:
+The following table shows the current WS endpoints common to both v1 and v2 APIs:
 
 |Description|Path|Input|Returns
 |-|-|-|-
 |Subscribe to model changes|`/subscribe`|query parameter: `?modeluri=...[&format=...][&timeout=...][&livevalidation=-...]`|`sessionId`
 
-The following table shows accepted messages from a valid WS connection:
+The following table shows messages accepted from a client on valid WS `/subscribe` connection:
 
 |Type|Description|Example message
 |-|-|-
 `keepAlive`|Keep WS connection alive if timeout is defined|`{ type: 'keepAlive', data: '' }`
 
+#### Websocket Endpoints — v2
+
+The following table shows the WS endpoints added in the v2 API:
+
+|Description|Path|Input
+|-|-|-
+|[Internal] Incremental edits with intermediate results|`/transaction/:id`|`id` returned from `POST` request on `/transaction`</br>query parameter: `?modeluri=...[&format=...]`
+
+The following table shows messages accepted from a client on the `transaction/:id` endpoint in the v2 API:
+
+|Type|Description|Example message
+|-|-|-
+`execute`|Execute an edit on the model, via EMF command or JSON Patch|`{ "type": "execute", "data": { "type": "modelserver.patch" ...}" }`
+`close`|Close the transaction, putting summary of all changes on the undo stack|`{ "type": "close" }`
+`roll-back`|Cancel the transaction, discarding all changes|`{ "type": "roll-back", "message": "Unexpected opening date for course enrollment." }`
+
+And messages from the server that clients will receive on the `transaction/:id` endpoint:
+
+|Type|Description|Example message
+|-|-|-
+`success`|Successful execution of command or JSON Patch|`{ "type": "success", "data": { "message": "Model successfully updated.", "patch": [ { "op": "add", ... }, ... ] } }`
+
 ## Java Client API
 
 The model server project features a Java-based client API that eases integration with the model server.
 The interface declaration is as defined below. Please note that the `Model` class is a POJO with a model uri and content.
+
+Note: the Java Client implementation is not ready for v2 yet, but the v1 client can still be used. See Issue #172 for details.
 
 ```Java
 public interface ModelServerClientApiV1<A> {
@@ -280,6 +344,9 @@ Consider the following JSON payload for a `PATCH` request to add change the name
 of the workflow in the example *Super Brewer 3000* model and to add another task
 to it:
 
+<details>
+	<summary>v1 PATCH Commands</summary>
+	
 ```json
   {
     "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//CompoundCommand",
@@ -344,6 +411,133 @@ To execute this command, issue a `PATCH` request to the `edit` endpoint like:
 The model server project already provides a default set of commands but it is also possible to plug in your custom metamodel-specific commands by providing `CommandContributions` specified with your model server module.
 
 All commands are executed on a transactional command stack within an __EMF transactional editing domain__. The use of an EMF transactional editing domain on the server side provides a more reliable way of executing commands through transactions and therefore making a clear separation between the end user's operations. In addition, it enables us to make use of `RecordingCommands` which record the changes made to objects via the custom metamodel's API and therefore provide automatic undo/redo support for custom commands.
+
+</details>
+
+**v2 Patch, using an EMF Command:**
+
+```json
+{
+	"type": "modelserver.emfcommand",
+	"data": {
+	    "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//CompoundCommand",
+	    "type": "compound",
+	    "commands": [
+	        {
+	            "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
+	            "type": "set",
+	            "owner": {
+	                "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+	                "$ref":"SuperBrewer3000.json#//@workflows.0"
+	          },
+	          "feature": "name",
+	          "dataValues": [ "Auto Brew" ]
+	        },
+	        {
+	            "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
+	            "type": "add",
+	            "owner": {
+	                "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+	                "$ref":"SuperBrewer3000.json#//@workflows.0"
+	            },
+	            "feature": "nodes",
+	            "objectValues": [
+	                {
+	                    "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+	                    "$ref":"//@commands.1/@objectsToAdd.0"
+	                }
+	            ],
+	            "objectsToAdd": [
+	                {
+	                    "eClass":"http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+	                    "name":"Brew"
+	                }
+	            ],
+	            "indices": [ 1 ]
+	        }
+	    ]
+    }
+}
+```
+
+This is a JSON representation of an EMF `CompoundCommand` containing two commands, a
+`SetCommand` that changes the name of the first workflow in the model, and an
+`AddCommand` that adds a new `AutomaticTask` to that workflow.  The `SetCommand` does
+not require any index because the `name` feature is single-valued.  The `AddCommand`
+here explicitly adds an position `1`, but this can also be omitted to simply append
+to the end of the list.  Notice how each command indicates the `owner` object in the
+model to which the change is applied using a cross-document reference.  And in the case
+of the `AddCommand`, the object to be added does not yet exist in the model, so it must
+be included in the payload of the command, itself.  Thus it is contained in the
+`objectsToAdd` property and indicate via an in-document reference in the `objectValues`
+property.  Other commands, such as the `RemoveCommand`, would indicate objects in the
+`objectValues` property that already exist in the model (to be removed in that case),
+and so those would be cross-document references and the `objectsToAdd` is unused.
+
+To execute this command, issue a `PATCH` request to the `models` endpoint like:
+
+```
+    PATCH http://localhost:8081/api/v2/models?modeluri=SuperBrewer3000.json
+    Content-type: application/json
+    { "data" : <payload> }
+```
+
+The model server project already provides a default set of commands but it is also possible to plug in your custom metamodel-specific commands by providing `CommandContributions` specified with your model server module.
+
+All commands are executed on a transactional command stack within an __EMF transactional editing domain__. The use of an EMF transactional editing domain on the server side provides a more reliable way of executing commands through transactions and therefore making a clear separation between the end user's operations. In addition, it enables us to make use of `RecordingCommands` which record the changes made to objects via the custom metamodel's API and therefore provide automatic undo/redo support for custom commands.
+
+**v2 Patch, using a Json Patch with EMF-like paths:**
+
+```json
+{
+	"type": "modelserver.patch",
+	"data": [{
+			"op": "replace",
+			"path":"SuperBrewer3000.json#//@workflows.0/name",
+			"value": "Auto Brew"
+		}, {
+			"op": "add",
+			"path":"SuperBrewer3000.json#//@workflows.0/nodes/-",
+			"value": {
+				"$type": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+				"name": "Brew"
+			}
+		}
+	]
+}
+```
+
+This Json Patch is equivalent to the EMF Command above, and can be used in the same way. This is the recommended format to use for Web clients,
+as manipulating this Json Patch format is a lot easier than EMF Commands.
+
+In this case, we still use an EMF-like path, which contains the URI of the model to edit, the ID of the Object to edit, and the feature to edit:
+
+`modeluri#objectID/featureName` or `modeluri#objectID/featureName/index` (Where the special value `-` can be used to represent the last element of the list).
+
+**v2 Patch, using a Json Patch with standard Json Pointer paths:**
+
+```json
+{
+	"type": "modelserver.patch",
+	"data": [{
+			"op": "replace",
+			"path":"/workflows/0/name",
+			"value": "Auto Brew"
+		}, {
+			"op": "add",
+			"path":"/workflows/0/nodes/-",
+			"value": {
+				"$type": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+				"name": "Brew"
+			}
+		}
+	]
+}
+```
+
+In this last case, we use standard Json Pointer paths, instead of EMF-like paths. The model URI is no longer part of the path, as
+this concept doesn't exist with Json Patch/Json Pointers. Instead, the `?modeluri=` query parameter will be used. Currently, this format 
+can't be used to edit multiple resources with a single operation.
 
 ### WebSocket Subscriptions Example
 

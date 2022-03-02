@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -27,7 +27,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DefaultJsonCodec implements Codec {
 
-   private final EMFJsonConverter emfJsonConverter = new EMFJsonConverter();
+   private final EMFJsonConverter emfJsonConverter;
+
+   public DefaultJsonCodec() {
+      this(new EMFJsonConverter());
+   }
+
+   protected DefaultJsonCodec(final EMFJsonConverter emfJsonConverter) {
+      this.emfJsonConverter = emfJsonConverter;
+   }
 
    @Override
    public JsonNode encode(final EObject obj) throws EncodingException {

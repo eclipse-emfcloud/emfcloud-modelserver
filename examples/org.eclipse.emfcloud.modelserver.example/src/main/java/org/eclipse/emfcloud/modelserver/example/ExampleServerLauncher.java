@@ -22,25 +22,25 @@ import org.eclipse.emfcloud.modelserver.emf.launch.CLIParser;
 import org.eclipse.emfcloud.modelserver.example.util.ResourceUtil;
 
 public final class ExampleServerLauncher {
-   private static String TEMP_DIR = ".temp";
-   private static String WORKSPACE_ROOT = "workspace";
-   private static String ECORE_TEST_FILE = "Coffee.ecore";
-   private static String COFFEE_TEST_FILE = "SuperBrewer3000.coffee";
-   private static String JSON_TEST_FILE = "SuperBrewer3000.json";
-   private static String UISCHEMA_FOLDER = ".ui-schemas";
-   private static String WORKSPACE_UISCHEMA_FOLDER = "workspace" + "/" + UISCHEMA_FOLDER;
-   private static String UISCHEMA_AUTOMATICTASK_FILE = "automatictask.json";
-   private static String UISCHEMA_BREWINGUNIT_FILE = "brewingunit.json";
-   private static String UISCHEMA_CONTROLUNIT_FILE = "controlunit.json";
-   private static String UISCHEMA_DECISION_FILE = "decision.json";
-   private static String UISCHEMA_DIPTRAY_FILE = "diptray.json";
-   private static String UISCHEMA_FLOW_FILE = "flow.json";
-   private static String UISCHEMA_MACHINE_FILE = "machine.json";
-   private static String UISCHEMA_MANUALTASK_FILE = "manualtask.json";
-   private static String UISCHEMA_MERGE_FILE = "merge.json";
-   private static String UISCHEMA_WATERTANK_FILE = "watertank.json";
-   private static String UISCHEMA_WEIGHTEDFLOW_FILE = "weightedflow.json";
-   private static String PROCESS_NAME = "java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar";
+   private static final String TEMP_DIR = ".temp";
+   private static final String WORKSPACE_ROOT = "workspace";
+   private static final String ECORE_TEST_FILE = "Coffee.ecore";
+   private static final String COFFEE_TEST_FILE = "SuperBrewer3000.coffee";
+   private static final String JSON_TEST_FILE = "SuperBrewer3000.json";
+   private static final String UISCHEMA_FOLDER = ".ui-schemas";
+   private static final String WORKSPACE_UISCHEMA_FOLDER = "workspace" + "/" + UISCHEMA_FOLDER;
+   private static final String UISCHEMA_AUTOMATICTASK_FILE = "automatictask.json";
+   private static final String UISCHEMA_BREWINGUNIT_FILE = "brewingunit.json";
+   private static final String UISCHEMA_CONTROLUNIT_FILE = "controlunit.json";
+   private static final String UISCHEMA_DECISION_FILE = "decision.json";
+   private static final String UISCHEMA_DIPTRAY_FILE = "diptray.json";
+   private static final String UISCHEMA_FLOW_FILE = "flow.json";
+   private static final String UISCHEMA_MACHINE_FILE = "machine.json";
+   private static final String UISCHEMA_MANUALTASK_FILE = "manualtask.json";
+   private static final String UISCHEMA_MERGE_FILE = "merge.json";
+   private static final String UISCHEMA_WATERTANK_FILE = "watertank.json";
+   private static final String UISCHEMA_WEIGHTEDFLOW_FILE = "weightedflow.json";
+   private static final String PROCESS_NAME = "java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar";
 
    private static Logger LOG = LogManager.getLogger(ExampleServerLauncher.class);
 
@@ -88,6 +88,8 @@ public final class ExampleServerLauncher {
          new File(workspaceRoot, ECORE_TEST_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_ROOT + "/" + COFFEE_TEST_FILE,
          new File(workspaceRoot, COFFEE_TEST_FILE));
+      result &= result && ResourceUtil.copyFromResource(WORKSPACE_ROOT + "/nested/" + COFFEE_TEST_FILE,
+         new File(workspaceRoot.getAbsolutePath() + "/nested/" + COFFEE_TEST_FILE));
       result &= result && ResourceUtil.copyFromResource(WORKSPACE_ROOT + "/" + JSON_TEST_FILE,
          new File(workspaceRoot, JSON_TEST_FILE));
       result &= setupTempUiSchemaTestWorkspace(new File(workspaceRoot + "/" + UISCHEMA_FOLDER + "/"), result);

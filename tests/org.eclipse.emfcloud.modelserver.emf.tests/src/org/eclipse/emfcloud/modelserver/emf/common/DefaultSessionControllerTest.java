@@ -188,7 +188,7 @@ public class DefaultSessionControllerTest {
       result.getDetails().put("fancyInfo", "more testing");
 
       when(codecs.encode(result)).thenReturn(encodings);
-      sessionController.commandExecuted(modelUri, result);
+      sessionController.commandExecuted(modelUri, () -> result, () -> null);
 
       verify(validClientCtx).send(argThat(jsonNodeThat(
          containsRegex(".\"type\":\"incrementalUpdate\",\"data\":.*\"type\":\"execute\".*"))));

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
@@ -52,6 +53,7 @@ public class DefaultSessionController implements SessionController {
    protected static Logger LOG = LogManager.getLogger(DefaultSessionController.class);
 
    protected final Map<String, Set<WsContext>> modelUrisToClients = Maps.newConcurrentMap();
+   protected final Map<String, Set<WsContext>> modelUrisToClientsV2 = Maps.newConcurrentMap();
 
    @Inject
    protected ModelRepository modelRepository;
@@ -69,6 +71,19 @@ public class DefaultSessionController implements SessionController {
       }
       Long timeout = getLongParam(client, TIMEOUT).orElse(SessionController.NO_TIMEOUT);
       modelUrisToClients.computeIfAbsent(modeluri, clients -> ConcurrentHashMap.newKeySet()).add(client);
+      client.session.setIdleTimeout(timeout);
+      success(client);
+      dirtyState(client, modelRepository.getDirtyState(modeluri));
+      return true;
+   }
+
+   @Override
+   public boolean subscribeV2(final WsContext client, final String modeluri) {
+      if (!this.modelRepository.hasModel(modeluri)) {
+         return false;
+      }
+      Long timeout = getLongParam(client, TIMEOUT).orElse(SessionController.NO_TIMEOUT);
+      modelUrisToClientsV2.computeIfAbsent(modeluri, clients -> ConcurrentHashMap.newKeySet()).add(client);
       client.session.setIdleTimeout(timeout);
       success(client);
       dirtyState(client, modelRepository.getDirtyState(modeluri));
@@ -126,6 +141,7 @@ public class DefaultSessionController implements SessionController {
    }
 
    @Override
+   @Deprecated
    public void commandExecuted(final String modeluri, final CCommandExecutionResult execution) {
       Optional<EObject> root = modelRepository.getModel(modeluri);
       if (root.isEmpty()) {
@@ -133,6 +149,33 @@ public class DefaultSessionController implements SessionController {
          return;
       }
       broadcastIncrementalUpdates(modeluri, execution);
+      broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
+      broadcastValidation(modeluri);
+   }
+
+   @Override
+   public void commandExecuted(final String modeluri, final Supplier<? extends CCommandExecutionResult> execution,
+      final Supplier<? extends JsonNode> patch) {
+      Optional<EObject> root = modelRepository.getModel(modeluri);
+      if (root.isEmpty()) {
+         broadcastError(modeluri, "Could not load changed object");
+         return;
+      }
+
+      if (hasSession(modeluri)) {
+         CCommandExecutionResult v1Update = execution.get();
+         if (v1Update != null) {
+            broadcastIncrementalUpdates(modeluri, v1Update);
+         }
+      }
+
+      if (hasV2Session(modeluri)) {
+         JsonNode v2Update = patch.get();
+         if (v2Update != null) {
+            broadcastIncrementalUpdatesV2(modeluri, v2Update);
+         }
+      }
+
       broadcastDirtyState(modeluri, modelRepository.getDirtyState(modeluri));
       broadcastValidation(modeluri);
    }
@@ -170,13 +213,19 @@ public class DefaultSessionController implements SessionController {
       return modelUrisToClients.containsKey(modeluri);
    }
 
+   protected boolean hasV2Session(final String modeluri) {
+      return modelUrisToClientsV2.containsKey(modeluri);
+   }
+
    protected void broadcastValidation(final String modeluri) {
-      broadcastValidation(modeluri, modelValidator.validate(modeluri));
+      if (hasOpenValidationSessions(modeluri)) {
+         broadcastValidation(modeluri, modelValidator.validate(modeluri));
+      }
    }
 
    protected void broadcastFullUpdate(final String modeluri, @Nullable final EObject updatedModel) {
-      if (modelUrisToClients.containsKey(modeluri)) {
-         getOpenSessions(modeluri).forEach(session -> broadcastFullUpdate(modeluri, updatedModel, session));
+      if (modelUrisToClients.containsKey(modeluri) || modelUrisToClientsV2.containsKey(modeluri)) {
+         getAllOpenSessions(modeluri).forEach(session -> broadcastFullUpdate(modeluri, updatedModel, session));
       }
    }
 
@@ -198,6 +247,10 @@ public class DefaultSessionController implements SessionController {
       getOpenSessions(modeluri).forEach(session -> broadcastIncrementalUpdate(session, updates));
    }
 
+   protected void broadcastIncrementalUpdatesV2(final String modeluri, final JsonNode jsonPatch) {
+      getOpenSessionsV2(modeluri).forEach(session -> session.send(JsonResponse.incrementalUpdate(jsonPatch)));
+   }
+
    private void broadcastIncrementalUpdate(final WsContext session, final Map<String, JsonNode> updates) {
       String sessionFormat = encoder.findFormat(session);
       JsonNode update = updates.get(sessionFormat);
@@ -205,24 +258,59 @@ public class DefaultSessionController implements SessionController {
    }
 
    protected void broadcastDirtyState(final String modeluri, final Boolean isDirty) {
-      getOpenSessions(modeluri).forEach(session -> session.send(dirtyState(isDirty)));
+      getAllOpenSessions(modeluri).forEach(session -> session.send(dirtyState(isDirty)));
    }
 
    protected void broadcastValidation(final String modeluri, final JsonNode newResult) {
-      getOpenValidationSessions(modeluri).forEach(session -> session.send(validationResult(newResult)));
+      if (hasOpenValidationSessions(modeluri)) {
+         final JsonNode validationResult = validationResult(newResult);
+         getOpenValidationSessions(modeluri).forEach(session -> session.send(validationResult));
+      }
    }
 
+   /**
+    * Return a stream of all open sessions (API V1 and API V2) for the specified model.
+    *
+    * @param modeluri
+    * @return
+    */
+   protected Stream<WsContext> getAllOpenSessions(final String modeluri) {
+      return Stream.concat(getOpenSessions(modeluri), getOpenSessionsV2(modeluri));
+   }
+
+   /**
+    * Return the open sessions for API V1 clients.
+    *
+    * @param modeluri
+    * @return
+    */
    protected Stream<WsContext> getOpenSessions(final String modeluri) {
       return modelUrisToClients.getOrDefault(modeluri, Collections.emptySet()).stream()
          .filter(ctx -> ctx.session.isOpen());
    }
 
+   /**
+    * Return the open sessions for API V2 clients.
+    *
+    * @param modeluri
+    * @return
+    */
+   protected Stream<WsContext> getOpenSessionsV2(final String modeluri) {
+      return modelUrisToClientsV2.getOrDefault(modeluri, Collections.emptySet()).stream()
+         .filter(ctx -> ctx.session.isOpen());
+   }
+
    protected Stream<WsContext> getOpenValidationSessions(final String modeluri) {
-      return getOpenSessions(modeluri).filter(this::requiresLiveValidation);
+      return getAllOpenSessions(modeluri).filter(this::requiresLiveValidation);
+   }
+
+   protected boolean hasOpenValidationSessions(final String modeluri) {
+      return getAllOpenSessions(modeluri).anyMatch(this::requiresLiveValidation);
    }
 
    protected void broadcastError(final String modeluri, final String errorMessage) {
       getOpenSessions(modeluri).forEach(session -> session.send(JsonResponse.error(errorMessage)));
+      getOpenSessionsV2(modeluri).forEach(session -> session.send(JsonResponse.error(errorMessage)));
    }
 
    protected boolean requiresLiveValidation(final WsContext client) {
@@ -230,7 +318,8 @@ public class DefaultSessionController implements SessionController {
    }
 
    protected boolean isClientSubscribed(final WsContext ctx) {
-      return modelUrisToClients.entrySet().stream().anyMatch(entry -> entry.getValue().contains(ctx));
+      return modelUrisToClients.entrySet().stream().anyMatch(entry -> entry.getValue().contains(ctx))
+         || modelUrisToClientsV2.entrySet().stream().anyMatch(entry -> entry.getValue().contains(ctx));
    }
 
    protected Map<String, JsonNode> encodeIfPresent(final String modeluri, final EObject execution) {

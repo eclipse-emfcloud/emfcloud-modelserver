@@ -34,6 +34,7 @@
     </location>
     <location includeMode="planner" includeAllPlatforms="false" includeSource="true" includeConfigurePhase="false" type="InstallableUnit">
       <unit id="org.eclipse.jetty.websocket.server" version="9.4.44.v20210927"/>
+      <unit id="org.eclipse.jetty.server" version="9.4.44.v20210927"/>
       <repository location="https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/9.4.44.v20210927/"/>
     </location>
   </locations>

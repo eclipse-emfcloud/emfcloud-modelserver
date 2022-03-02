@@ -24,6 +24,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
 import org.eclipse.emfcloud.modelserver.emf.di.ProviderDefaults;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 import io.javalin.http.Context;
 import io.javalin.websocket.WsContext;
@@ -130,20 +131,48 @@ public final class ContextRequest {
    public static Optional<String> readMessageType(final WsMessageContext ctx) {
       try {
          JsonNode json = ProviderDefaults.provideObjectMapper().readTree(ctx.message());
-         if (!json.has(JsonResponseMember.TYPE)) {
-            error(ctx, "Empty JSON");
-            return Optional.empty();
-         }
-         JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
-         String jsonType = !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : jsonTypeNode.toString();
-         if (jsonType.equals("{}")) {
-            error(ctx, "Empty JSON");
-            return Optional.empty();
-         }
-         return Optional.of(jsonType);
+         return readMessageType(ctx, json);
       } catch (IOException exception) {
          error(ctx, "Invalid JSON", exception);
       }
       return Optional.empty();
    }
+
+   public static Optional<Message<String>> readMessage(final WsMessageContext ctx) {
+      try {
+         JsonNode json = ProviderDefaults.provideObjectMapper().readTree(ctx.message());
+         Optional<String> jsonType = readMessageType(ctx, json);
+         if (jsonType.isEmpty()) {
+            return Optional.empty();
+         }
+
+         // Messages do not all require data
+         String jsonData = null;
+         if (json.has(JsonResponseMember.DATA)) {
+            JsonNode jsonDataNode = json.get(JsonResponseMember.DATA);
+            jsonData = jsonDataNode.getNodeType() == JsonNodeType.STRING ? jsonDataNode.asText()
+               : jsonDataNode.toString();
+         }
+         return Optional.of(new Message<>(jsonType.get(), jsonData));
+      } catch (IOException exception) {
+         error(ctx, "Invalid JSON", exception);
+         return Optional.empty();
+      }
+   }
+
+   private static Optional<String> readMessageType(final WsMessageContext ctx, final JsonNode json) {
+      if (!json.has(JsonResponseMember.TYPE)) {
+         error(ctx, "Missing message type");
+         return Optional.empty();
+      }
+
+      JsonNode jsonTypeNode = json.get(JsonResponseMember.TYPE);
+      String jsonType = jsonTypeNode.isTextual() && !jsonTypeNode.asText().isEmpty() ? jsonTypeNode.asText() : null;
+      if (jsonType == null) {
+         error(ctx, "Invalid message type");
+         return Optional.empty();
+      }
+      return Optional.of(jsonType);
+   }
+
 }

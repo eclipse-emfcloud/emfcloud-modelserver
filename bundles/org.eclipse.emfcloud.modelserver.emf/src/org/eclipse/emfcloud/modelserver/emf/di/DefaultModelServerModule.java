@@ -13,6 +13,7 @@ package org.eclipse.emfcloud.modelserver.emf.di;
 import org.eclipse.emf.common.notify.AdapterFactory;
 import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
@@ -28,6 +29,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.DefaultSchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultSchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultServerController;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultSessionController;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultTransactionController;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultUriHelper;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
@@ -39,6 +41,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ServerController;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
 import org.eclipse.emfcloud.modelserver.emf.common.SingleThreadModelController;
+import org.eclipse.emfcloud.modelserver.emf.common.TransactionController;
 import org.eclipse.emfcloud.modelserver.emf.common.UriHelper;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
@@ -52,6 +55,9 @@ import org.eclipse.emfcloud.modelserver.emf.configuration.FacetConfig;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.launch.DefaultModelServerStartup;
 import org.eclipse.emfcloud.modelserver.emf.launch.ModelServerStartup;
+import org.eclipse.emfcloud.modelserver.emf.patch.EMFCommandHandler;
+import org.eclipse.emfcloud.modelserver.emf.patch.JsonPatchHandler;
+import org.eclipse.emfcloud.modelserver.emf.patch.PatchCommandHandler;
 import org.eclipse.emfcloud.modelserver.jsonschema.DefaultJsonSchemaConverter;
 import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
 
@@ -66,6 +72,9 @@ public class DefaultModelServerModule extends ModelServerModule {
    @Override
    protected void configure() {
       super.configure();
+
+      bind(String.class).annotatedWith(Names.named(CodecsManager.PREFERRED_FORMAT))
+         .toInstance(ModelServerPathParametersV2.FORMAT_JSON_V2);
 
       // singletons
       bind(ModelRepository.class).to(bindModelRepository()).in(Singleton.class);
@@ -83,6 +92,7 @@ public class DefaultModelServerModule extends ModelServerModule {
       bind(ModelValidator.class).to(bindModelValidator()).in(Singleton.class);
       bind(FacetConfig.class).to(bindFacetConfig()).in(Singleton.class);
       bind(UriHelper.class).to(bindUriHelper()).in(Singleton.class);
+      bind(TransactionController.class).to(bindTransactionController()).in(Singleton.class);
 
       // Configure instance bindings
       bind(ObjectMapper.class).toProvider(this::provideObjectMapper).in(Singleton.class);
@@ -126,6 +136,7 @@ public class DefaultModelServerModule extends ModelServerModule {
 
    protected Class<? extends ModelResourceManager> bindModelResourceManager() {
       return RecordingModelResourceManager.class;
+
    }
 
    protected Class<? extends ModelWatchersManager> bindModelWatchersManager() {
@@ -170,6 +181,10 @@ public class DefaultModelServerModule extends ModelServerModule {
       return DefaultUriHelper.class;
    }
 
+   protected Class<? extends TransactionController> bindTransactionController() {
+      return DefaultTransactionController.class;
+   }
+
    protected void configureAppEntryPoints(final MapBinding<EntryPointType, AppEntryPoint> binding) {
       binding.putAll(MultiBindingDefaults.DEFAULT_APP_ENTRY_POINTS);
    }
@@ -205,6 +220,7 @@ public class DefaultModelServerModule extends ModelServerModule {
       configure(MapBinding.create(String.class, Codec.class), this::configureCodecs);
       configure(MapBinding.create(String.class, CommandContribution.class), this::configureCommandCodecs);
       configure(MultiBinding.create(ModelWatcher.Factory.class), this::configureModelWatcherFactories);
+      configure(MultiBinding.create(PatchCommandHandler.class), this::configurePatchCommandHandlers);
    }
 
    protected void configureRoutings(final MultiBinding<Routing> binding) {
@@ -225,5 +241,10 @@ public class DefaultModelServerModule extends ModelServerModule {
 
    protected void configureModelWatcherFactories(final MultiBinding<ModelWatcher.Factory> binding) {
       binding.addAll(MultiBindingDefaults.DEFAULT_MODEL_WATCHER_FACTORIES);
+   }
+
+   protected void configurePatchCommandHandlers(final MultiBinding<PatchCommandHandler> binding) {
+      binding.add(JsonPatchHandler.class);
+      binding.add(EMFCommandHandler.class);
    }
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -16,6 +16,7 @@ import java.util.Map;
 import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
@@ -27,7 +28,9 @@ import org.eclipse.emfcloud.modelserver.edit.command.RemoveCommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.command.SetCommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRoutingV1;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRoutingV2;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
 import org.eclipse.emfcloud.modelserver.emf.common.watchers.FileModelWatcher;
 import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatcher;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
@@ -43,6 +46,7 @@ public final class MultiBindingDefaults {
       CommandPackageConfiguration.class);
 
    public static final List<Class<? extends Routing>> DEFAULT_ROUTINGS = List.of(
+      ModelServerRoutingV2.class,
       ModelServerRoutingV1.class);
 
    public static final Map<EntryPointType, Class<? extends AppEntryPoint>> DEFAULT_APP_ENTRY_POINTS = Map.of(
@@ -50,7 +54,8 @@ public final class MultiBindingDefaults {
 
    public static final Map<String, Class<? extends Codec>> DEFAULT_CODECS = Map.of(
       ModelServerPathParameters.FORMAT_XMI, XmiCodec.class,
-      ModelServerPathParameters.FORMAT_JSON, JsonCodec.class);
+      ModelServerPathParameters.FORMAT_JSON, JsonCodec.class,
+      ModelServerPathParametersV2.FORMAT_JSON_V2, JsonCodecV2.class);
 
    public static final Map<String, Class<? extends CommandContribution>> DEFAULT_COMMAND_CODECS = Map.of(
       EMFCommandType.ADD, AddCommandContribution.class,
