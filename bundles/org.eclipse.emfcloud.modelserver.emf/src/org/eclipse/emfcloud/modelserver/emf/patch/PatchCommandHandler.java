@@ -10,10 +10,14 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.patch;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.common.patch.PatchCommand;
+import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.ImplementedBy;
@@ -41,6 +45,7 @@ public interface PatchCommandHandler {
    }
 
    class RegistryImpl implements Registry {
+      private static final Logger LOG = LogManager.getLogger(RegistryImpl.class);
 
       private Set<PatchCommandHandler> handlers;
 
@@ -62,8 +67,21 @@ public interface PatchCommandHandler {
          String patchType = patch.get("type").asText();
          Optional<PatchCommandHandler> patchCommandHandler = getPatchCommandHandler(ctx, patchType);
          Optional<PatchCommand<?>> patchCommand = patchCommandHandler
-            .map(handler -> handler.getPatchCommand(ctx, patch.get("data")));
+            .map(handler -> handler.getPatchCommand(ctx, getPatchData(patch)));
          return patchCommand;
+      }
+
+      protected JsonNode getPatchData(final JsonNode patch) {
+         // The Java client API encodes the patch data as JSON embedded in a string
+         JsonNode result = patch.get("data");
+         if (result != null && result.isTextual()) {
+            try {
+               result = Json.parse(result.textValue());
+            } catch (IOException e) {
+               LOG.error("Failed to parse data string as an embedded JSON object.", e);
+            }
+         }
+         return result;
       }
 
       @Override
@@ -71,7 +89,7 @@ public interface PatchCommandHandler {
          String patchType = patch.get("type").asText();
          Optional<PatchCommandHandler> patchCommandHandler = getPatchCommandHandler(ctx, patchType);
          Optional<PatchCommand<?>> patchCommand = patchCommandHandler
-            .map(handler -> handler.getPatchCommand(ctx, patch.get("data")));
+            .map(handler -> handler.getPatchCommand(ctx, getPatchData(patch)));
          return patchCommand;
       }
 

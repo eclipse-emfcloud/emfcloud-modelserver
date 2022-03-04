@@ -10,18 +10,13 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
-import static io.javalin.apibuilder.ApiBuilder.after;
-import static io.javalin.apibuilder.ApiBuilder.before;
-import static io.javalin.apibuilder.ApiBuilder.delete;
-import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.path;
-import static io.javalin.apibuilder.ApiBuilder.post;
-import static io.javalin.apibuilder.ApiBuilder.put;
-import static io.javalin.apibuilder.ApiBuilder.ws;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1.ELEMENT_ID;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1.ELEMENT_NAME;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1.MODEL_URI;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1.SCHEMA_NAME;
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1.SERVER_CONFIGURE;
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1.SERVER_PING;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest.getParam;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.error;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.missingParameter;
@@ -31,15 +26,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
-import org.eclipse.emfcloud.modelserver.common.Routing;
-
-import com.google.inject.Inject;
 
 import io.javalin.Javalin;
+import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConfig;
@@ -47,8 +40,11 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsErrorContext;
 import io.javalin.websocket.WsMessageContext;
 
-public abstract class AbstractModelServerRouting implements Routing {
-   protected static final Logger LOG = LogManager.getLogger(AbstractModelServerRouting.class);
+/**
+ * Implementation of common routing for multiple API versions.
+ */
+class ModelServerRoutingDelegate {
+   protected static final Logger LOG = LogManager.getLogger(ModelServerRoutingDelegate.class);
 
    protected final Javalin javalin;
    protected final ModelResourceManager resourceManager;
@@ -57,13 +53,19 @@ public abstract class AbstractModelServerRouting implements Routing {
    protected final ServerController serverController;
    protected final SessionController sessionController;
 
+   protected final String basePath;
+
    // Do not process certain requests while server is being configured.
    protected CompletableFuture<Void> onServerConfigured;
 
-   @Inject
-   public AbstractModelServerRouting(final Javalin javalin, final ModelResourceManager resourceManager,
+   protected BiConsumer<? super WsConnectContext, String> subscriptionConnectionHandler = this::connectSubscription;
+
+   protected ModelServerRoutingDelegate(final Javalin javalin, final ModelResourceManager resourceManager,
       final ModelController modelController, final SchemaController schemaController,
-      final ServerController serverController, final SessionController sessionController) {
+      final ServerController serverController, final SessionController sessionController, final String basePath) {
+
+      super();
+
       this.javalin = javalin;
       this.resourceManager = resourceManager;
       this.modelController = modelController;
@@ -71,64 +73,19 @@ public abstract class AbstractModelServerRouting implements Routing {
       this.serverController = serverController;
       this.sessionController = sessionController;
       this.onServerConfigured = CompletableFuture.completedFuture(null);
+
+      this.basePath = basePath;
    }
 
-   @Override
-   public void bindRoutes() {
-      javalin.routes(this::endpoints);
+   public void bindRoutes(final EndpointGroup endpointGroup) {
+      javalin.routes(() -> endpoints(endpointGroup));
    }
 
-   private void endpoints() {
-      path(getBasePath(), () -> {
-         apiEndpoints();
-      });
+   private void endpoints(final EndpointGroup endpointGroup) {
+      path(getBasePath(), endpointGroup::addEndpoints);
    }
 
-   protected abstract String getBasePath();
-
-   /**
-    * API Endpoints common for V1 and V2 APIs.
-    */
-   protected void commonApiEndpoints() {
-      before(this::waitForPrecondition);
-
-      get(ModelServerPathsV1.MODEL_BASE_PATH, this::getModel);
-      post(ModelServerPathsV1.MODEL_BASE_PATH, this::createModel);
-      delete(ModelServerPathsV1.MODEL_BASE_PATH, this::deleteModel);
-
-      post(ModelServerPathsV1.CLOSE, this::closeModel);
-
-      get(ModelServerPathsV1.UNDO, this::undoCommand);
-      get(ModelServerPathsV1.REDO, this::redoCommand);
-
-      get(ModelServerPathsV1.MODEL_ELEMENT, this::getModelElement);
-
-      get(ModelServerPathsV1.SAVE, this::saveModel);
-      get(ModelServerPathsV1.SAVE_ALL, this::saveAllModels);
-
-      get(ModelServerPathsV1.MODEL_URIS, this::getModelUris);
-
-      get(ModelServerPathsV1.TYPE_SCHEMA, this::getTypeSchema);
-
-      get(ModelServerPathsV1.UI_SCHEMA, this::getUiSchema);
-
-      before(ModelServerPathsV1.SERVER_CONFIGURE, this::beforeServerConfigure);
-      put(ModelServerPathsV1.SERVER_CONFIGURE, this::serverConfigure);
-      after(ModelServerPathsV1.SERVER_CONFIGURE, this::afterServerConfigure);
-
-      get(ModelServerPathsV1.SERVER_PING, this::serverPing);
-
-      get(ModelServerPathsV1.VALIDATION, this::validateModel);
-      get(ModelServerPathsV1.VALIDATION_CONSTRAINTS, this::getValidationConstraints);
-
-      ws(ModelServerPathsV1.SUBSCRIPTION, this::subscribe);
-
-      // TODO: ws for the commands
-   }
-
-   protected void apiEndpoints() {
-      commonApiEndpoints();
-   }
+   protected String getBasePath() { return basePath; }
 
    protected void waitForPrecondition(final Context ctx) throws InterruptedException, ExecutionException {
       if (requiresConfiguredServer(ctx) && !this.onServerConfigured.isDone()) {
@@ -140,8 +97,8 @@ public abstract class AbstractModelServerRouting implements Routing {
    }
 
    protected boolean requiresConfiguredServer(final Context ctx) {
-      return !ctx.path().contains(ModelServerPathsV1.SERVER_CONFIGURE)
-         && !ctx.path().contains(ModelServerPathsV1.SERVER_PING);
+      return !ctx.path().contains(SERVER_CONFIGURE)
+         && !ctx.path().contains(SERVER_PING);
    }
 
    protected void validateModel(final Context ctx) {
@@ -278,14 +235,24 @@ public abstract class AbstractModelServerRouting implements Routing {
 
    protected void onSubscriptionConnect(final WsConnectContext ctx) {
       Optional<String> modelUri = getResolvedFileUri(ctx.queryParamMap(), MODEL_URI);
-      if (modelUri.isEmpty()) {
-         missingParameter(ctx, MODEL_URI);
-         ctx.session.close();
-         return;
-      }
+      modelUri.ifPresentOrElse(uri -> this.subscriptionConnectionHandler.accept(ctx, uri),
+         () -> {
+            missingParameter(ctx, MODEL_URI);
+            ctx.session.close();
+         });
+   }
 
-      if (!sessionController.subscribe(ctx, modelUri.get())) {
-         error(ctx, "Cannot subscribe to '%s': modeluri is not a valid model resource", modelUri.get());
+   protected void setSubscriptionConnectionHandler(
+      final BiConsumer<? super WsConnectContext, String> subscriptionConnectionHandler) {
+
+      // Default to our own implementation if null
+      this.subscriptionConnectionHandler = subscriptionConnectionHandler == null ? this::connectSubscription
+         : subscriptionConnectionHandler;
+   }
+
+   protected void connectSubscription(final WsConnectContext ctx, final String modelUri) {
+      if (!sessionController.subscribe(ctx, modelUri)) {
+         error(ctx, "Cannot subscribe to '%s': modeluri is not a valid model resource", modelUri);
          ctx.session.close();
       }
    }

@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV2;
 import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
@@ -55,13 +56,20 @@ public class JsonCodecV2 extends DefaultJsonCodec {
 
    @Override
    public JsonNode encode(final EObject obj) throws EncodingException {
-      // FIXME: The super implementation creates a JsonResource, which doesn't (seem to) support
+      // The super implementation creates a JsonResource, which doesn't (seem to) support
       // IDs at all. When used with the $id: feature, it results in $id:null for all elements.
-      // Directly serialize the object, without moving it to a separate resource.
+
+      Resource original = obj.eResource();
+      if (original == null) {
+         // If it's not in a resource, then the superclass implementation will do just as well
+         // because nothing can have an ID, anyways
+         return super.encode(obj);
+      }
+
+      // FIXME: Directly serialize the object, without moving it to a separate resource.
       // However, by doing this, we might break href-references in some cases? TO BE INVESTIGATED
       // Alternatively, we could use a custom ID-Provider (Or delegate to the original resource for IDs?)
-      // return super.encode(obj);
-      return super.encode(obj, getObjectMapper());
+      return DefaultJsonCodec.encode(obj, getObjectMapper());
    }
 
 }
