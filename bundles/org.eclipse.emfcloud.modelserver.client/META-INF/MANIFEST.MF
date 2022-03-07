@@ -17,5 +17,7 @@ Require-Bundle: com.fasterxml.jackson.core.jackson-core;bundle-version="[2.9.0,3
  org.eclipse.emfcloud.modelserver.emf;bundle-version="[0.7.0,1.0.0)",
  org.eclipse.emf.ecore.change;bundle-version="[2.14.0,3.0.0)"
 Export-Package: org.eclipse.emfcloud.modelserver.client,
+ org.eclipse.emfcloud.modelserver.client.v1,
+ org.eclipse.emfcloud.modelserver.client.v2,
  org.eclipse.emfcloud.modelserver.internal.client;x-internal:=true
 Bundle-Vendor: EclipseSource
