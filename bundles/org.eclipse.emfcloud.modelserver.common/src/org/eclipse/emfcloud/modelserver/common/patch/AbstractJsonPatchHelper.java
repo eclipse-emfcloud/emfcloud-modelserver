@@ -654,7 +654,7 @@ public abstract class AbstractJsonPatchHelper {
     * an optional Index for list items, or a referenced element (e.g.
     * an EObject to remove, in which case there will be no Feature or Index)
     */
-   public final class SettingValue {
+   public static class SettingValue {
 
       private final EObject eObject;
 
