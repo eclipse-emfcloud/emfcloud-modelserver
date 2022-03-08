@@ -107,6 +107,8 @@ public class DefaultModelControllerTest {
    @Mock
    private ServerConfiguration serverConfiguration;
    @Mock
+   private ModelURIConverter uriConverter;
+   @Mock
    private JsonPatchHelper jsonPatchHelper;
    @InjectMocks
    private DefaultModelValidator modelValidator;
@@ -130,7 +132,7 @@ public class DefaultModelControllerTest {
       modelValidator = new DefaultModelValidator(modelRepository, new DefaultFacetConfig(),
          EMFModule::setupDefaultMapper);
       modelController = new DefaultModelController(modelRepository, sessionController, serverConfiguration, codecs,
-         modelValidator, new PatchCommandHandler.RegistryImpl(), modelResourceManager, jsonPatchHelper);
+         modelValidator, new PatchCommandHandler.RegistryImpl(), modelResourceManager, uriConverter, jsonPatchHelper);
    }
 
    @Test
@@ -169,6 +171,8 @@ public class DefaultModelControllerTest {
       final Map<URI, EObject> allModels = Collections.singletonMap(URI.createURI("test"), brewingUnit);
       when(modelRepository.getAllModels()).thenReturn(allModels);
 
+      when(uriConverter.deresolveModelURI(any(Context.class), any(URI.class)))
+         .thenAnswer(invocation -> invocation.getArgument(1));
       modelController.getAll(context);
 
       assertThat(response.get().get(JsonResponseMember.DATA), is(equalTo(

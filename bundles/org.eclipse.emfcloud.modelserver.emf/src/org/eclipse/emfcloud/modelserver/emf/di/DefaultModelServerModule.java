@@ -10,7 +10,13 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.di;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 import org.eclipse.emf.common.notify.AdapterFactory;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.URIConverter;
+import org.eclipse.emfcloud.modelserver.common.APIVersionRange;
 import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
@@ -24,7 +30,9 @@ import org.eclipse.emfcloud.modelserver.edit.DICommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultFacetConfig;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelRepository;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelValidator;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultResourceSetFactory;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultSchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultSchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultServerController;
@@ -34,8 +42,10 @@ import org.eclipse.emfcloud.modelserver.emf.common.DefaultUriHelper;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelValidator;
 import org.eclipse.emfcloud.modelserver.emf.common.RecordingModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.ResourceSetFactory;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaController;
 import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ServerController;
@@ -62,7 +72,9 @@ import org.eclipse.emfcloud.modelserver.jsonschema.DefaultJsonSchemaConverter;
 import org.eclipse.emfcloud.modelserver.jsonschema.JsonSchemaConverter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.Key;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
 import io.javalin.Javalin;
@@ -93,6 +105,9 @@ public class DefaultModelServerModule extends ModelServerModule {
       bind(FacetConfig.class).to(bindFacetConfig()).in(Singleton.class);
       bind(UriHelper.class).to(bindUriHelper()).in(Singleton.class);
       bind(TransactionController.class).to(bindTransactionController()).in(Singleton.class);
+      bind(ModelURIConverter.class).to(bindModelURIConverter()).in(Singleton.class);
+      bind(ResourceSetFactory.class).to(bindResourceSetFactory()).in(Singleton.class);
+      bind(URIConverter.class).to(Key.get(ModelURIConverter.class));
 
       // Configure instance bindings
       bind(ObjectMapper.class).toProvider(this::provideObjectMapper).in(Singleton.class);
@@ -185,6 +200,14 @@ public class DefaultModelServerModule extends ModelServerModule {
       return DefaultTransactionController.class;
    }
 
+   protected Class<? extends ModelURIConverter> bindModelURIConverter() {
+      return DefaultModelURIConverter.class;
+   }
+
+   protected Class<? extends ResourceSetFactory> bindResourceSetFactory() {
+      return DefaultResourceSetFactory.class;
+   }
+
    protected void configureAppEntryPoints(final MapBinding<EntryPointType, AppEntryPoint> binding) {
       binding.putAll(MultiBindingDefaults.DEFAULT_APP_ENTRY_POINTS);
    }
@@ -213,6 +236,16 @@ public class DefaultModelServerModule extends ModelServerModule {
       binding.addAll(MultiBindingDefaults.DEFAULT_EPACKAGE_CONFIGURATIONS);
    }
 
+   protected void configureModelURIResolvers(
+      final MapBinding<APIVersionRange, Function<? super URI, Optional<URI>>> binding) {
+      binding.putAll(MultiBindingDefaults.DEFAULT_MODEL_URI_RESOLVERS);
+   }
+
+   protected void configureModelURIDeresolvers(
+      final MapBinding<APIVersionRange, Function<? super URI, URI>> binding) {
+      binding.putAll(MultiBindingDefaults.DEFAULT_MODEL_URI_DERESOLVERS);
+   }
+
    protected void configureMultiBindings() {
       configure(MultiBinding.create(EPackageConfiguration.class), this::configureEPackages);
       configure(MultiBinding.create(Routing.class), this::configureRoutings);
@@ -221,6 +254,10 @@ public class DefaultModelServerModule extends ModelServerModule {
       configure(MapBinding.create(String.class, CommandContribution.class), this::configureCommandCodecs);
       configure(MultiBinding.create(ModelWatcher.Factory.class), this::configureModelWatcherFactories);
       configure(MultiBinding.create(PatchCommandHandler.class), this::configurePatchCommandHandlers);
+      configure(MapBinding.create(APIVersionRange.class, new TypeLiteral<Function<? super URI, Optional<URI>>>() {})
+         .setAnnotationName(DefaultModelURIConverter.MODEL_URI_RESOLVERS), this::configureModelURIResolvers);
+      configure(MapBinding.create(APIVersionRange.class, new TypeLiteral<Function<? super URI, URI>>() {})
+         .setAnnotationName(DefaultModelURIConverter.MODEL_URI_DERESOLVERS), this::configureModelURIDeresolvers);
    }
 
    protected void configureRoutings(final MultiBinding<Routing> binding) {
