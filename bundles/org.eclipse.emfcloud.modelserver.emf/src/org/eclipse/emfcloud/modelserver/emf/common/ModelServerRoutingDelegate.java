@@ -43,7 +43,7 @@ import io.javalin.websocket.WsMessageContext;
 /**
  * Implementation of common routing for multiple API versions.
  */
-public class ModelServerRoutingDelegate {
+class ModelServerRoutingDelegate {
    protected static final Logger LOG = LogManager.getLogger(ModelServerRoutingDelegate.class);
 
    protected final Javalin javalin;
