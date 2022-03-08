@@ -25,10 +25,11 @@ import org.eclipse.emfcloud.modelserver.common.Routing;
 import com.google.inject.Inject;
 
 import io.javalin.Javalin;
+import io.javalin.apibuilder.EndpointGroup;
 
 public class ModelServerRoutingV1 implements Routing {
 
-   protected final ModelServerRoutingDelegate delegate;
+   private final ModelServerRoutingDelegate delegate;
 
    @Inject
    public ModelServerRoutingV1(final Javalin javalin, final ModelResourceManager resourceManager,
@@ -43,7 +44,11 @@ public class ModelServerRoutingV1 implements Routing {
 
    @Override
    public void bindRoutes() {
-      delegate.bindRoutes(this::endpoints);
+      bindRoutes(this::endpoints);
+   }
+
+   protected void bindRoutes(final EndpointGroup endpointGroup) {
+      delegate.bindRoutes(endpointGroup);
    }
 
    private void endpoints() {

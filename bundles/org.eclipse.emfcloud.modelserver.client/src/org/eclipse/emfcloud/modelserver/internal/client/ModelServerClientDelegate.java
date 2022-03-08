@@ -37,6 +37,7 @@ import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
+import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
@@ -57,6 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import okhttp3.Call;
@@ -93,17 +95,17 @@ public class ModelServerClientDelegate implements AutoCloseable {
    protected final Map<EditingContextImpl<?>, WebSocket> openEditingSockets = new LinkedHashMap<>();
    protected final EPackageConfiguration[] configurations;
 
-   private final Set<String> supportedFormats;
+   private final Map<String, Codec> supportedFormats;
 
    public ModelServerClientDelegate(final String baseUrl, final String defaultFormat,
-      final Iterable<String> supportedFormats, final EPackageConfiguration... configurations)
+      final Map<String, Codec> supportedFormats, final EPackageConfiguration... configurations)
       throws MalformedURLException {
 
       this(new OkHttpClient(), baseUrl, defaultFormat, supportedFormats, configurations);
    }
 
    public ModelServerClientDelegate(final OkHttpClient client, final String baseUrl, final String defaultFormat,
-      final Iterable<String> supportedFormats, final EPackageConfiguration... configurations)
+      final Map<String, Codec> supportedFormats, final EPackageConfiguration... configurations)
       throws MalformedURLException {
 
       super();
@@ -112,8 +114,24 @@ public class ModelServerClientDelegate implements AutoCloseable {
       this.baseUrl = new URL(baseUrl).toString();
       this.defaultFormat = defaultFormat;
       this.configurations = configurations;
-      this.supportedFormats = ImmutableSet.copyOf(supportedFormats);
+      this.supportedFormats = initFormats(supportedFormats);
+
       this.init();
+   }
+
+   private static ImmutableMap<String, Codec> initFormats(final Map<String, Codec> supportedFormats) {
+      ImmutableMap.Builder<String, Codec> result = ImmutableMap.builder();
+
+      // Support these at a minimum for backward compatibility
+      if (!supportedFormats.containsKey(ModelServerPathParametersV1.FORMAT_XMI)) {
+         result.put(ModelServerPathParametersV1.FORMAT_XMI, new XmiCodec());
+      }
+      if (!supportedFormats.containsKey(ModelServerPathParametersV1.FORMAT_JSON)) {
+         result.put(ModelServerPathParametersV1.FORMAT_JSON, new DefaultJsonCodec());
+      }
+
+      result.putAll(supportedFormats);
+      return result.build();
    }
 
    protected void init() {
@@ -129,6 +147,8 @@ public class ModelServerClientDelegate implements AutoCloseable {
       // custom packages adding or overriding default configurations
       EPackageConfiguration.setup(this.configurations);
    }
+
+   public String getBaseUrl() { return this.baseUrl; }
 
    @Override
    public void close() {
@@ -398,7 +418,7 @@ public class ModelServerClientDelegate implements AutoCloseable {
     * @return true when supported.
     */
    public boolean isSupportedFormat(final String format) {
-      return supportedFormats.contains(format);
+      return supportedFormats.containsKey(format);
    }
 
    /**
@@ -732,11 +752,17 @@ public class ModelServerClientDelegate implements AutoCloseable {
    }
 
    public String encode(final EObject eObject, final String format) {
+      Codec codec = supportedFormats.get(format);
+      if (codec == null) {
+         throw new IllegalArgumentException("Unsupported format: " + format);
+      }
+
       try {
-         if (format.equals(ModelServerPathParametersV1.FORMAT_XMI)) {
-            return new XmiCodec().encode(eObject).asText();
+         JsonNode json = codec.encode(eObject);
+         if (json.isValueNode()) {
+            return json.asText();
          }
-         return new DefaultJsonCodec().encode(eObject).toString();
+         return json.toString();
       } catch (EncodingException e) {
          LOG.error("Encoding of " + eObject + " with " + format + " format failed");
          throw new RuntimeException(e);
@@ -748,11 +774,13 @@ public class ModelServerClientDelegate implements AutoCloseable {
    }
 
    public Optional<EObject> decode(final String payload, final String format) {
+      Codec codec = supportedFormats.get(format);
+      if (codec == null) {
+         throw new IllegalArgumentException("Unsupported format: " + format);
+      }
+
       try {
-         if (format.equals(ModelServerPathParametersV1.FORMAT_XMI)) {
-            return new XmiCodec().decode(payload);
-         }
-         return new DefaultJsonCodec().decode(payload);
+         return codec.decode(payload);
       } catch (DecodingException e) {
          LOG.error("Decoding of " + payload + " with " + format + " format failed");
       }
