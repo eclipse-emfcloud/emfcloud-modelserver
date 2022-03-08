@@ -44,12 +44,20 @@ public class ModelServerClientV1 implements ModelServerClientApiV1<EObject>, Mod
 
    protected static final Logger LOG = LogManager.getLogger(ModelServerClientV1.class);
 
-   private final ModelServerClientDelegate delegate;
+   protected final ModelServerClientDelegate delegate;
 
    public ModelServerClientV1(final String baseUrl, final EPackageConfiguration... configurations)
       throws MalformedURLException {
 
       this(new ModelServerClientDelegate(baseUrl, ModelServerPathParametersV1.FORMAT_JSON, SUPPORTED_FORMATS,
+         configurations));
+   }
+
+   public ModelServerClientV1(final String baseUrl, final Set<String> supportedFormats,
+      final EPackageConfiguration... configurations)
+      throws MalformedURLException {
+
+      this(new ModelServerClientDelegate(baseUrl, ModelServerPathParametersV1.FORMAT_JSON, supportedFormats,
          configurations));
    }
 

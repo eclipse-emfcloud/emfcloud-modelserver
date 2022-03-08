@@ -130,6 +130,8 @@ public class ModelServerClientDelegate implements AutoCloseable {
       EPackageConfiguration.setup(this.configurations);
    }
 
+   public String getBaseUrl() { return this.baseUrl; }
+
    @Override
    public void close() {
       openSockets.keySet().forEach(this::unsubscribe);

@@ -26,6 +26,7 @@ import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPaths;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
@@ -53,12 +54,20 @@ public class ModelServerClientV2 implements ModelServerClientApi<EObject>, Model
 
    protected static final Logger LOG = LogManager.getLogger(ModelServerClientV2.class);
 
-   private final ModelServerClientDelegate delegate;
+   protected final ModelServerClientDelegate delegate;
 
    public ModelServerClientV2(final String baseUrl, final EPackageConfiguration... configurations)
       throws MalformedURLException {
 
       this(new ModelServerClientDelegate(baseUrl, ModelServerPathParametersV2.FORMAT_JSON_V2, SUPPORTED_FORMATS,
+         configurations));
+   }
+
+   public ModelServerClientV2(final String baseUrl, final Set<String> supportedFormats,
+      final EPackageConfiguration... configurations)
+      throws MalformedURLException {
+
+      this(new ModelServerClientDelegate(baseUrl, ModelServerPathParametersV1.FORMAT_JSON, supportedFormats,
          configurations));
    }
 

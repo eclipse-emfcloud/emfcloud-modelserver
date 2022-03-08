@@ -29,6 +29,13 @@ public class ModelServerClient extends ModelServerClientV2 {
       super(baseUrl, configurations);
    }
 
+   public ModelServerClient(final String baseUrl, final Set<String> supportedFormats,
+      final EPackageConfiguration... configurations)
+      throws MalformedURLException {
+
+      super(baseUrl, supportedFormats, configurations);
+   }
+
    public ModelServerClient(final OkHttpClient client, final String baseUrl,
       final EPackageConfiguration... configurations) throws MalformedURLException {
       super(client, baseUrl, configurations);
