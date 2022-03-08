@@ -28,6 +28,7 @@ import org.eclipse.emfcloud.modelserver.common.Routing;
 import com.google.inject.Inject;
 
 import io.javalin.Javalin;
+import io.javalin.apibuilder.EndpointGroup;
 import io.javalin.http.Context;
 import io.javalin.websocket.WsConfig;
 import io.javalin.websocket.WsConnectContext;
@@ -39,7 +40,7 @@ public class ModelServerRoutingV2 implements Routing {
     */
    protected static final String TRANSACTION_ENDPOINT = "transaction";
 
-   protected final ModelServerRoutingDelegate delegate;
+   private final ModelServerRoutingDelegate delegate;
 
    protected final ModelController modelController;
    protected final SessionController sessionController;
@@ -64,7 +65,11 @@ public class ModelServerRoutingV2 implements Routing {
 
    @Override
    public void bindRoutes() {
-      delegate.bindRoutes(this::endpoints);
+      bindRoutes(this::endpoints);
+   }
+
+   protected void bindRoutes(final EndpointGroup endpointGroup) {
+      delegate.bindRoutes(endpointGroup);
    }
 
    private void endpoints() {

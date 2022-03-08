@@ -12,7 +12,8 @@ package org.eclipse.emfcloud.modelserver.client.v1;
 
 import java.net.MalformedURLException;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.logging.log4j.LogManager;
@@ -27,24 +28,31 @@ import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
+import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
+import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
+import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.internal.client.ModelServerClientDelegate;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
+import okhttp3.HttpUrl.Builder;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 
 public class ModelServerClientV1 implements ModelServerClientApiV1<EObject>, ModelServerPathsV1, AutoCloseable {
 
-   public static final Set<String> SUPPORTED_FORMATS = Set.of(ModelServerPathParametersV1.FORMAT_JSON,
-      ModelServerPathParametersV1.FORMAT_XMI);
+   public static final Map<String, Codec> SUPPORTED_FORMATS = Map.of(
+      ModelServerPathParametersV1.FORMAT_JSON, new DefaultJsonCodec(),
+      ModelServerPathParametersV1.FORMAT_XMI, new XmiCodec());
 
    protected static final Logger LOG = LogManager.getLogger(ModelServerClientV1.class);
 
-   protected final ModelServerClientDelegate delegate;
+   private final ModelServerClientDelegate delegate;
 
    public ModelServerClientV1(final String baseUrl, final EPackageConfiguration... configurations)
       throws MalformedURLException {
@@ -53,7 +61,7 @@ public class ModelServerClientV1 implements ModelServerClientApiV1<EObject>, Mod
          configurations));
    }
 
-   public ModelServerClientV1(final String baseUrl, final Set<String> supportedFormats,
+   public ModelServerClientV1(final String baseUrl, final Map<String, Codec> supportedFormats,
       final EPackageConfiguration... configurations)
       throws MalformedURLException {
 
@@ -298,6 +306,48 @@ public class ModelServerClientV1 implements ModelServerClientApiV1<EObject>, Mod
    @Override
    public CompletableFuture<Response<Boolean>> redo(final String modelUri) {
       return delegate.redo(modelUri);
+   }
+
+   protected String getBaseUrl() { return delegate.getBaseUrl(); }
+
+   protected String makeWsUrl(final String path) {
+      return delegate.makeWsUrl(path);
+   }
+
+   protected String makeUrl(final String path) {
+      return delegate.makeUrl(path);
+   }
+
+   protected Builder createHttpUrlBuilder(final String path) {
+      return delegate.createHttpUrlBuilder(path);
+   }
+
+   public String checkedFormat(final String format) {
+      return delegate.checkedFormat(format);
+   }
+
+   public boolean isSupportedFormat(final String format) {
+      return delegate.isSupportedFormat(format);
+   }
+
+   protected String encode(final EObject eObject) {
+      return delegate.encode(eObject);
+   }
+
+   protected Optional<EObject> decode(final String payload) {
+      return delegate.decode(payload);
+   }
+
+   protected CompletableFuture<Response<Boolean>> makeCallAndExpectSuccess(final Request request) {
+      return delegate.makeCallAndExpectSuccess(request);
+   }
+
+   protected CompletableFuture<Response<String>> makeCallAndGetDataBody(final Request request) {
+      return delegate.makeCallAndGetDataBody(request);
+   }
+
+   public WebSocket createWebSocket(final Request request, final WebSocketListener listener) {
+      return delegate.createWebSocket(request, listener);
    }
 
 }
