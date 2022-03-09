@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -24,4 +24,27 @@ public interface Codec {
    Optional<EObject> decode(String payload) throws DecodingException;
 
    Optional<EObject> decode(String payload, URI workspaceURI) throws DecodingException;
+
+   //
+   // Nested types
+   //
+
+   /**
+    * An internal interface that may be implemented by codecs to provide protected access
+    * to it within the framework. This interface is not intended for use only by the core
+    * server framework.
+    */
+   interface Internal extends Codec {
+      /**
+       * Encode an object as it is, <em>in situ</em>, without making any temporary
+       * changes to it or operating on a copy, etc.
+       *
+       * @param eObject an object to encode
+       * @return the most direct encoding of the object that is feasible
+       *
+       * @throws EncodingException on failure to perform the encoding
+       */
+      JsonNode basicEncode(EObject eObject) throws EncodingException;
+   }
+
 }

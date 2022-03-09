@@ -23,8 +23,10 @@ import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatchersManager
 import org.eclipse.emfcloud.modelserver.emf.configuration.ChangePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 /**
  * A custom implementation of the resource manager that records the changes when executing commands on the command
@@ -35,8 +37,9 @@ public class RecordingModelResourceManager extends DefaultModelResourceManager {
    @Inject
    public RecordingModelResourceManager(final Set<EPackageConfiguration> configurations,
       final AdapterFactory adapterFactory,
-      final ServerConfiguration serverConfiguration, final ModelWatchersManager watchersManager) {
-      super(configurations, adapterFactory, serverConfiguration, watchersManager);
+      final ServerConfiguration serverConfiguration, final ModelWatchersManager watchersManager,
+      final Provider<JsonPatchHelper> jsonPatchHelper) {
+      super(configurations, adapterFactory, serverConfiguration, watchersManager, jsonPatchHelper);
    }
 
    @Override

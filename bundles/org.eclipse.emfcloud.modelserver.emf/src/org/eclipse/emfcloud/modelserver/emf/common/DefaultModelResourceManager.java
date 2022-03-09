@@ -51,6 +51,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 public class DefaultModelResourceManager implements ModelResourceManager {
    protected static final Logger LOG = LogManager.getLogger(DefaultModelResourceManager.class);
@@ -69,20 +70,23 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    protected ModelWatchersManager watchersManager;
    protected final Map<URI, ResourceSet> resourceSets = Maps.newLinkedHashMap();
    protected final Map<ResourceSet, ModelServerEditingDomain> editingDomains = Maps.newLinkedHashMap();
-   protected final JsonPatchHelper jsonPatchHelper;
+
+   // Inject a provider to break the dependency cycle (the helper needs the resource manager)
+   protected final Provider<JsonPatchHelper> jsonPatchHelper;
 
    protected boolean isInitializing;
 
    @Inject
    public DefaultModelResourceManager(final Set<EPackageConfiguration> configurations,
       final AdapterFactory adapterFactory, final ServerConfiguration serverConfiguration,
-      final ModelWatchersManager watchersManager) {
+      final ModelWatchersManager watchersManager, final Provider<JsonPatchHelper> jsonPatchHelper) {
 
       this.configurations = Sets.newLinkedHashSet(configurations);
       this.adapterFactory = adapterFactory;
       this.serverConfiguration = serverConfiguration;
       this.watchersManager = watchersManager;
-      this.jsonPatchHelper = new JsonPatchHelper(this, serverConfiguration);
+      this.jsonPatchHelper = jsonPatchHelper;
+
       initialize();
    }
 
@@ -467,7 +471,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       ResourceSet resourceSet = getResourceSet(modeluri);
       ModelServerEditingDomain domain = getEditingDomain(resourceSet);
 
-      Command command = jsonPatchHelper.getCommand(modeluri, resourceSet, jsonPatch);
+      Command command = jsonPatchHelper.get().getCommand(modeluri, resourceSet, jsonPatch);
       // execute command
       CommandExecutionContext context = executeCommand(domain, command, null);
 
