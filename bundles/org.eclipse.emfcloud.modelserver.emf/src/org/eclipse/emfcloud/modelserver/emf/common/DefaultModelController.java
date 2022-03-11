@@ -426,7 +426,6 @@ public class DefaultModelController implements ModelController {
       Object data = pCommand.getData();
       if (data instanceof CCommand) {
          CCommand cCommand = (CCommand) data;
-         // resolveWorkspaceURIs(cCommand);
          return cCommand;
       }
       return null;
