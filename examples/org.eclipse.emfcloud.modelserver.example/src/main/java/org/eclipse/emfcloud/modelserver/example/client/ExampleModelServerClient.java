@@ -209,7 +209,7 @@ public final class ExampleModelServerClient {
       System.out.println("- " + CMD_SUBSCRIBE + " <modelUri> <format>");
       System.out.println("- " + CMD_UNSUBSCRIBE + " <modelUri>");
       System.out.println("- " + CMD_GET + " <modelUri>");
-      System.out.println("- " + CMD_GET_ALL + "<format>");
+      System.out.println("- " + CMD_GET_ALL + " <format>");
       System.out.println("- " + CMD_UPDATE_TASKS + " <name> // adapts all task names in SuperBrewer3000.json (custom)");
       System.out.println("- " + CMD_UNDO + " <modelUri>");
       System.out.println("- " + CMD_REDO + " <modelUri>");

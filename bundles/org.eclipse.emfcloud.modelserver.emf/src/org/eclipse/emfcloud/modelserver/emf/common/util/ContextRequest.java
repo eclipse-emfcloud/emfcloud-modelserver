@@ -17,9 +17,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.emfcloud.modelserver.common.APIVersion;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseMember;
 import org.eclipse.emfcloud.modelserver.emf.di.ProviderDefaults;
 
@@ -32,6 +35,8 @@ import io.javalin.websocket.WsMessageContext;
 
 public final class ContextRequest {
    protected static final Logger LOG = LogManager.getLogger(ContextRequest.class.getSimpleName());
+
+   private static final Pattern API_PATTERN = Pattern.compile("^/?api/v(\\d+)\\b");
 
    private ContextRequest() {}
 
@@ -173,6 +178,19 @@ public final class ContextRequest {
          return Optional.empty();
       }
       return Optional.of(jsonType);
+   }
+
+   public static APIVersion getAPIVersion(final Context ctx) {
+      return getAPIVersion(ctx.matchedPath());
+   }
+
+   public static APIVersion getAPIVersion(final WsContext ctx) {
+      return getAPIVersion(ctx.matchedPath());
+   }
+
+   protected static APIVersion getAPIVersion(final String apiPath) {
+      Matcher m = API_PATTERN.matcher(apiPath);
+      return m.find() ? new APIVersion(Integer.parseInt(m.group(1))) : APIVersion.ZERO;
    }
 
 }

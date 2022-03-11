@@ -12,12 +12,15 @@ package org.eclipse.emfcloud.modelserver.emf.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,13 +31,13 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
+import org.eclipse.emfcloud.modelserver.common.di.Initialize;
 import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
 import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchTestException;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
@@ -56,6 +59,9 @@ import com.google.inject.Provider;
 public class DefaultModelResourceManager implements ModelResourceManager {
    protected static final Logger LOG = LogManager.getLogger(DefaultModelResourceManager.class);
 
+   // A scheme must comprise at least two characters, otherwise it's assumed to be a Windows drive letter
+   protected static final Pattern SCHEME_PATTERN = Pattern.compile("^([a-zA-Z_0-9@-]{2,}):");
+
    @Inject
    protected CommandCodec commandCodec;
 
@@ -70,6 +76,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    protected ModelWatchersManager watchersManager;
    protected final Map<URI, ResourceSet> resourceSets = Maps.newLinkedHashMap();
    protected final Map<ResourceSet, ModelServerEditingDomain> editingDomains = Maps.newLinkedHashMap();
+   protected ResourceSetFactory resourceSetFactory;
 
    // Inject a provider to break the dependency cycle (the helper needs the resource manager)
    protected final Provider<JsonPatchHelper> jsonPatchHelper;
@@ -86,10 +93,12 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       this.serverConfiguration = serverConfiguration;
       this.watchersManager = watchersManager;
       this.jsonPatchHelper = jsonPatchHelper;
-
-      initialize();
    }
 
+   // Only initialize after injection of the object. This also avoids the antipattern of invoking
+   // a method from a superclass constructor that can be overridden in subclasses and so "see"
+   // a partially-uninitialized object
+   @Initialize
    @Override
    public void initialize() {
       this.isInitializing = true;
@@ -107,6 +116,11 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       } finally {
          this.isInitializing = false;
       }
+   }
+
+   @Inject
+   public void setResourceSetFactory(final ResourceSetFactory resourceSetFactory) {
+      this.resourceSetFactory = resourceSetFactory;
    }
 
    @Override
@@ -128,8 +142,9 @@ public class DefaultModelResourceManager implements ModelResourceManager {
          if (isSourceDirectory(file)) {
             loadSourceResources(file.getAbsolutePath());
          } else if (file.isFile()) {
-            resourceSets.put(createURI(file.getAbsolutePath()), new ResourceSetImpl());
-            loadResource(file.getAbsolutePath());
+            URI modelURI = createURI(file.getAbsolutePath());
+            resourceSets.put(modelURI, resourceSetFactory.createResourceSet(modelURI));
+            loadResource(modelURI.toString());
          }
       }
    }
@@ -164,9 +179,13 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    }
 
    protected URI createURI(final String modeluri) {
-      return modeluri.startsWith("file:")
-         ? URI.createURI(modeluri, true)
-         : URI.createFileURI(modeluri);
+      Matcher scheme = SCHEME_PATTERN.matcher(modeluri);
+      if (scheme.find() && URI.validScheme(scheme.group(1))) {
+         return URI.createURI(modeluri, true);
+      }
+
+      // It's a file path
+      return URI.createFileURI(modeluri);
    }
 
    /**
@@ -182,13 +201,14 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    public Optional<Resource> loadResource(final String modeluri) {
       try {
          ResourceSet rset = getResourceSet(modeluri);
-         Optional<Resource> loadedResource = Optional.ofNullable(rset.getResource(createURI(modeluri), false))
+         URI resourceURI = createURI(modeluri);
+         Optional<Resource> loadedResource = Optional.ofNullable(rset.getResource(resourceURI, false))
             .filter(Resource::isLoaded);
          if (loadedResource.isPresent()) {
             return loadedResource;
          }
          // do load the resource and watch for modifications
-         Resource resource = rset.getResource(createURI(modeluri), true);
+         Resource resource = rset.getResource(resourceURI, true);
          resource.load(Collections.EMPTY_MAP);
          watchResourceModifications(resource);
          return Optional.of(resource);
@@ -300,7 +320,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
          if (resourceStillExists) {
             // recreate resource set when necessary
             resourceSets.computeIfAbsent(uri, u -> {
-               ResourceSetImpl created = new ResourceSetImpl();
+               ResourceSet created = resourceSetFactory.createResourceSet(u);
                createEditingDomain(created);
                return created;
             });
@@ -338,9 +358,10 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Override
    public void addResource(final String modeluri, final EObject model) throws IOException {
-      resourceSets.put(createURI(modeluri), new ResourceSetImpl());
+      URI resourceURI = createURI(modeluri);
+      resourceSets.put(resourceURI, resourceSetFactory.createResourceSet(resourceURI));
       ResourceSet newResourceSet = getResourceSet(modeluri);
-      final Resource resource = newResourceSet.createResource(createURI(modeluri));
+      final Resource resource = newResourceSet.createResource(resourceURI);
       newResourceSet.getResources().add(resource);
       resource.getContents().add(model);
       resource.save(null);
@@ -557,22 +578,30 @@ public class DefaultModelResourceManager implements ModelResourceManager {
     *
     * @param modelUri the client-supplied model URI
     * @return the absolute file URI
+    *
+    * @deprecated Resolution/normalization/etc. of incoming model URIs is the responsibility of the
+    *             {@link ModelURIConverter} service
     */
    @Override
+   @Deprecated
    public String adaptModelUri(final String modelUri) {
-      URI uri = URI.createURI(modelUri, true);
+      URI uri = createURI(modelUri);
+
       if (uri.isRelative()) {
          if (serverConfiguration.getWorkspaceRootURI().isFile()) {
             return uri.resolve(serverConfiguration.getWorkspaceRootURI()).toString();
          }
          return URI.createFileURI(modelUri).toString();
       }
+
       // Create file URI from path if modelUri is already absolute path (file:/ or full path file:///)
       // to ensure consistent usage of org.eclipse.emf.common.util.URI
       if (uri.hasDevice() && !Strings.isNullOrEmpty(uri.device())) {
-         return URI.createFileURI(uri.device() + uri.path()).toString();
+         String path = "/" + Paths.get(uri.device(), uri.path()).toFile().toString();
+         return URI.createFileURI(path).toString();
       }
-      return URI.createFileURI(uri.path()).toString();
+
+      return uri.toString();
    }
 
    public static class CommandExecutionContext {

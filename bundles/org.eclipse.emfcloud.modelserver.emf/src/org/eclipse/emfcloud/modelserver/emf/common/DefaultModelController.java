@@ -27,19 +27,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
-import org.eclipse.emfcloud.modelserver.command.util.CommandSwitch;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
@@ -75,6 +71,7 @@ public class DefaultModelController implements ModelController {
    protected final CodecsManager codecs;
    protected final ModelValidator modelValidator;
    protected final PatchCommandHandler.Registry commandHandlerRegistry;
+   protected final ModelURIConverter uriConverter;
    protected final JsonPatchHelper jsonPatchHelper;
 
    @Inject
@@ -82,13 +79,14 @@ public class DefaultModelController implements ModelController {
    public DefaultModelController(final ModelRepository modelRepository, final SessionController sessionController,
       final ServerConfiguration serverConfiguration, final CodecsManager codecs, final ModelValidator modelValidator,
       final PatchCommandHandler.Registry commandHandlerRegistry, final ModelResourceManager resourceManager,
-      final JsonPatchHelper jsonPatchHelper) {
+      final ModelURIConverter uriConverter, final JsonPatchHelper jsonPatchHelper) {
       this.modelRepository = modelRepository;
       this.sessionController = sessionController;
       this.serverConfiguration = serverConfiguration;
       this.codecs = codecs;
       this.modelValidator = modelValidator;
       this.commandHandlerRegistry = commandHandlerRegistry;
+      this.uriConverter = uriConverter;
       this.jsonPatchHelper = jsonPatchHelper;
    }
 
@@ -120,7 +118,7 @@ public class DefaultModelController implements ModelController {
       if (this.modelRepository.hasModel(modeluri)) {
          try {
             this.modelRepository.deleteModel(modeluri);
-            success(ctx, "Model '%s' successfully deleted", modeluri);
+            success(ctx, "Model '%s' successfully deleted", uriConverter.deresolveModelURI(ctx, modeluri));
             this.sessionController.modelDeleted(modeluri);
          } catch (IOException e) {
             internalError(ctx, e);
@@ -134,7 +132,7 @@ public class DefaultModelController implements ModelController {
    public void close(final Context ctx, final String modeluri) {
       if (this.modelRepository.hasModel(modeluri)) {
          this.modelRepository.closeModel(modeluri);
-         success(ctx, "Model '%s' successfully closed", modeluri);
+         success(ctx, "Model '%s' successfully closed", uriConverter.deresolveModelURI(ctx, modeluri));
          this.sessionController.modelClosed(modeluri);
       } else {
          ContextResponse.modelNotFound(ctx, modeluri);
@@ -148,7 +146,7 @@ public class DefaultModelController implements ModelController {
          Map<URI, JsonNode> encodedEntries = Maps.newLinkedHashMap();
          for (Map.Entry<URI, EObject> entry : allModels.entrySet()) {
             final JsonNode encoded = codecs.encode(ctx, entry.getValue());
-            encodedEntries.put(entry.getKey(), encoded);
+            encodedEntries.put(uriConverter.deresolveModelURI(ctx, entry.getKey()), encoded);
          }
          success(ctx, JsonCodec.encode(encodedEntries));
       } catch (EncodingException exception) {
@@ -176,7 +174,8 @@ public class DefaultModelController implements ModelController {
    public void getModelElementById(final Context ctx, final String modeluri, final String elementid) {
       Optional<EObject> element = this.modelRepository.getModelElementById(modeluri, elementid);
       if (element.isEmpty()) {
-         notFound(ctx, "Element with id '" + elementid + "' of model '" + modeluri + "' not found!");
+         notFound(ctx, "Element with id '" + elementid + "' of model '" + uriConverter.deresolveModelURI(ctx, modeluri)
+            + "' not found!");
          return;
       }
       try {
@@ -190,7 +189,8 @@ public class DefaultModelController implements ModelController {
    public void getModelElementByName(final Context ctx, final String modeluri, final String elementname) {
       Optional<EObject> element = this.modelRepository.getModelElementByName(modeluri, elementname);
       if (element.isEmpty()) {
-         notFound(ctx, "Element with name '" + elementname + "' of model '" + modeluri + "' not found!");
+         notFound(ctx, "Element with name '" + elementname + "' of model '"
+            + uriConverter.deresolveModelURI(ctx, modeluri) + "' not found!");
          return;
       }
       try {
@@ -221,15 +221,16 @@ public class DefaultModelController implements ModelController {
 
    @Override
    public void save(final Context ctx, final String modeluri) {
+      String model = uriConverter.deresolveModelURI(ctx, modeluri);
       if (!this.modelRepository.hasModel(modeluri)) {
-         notFound(ctx, "Model '%s' not found.", modeluri);
+         notFound(ctx, "Model '%s' not found.", model);
          return;
       }
       if (this.modelRepository.saveModel(modeluri)) {
-         success(ctx, "Model '%s' successfully saved", modeluri);
+         success(ctx, "Model '%s' successfully saved", model);
          sessionController.modelSaved(modeluri);
       } else {
-         internalError(ctx, "Saving model '%s' failed!", modeluri);
+         internalError(ctx, "Saving model '%s' failed!", model);
       }
    }
 
@@ -300,11 +301,25 @@ public class DefaultModelController implements ModelController {
    @Override
    public void getModelUris(final Context ctx) {
       try {
-         ctx.json(JsonResponse.success(JsonCodec.encode(this.modelRepository.getRelativeModelUris())));
+         List<String> uris;
+
+         if (ContextRequest.getAPIVersion(ctx).major() < 2) {
+            // Compatibility for API v1
+            uris = getModelURIsV1();
+         } else {
+            uris = this.modelRepository.getAbsoluteModelUris().stream()
+               .map(uri -> uriConverter.deresolveModelURI(ctx, uri))
+               .collect(Collectors.toList());
+         }
+
+         ctx.json(JsonResponse.success(JsonCodec.encode(uris)));
       } catch (EncodingException ex) {
          encodingError(ctx, ex);
       }
    }
+
+   @SuppressWarnings("deprecation")
+   private List<String> getModelURIsV1() { return List.copyOf(this.modelRepository.getRelativeModelUris()); }
 
    protected Optional<EObject> readPayload(final Context ctx) {
       Optional<String> data = ContextRequest.readData(ctx);
@@ -330,7 +345,7 @@ public class DefaultModelController implements ModelController {
          try {
             CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, command.get());
 
-            success(ctx, "Model '%s' successfully updated", modelURI);
+            success(ctx, "Model '%s' successfully updated", uriConverter.deresolveModelURI(ctx, modelURI));
 
             sessionController.commandExecuted(modelURI, Suppliers.ofInstance(execution),
                Suppliers.memoize(() -> getJSONPatchUpdate(ctx, modelURI, root, execution)));
@@ -372,14 +387,15 @@ public class DefaultModelController implements ModelController {
          return;
       }
 
+      String model = uriConverter.deresolveModelURI(ctx, modelURI);
       JsonNode patchResult = getJSONPatchUpdate(ctx, modelURI, root, result);
       if (patchResult != null) {
-         successPatch(ctx, patchResult, "Model '%s' successfully updated", modelURI);
+         successPatch(ctx, patchResult, "Model '%s' successfully updated", model);
 
          sessionController.commandExecuted(modelURI, Suppliers.ofInstance(result),
             Suppliers.ofInstance(patchResult));
       } else {
-         success(ctx, "Model '%s' successfully updated", modelURI);
+         success(ctx, "Model '%s' successfully updated", model);
       }
    }
 
@@ -410,56 +426,9 @@ public class DefaultModelController implements ModelController {
       Object data = pCommand.getData();
       if (data instanceof CCommand) {
          CCommand cCommand = (CCommand) data;
-         resolveWorkspaceURIs(cCommand);
          return cCommand;
       }
       return null;
-   }
-
-   /**
-    * In V1 (And with the Theia client), clients were expected to include
-    * the complete URIs when referencing EObjects (including the workspace
-    * path prefix). With V2 and standalone client, the client no longer has
-    * knowledge about the workspace location, and may not be able to provide
-    * full URIs. Resolve relative URIs against the current workspace root.
-    *
-    * @param jsonResource
-    */
-   protected void resolveWorkspaceURIs(final CCommand cCommand) {
-      if (serverConfiguration.getWorkspaceRootURI() == null) {
-         return;
-      }
-      TreeIterator<EObject> allContents = cCommand.eAllContents();
-      doResolveWorkspaceURIs(cCommand);
-      while (allContents.hasNext()) {
-         EObject next = allContents.next();
-         new CommandSwitch<Void>() {
-            @Override
-            public Void caseCommand(final CCommand object) {
-               doResolveWorkspaceURIs(object);
-               return null;
-            }
-         }.doSwitch(next);
-      }
-   }
-
-   private void doResolveWorkspaceURIs(final CCommand cCommand) {
-      EObject owner = cCommand.getOwner();
-      List<EObject> objectValues = cCommand.getObjectValues();
-      List<EObject> objectsToAdd = cCommand.getObjectsToAdd();
-      Stream.concat(
-         Stream.concat(
-            Stream.ofNullable(owner),
-            objectValues.stream()),
-         objectsToAdd.stream())
-         .forEach(this::doResolveWorkspaceURIs);
-   }
-
-   private void doResolveWorkspaceURIs(final EObject eObject) {
-      URI objectURI = EcoreUtil.getURI(eObject);
-      if (eObject.eIsProxy() && objectURI.isRelative()) {
-         ((InternalEObject) eObject).eSetProxyURI(objectURI.resolve(serverConfiguration.getWorkspaceRootURI()));
-      }
    }
 
    private ArrayNode getJsonPatch(final PatchCommand<?> pCommand) {

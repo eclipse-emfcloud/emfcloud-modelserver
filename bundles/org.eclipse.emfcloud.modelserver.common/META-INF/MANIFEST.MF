@@ -15,6 +15,7 @@ Require-Bundle: com.fasterxml.jackson.core.jackson-core;bundle-version="[2.9.0,3
  org.eclipse.emf.edit;bundle-version="[2.16.0,3.0.0)"
 Export-Package: org.eclipse.emfcloud.modelserver.common,
  org.eclipse.emfcloud.modelserver.common.codecs,
+ org.eclipse.emfcloud.modelserver.common.di,
  org.eclipse.emfcloud.modelserver.common.patch,
  org.eclipse.emfcloud.modelserver.common.utils,
  org.eclipse.emfcloud.modelserver.jsonschema

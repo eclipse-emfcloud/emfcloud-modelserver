@@ -21,8 +21,6 @@ import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest.ge
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.error;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.missingParameter;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -30,6 +28,7 @@ import java.util.function.BiConsumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.emf.common.util.URI;
 
 import io.javalin.Javalin;
 import io.javalin.apibuilder.EndpointGroup;
@@ -60,6 +59,8 @@ class ModelServerRoutingDelegate {
 
    protected BiConsumer<? super WsConnectContext, String> subscriptionConnectionHandler = this::connectSubscription;
 
+   protected ModelURIConverter uriConverter;
+
    protected ModelServerRoutingDelegate(final Javalin javalin, final ModelResourceManager resourceManager,
       final ModelController modelController, final SchemaController schemaController,
       final ServerController serverController, final SessionController sessionController, final String basePath) {
@@ -76,6 +77,8 @@ class ModelServerRoutingDelegate {
 
       this.basePath = basePath;
    }
+
+   public void setModelURIConverter(final ModelURIConverter uriConverter) { this.uriConverter = uriConverter; }
 
    public void bindRoutes(final EndpointGroup endpointGroup) {
       javalin.routes(() -> endpoints(endpointGroup));
@@ -102,15 +105,11 @@ class ModelServerRoutingDelegate {
    }
 
    protected void validateModel(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.validate(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> modelController.validate(ctx, param));
    }
 
    protected void getValidationConstraints(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.getValidationConstraints(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> modelController.getValidationConstraints(ctx, param));
    }
 
    protected void serverPing(final Context ctx) {
@@ -138,9 +137,7 @@ class ModelServerRoutingDelegate {
    }
 
    protected void getTypeSchema(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> schemaController.getTypeSchema(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> schemaController.getTypeSchema(ctx, param));
    }
 
    protected void getModelUris(final Context ctx) {
@@ -148,15 +145,11 @@ class ModelServerRoutingDelegate {
    }
 
    protected void undoCommand(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.undo(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> modelController.undo(ctx, param));
    }
 
    protected void redoCommand(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.redo(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> modelController.redo(ctx, param));
    }
 
    protected void saveAllModels(final Context ctx) {
@@ -164,64 +157,51 @@ class ModelServerRoutingDelegate {
    }
 
    protected void saveModel(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.save(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> modelController.save(ctx, param));
    }
 
    protected void executeCommand(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.executeCommand(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> modelController.executeCommand(ctx, param));
    }
 
    protected void deleteModel(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.delete(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> modelController.delete(ctx, param));
    }
 
    protected void closeModel(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.close(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> modelController.close(ctx, param));
    }
 
    protected void setModel(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
-         param -> modelController.update(ctx, param),
-         () -> missingParameter(ctx, MODEL_URI));
+      uriConverter.withResolvedModelURI(ctx, param -> modelController.update(ctx, param));
    }
 
    protected void getModelElement(final Context ctx) {
-      Optional<String> modelFileUri = getResolvedFileUri(ctx, MODEL_URI);
-      if (!modelFileUri.isPresent()) {
-         missingParameter(ctx, MODEL_URI);
-         return;
-      }
+      uriConverter.withResolvedModelURI(ctx, modelURI -> {
+         Optional<String> elementId = getParam(ctx, ELEMENT_ID);
+         if (elementId.isPresent()) {
+            modelController.getModelElementById(ctx, modelURI, elementId.get());
+            return;
+         }
 
-      Optional<String> elementId = getParam(ctx, ELEMENT_ID);
-      if (elementId.isPresent()) {
-         modelController.getModelElementById(ctx, modelFileUri.get(), elementId.get());
-         return;
-      }
+         Optional<String> elementName = getParam(ctx, ELEMENT_NAME);
+         if (elementName.isPresent()) {
+            modelController.getModelElementByName(ctx, modelURI, elementName.get());
+            return;
+         }
 
-      Optional<String> elementName = getParam(ctx, ELEMENT_NAME);
-      if (elementName.isPresent()) {
-         modelController.getModelElementByName(ctx, modelFileUri.get(), elementName.get());
-         return;
-      }
-      missingParameter(ctx, ELEMENT_ID + "' or '" + ELEMENT_NAME);
+         missingParameter(ctx, ELEMENT_ID + "' or '" + ELEMENT_NAME);
+      });
    }
 
    protected void getModel(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
+      uriConverter.resolveModelURI(ctx).map(URI::toString).ifPresentOrElse(
          param -> modelController.getOne(ctx, param),
          () -> modelController.getAll(ctx));
    }
 
    protected void createModel(final Context ctx) {
-      getResolvedFileUri(ctx, MODEL_URI).ifPresentOrElse(
+      uriConverter.resolveModelURI(ctx).map(URI::toString).ifPresentOrElse(
          param -> modelController.create(ctx, param),
          () -> missingParameter(ctx, MODEL_URI));
    }
@@ -234,8 +214,8 @@ class ModelServerRoutingDelegate {
    }
 
    protected void onSubscriptionConnect(final WsConnectContext ctx) {
-      Optional<String> modelUri = getResolvedFileUri(ctx.queryParamMap(), MODEL_URI);
-      modelUri.ifPresentOrElse(uri -> this.subscriptionConnectionHandler.accept(ctx, uri),
+      uriConverter.resolveModelURI(ctx).map(URI::toString).ifPresentOrElse(
+         modelUri -> this.subscriptionConnectionHandler.accept(ctx, modelUri),
          () -> {
             missingParameter(ctx, MODEL_URI);
             ctx.session.close();
@@ -272,13 +252,5 @@ class ModelServerRoutingDelegate {
       if (!sessionController.handleMessage(ctx)) {
          error(ctx, "Cannot handle message: %s", ctx.message());
       }
-   }
-
-   protected Optional<String> getResolvedFileUri(final Context context, final String paramKey) {
-      return getResolvedFileUri(context.queryParamMap(), paramKey);
-   }
-
-   protected Optional<String> getResolvedFileUri(final Map<String, List<String>> queryParams, final String paramKey) {
-      return getParam(queryParams, paramKey).map(resourceManager::adaptModelUri);
    }
 }

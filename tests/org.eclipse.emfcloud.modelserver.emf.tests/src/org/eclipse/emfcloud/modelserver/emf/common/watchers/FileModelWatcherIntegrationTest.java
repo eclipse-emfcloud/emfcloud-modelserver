@@ -36,16 +36,21 @@ import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.util.EcoreAdapterFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
+import org.eclipse.emfcloud.modelserver.common.di.AbstractModuleWithInitializers;
 import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.AbstractResourceTest;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelURIConverter;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultResourceSetFactory;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.ResourceSetFactory;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
@@ -57,7 +62,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
@@ -72,6 +76,8 @@ import com.google.inject.multibindings.Multibinder;
  * <li>{@link ReconcilingStrategy.AlwaysReload}</li>
  * <li>{@link DefaultModelResourceManager}</li>
  * <li>{@link DefaultModelRepository}</li>
+ * <li>{@link DefaultResourceSetFactory}</li>
+ * <li>{@link DefaultModelURIConverter}</li>
  * </ul>
  *
  * @author vhemery
@@ -113,7 +119,8 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
    public void beforeTests() throws DecodingException {
       when(serverConfig.getWorkspaceRootURI())
          .thenReturn(URI.createFileURI(getCWD().getAbsolutePath() + "/" + RESOURCE_PATH));
-      Injector injector = Guice.createInjector(new AbstractModule() {
+
+      class TestModule extends AbstractModuleWithInitializers {
 
          private Multibinder<ModelWatcher.Factory> watcherFactoryBinder;
          private Multibinder<EPackageConfiguration> ePackageConfigurationBinder;
@@ -121,6 +128,8 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
 
          @Override
          protected void configure() {
+            super.configure();
+
             ePackageConfigurationBinder = Multibinder.newSetBinder(binder(), EPackageConfiguration.class);
             ePackageConfigurationBinder.addBinding().to(EcorePackageConfiguration.class);
 
@@ -141,8 +150,13 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
             bind(ModelWatchersManager.class).to(DIModelWatchersManager.class).in(Singleton.class);
             bind(ModelRepository.class).to(DefaultModelRepository.class).in(Singleton.class);
             bind(ModelResourceManager.class).to(DefaultModelResourceManager.class).in(Singleton.class);
+            bind(ResourceSetFactory.class).to(DefaultResourceSetFactory.class).in(Singleton.class);
+            bind(URIConverter.class).to(DefaultModelURIConverter.class).in(Singleton.class);
+
          }
-      });
+      }
+
+      Injector injector = Guice.createInjector(new TestModule());
       modelResourceManager = injector.getInstance(ModelResourceManager.class);
 
    }

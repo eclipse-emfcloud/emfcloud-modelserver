@@ -91,7 +91,11 @@ public interface ModelResourceManager {
     *
     * @param modelUri the client-supplied model URI
     * @return the adapted URI ready to be consumed
+    *
+    * @deprecated Resolution/normalization/etc. of incoming model URIs is the responsibility of the
+    *             {@link ModelURIConverter} service
     */
+   @Deprecated
    default String adaptModelUri(final String modelUri) {
       URI uri = URI.createURI(modelUri, true);
       // we do not know the server configuration for relative URIs nor the possible schemes here...
