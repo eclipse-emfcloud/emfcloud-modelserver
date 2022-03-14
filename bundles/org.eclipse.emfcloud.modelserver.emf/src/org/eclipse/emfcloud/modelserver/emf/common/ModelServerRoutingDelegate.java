@@ -20,6 +20,7 @@ import static org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1.SERVER_
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest.getParam;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.error;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.missingParameter;
+import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.modelNotFound;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +30,8 @@ import java.util.function.BiConsumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
+
+import com.google.common.base.Strings;
 
 import io.javalin.Javalin;
 import io.javalin.apibuilder.EndpointGroup;
@@ -197,7 +200,14 @@ class ModelServerRoutingDelegate {
    protected void getModel(final Context ctx) {
       uriConverter.resolveModelURI(ctx).map(URI::toString).ifPresentOrElse(
          param -> modelController.getOne(ctx, param),
-         () -> modelController.getAll(ctx));
+         () -> {
+            if (!Strings.isNullOrEmpty(ctx.queryParam(MODEL_URI))) {
+               // Rejected input should 404
+               modelNotFound(ctx, ctx.queryParam(MODEL_URI));
+            } else {
+               modelController.getAll(ctx);
+            }
+         });
    }
 
    protected void createModel(final Context ctx) {

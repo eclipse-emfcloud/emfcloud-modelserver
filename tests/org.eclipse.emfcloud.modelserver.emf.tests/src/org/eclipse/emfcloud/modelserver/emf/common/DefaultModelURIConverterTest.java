@@ -187,6 +187,18 @@ public class DefaultModelURIConverterTest {
       }
 
       @Test
+      public void testNormalizeFileURIVariants() {
+         URI usualFileURI = inWorkspace("model.xmi");
+         System.out.println("URI has authority: " + usualFileURI.authority());
+         URI usualNormalized = uriConverter.normalize(usualFileURI);
+
+         URI variantFileURI = URI.createURI(usualFileURI.toString().replace("file:/", "file:///"));
+         URI variantNormalized = uriConverter.normalize(variantFileURI);
+
+         assertThat(variantNormalized, is(usualNormalized));
+      }
+
+      @Test
       public void resolveModelURI_Context() {
          configureContexts();
          Optional<URI> uri = uriConverter.resolveModelURI(requestCtx);
@@ -205,6 +217,14 @@ public class DefaultModelURIConverterTest {
       }
 
       @Test
+      public void testResolveModelURI_Context_FileURIVariant() {
+         configureContexts("file:///C:/Users/junit/workspace/nested/model.xmi");
+         Optional<URI> uri = uriConverter.resolveModelURI(requestCtx);
+
+         assertThat(uri, is(Optional.of(URI.createURI("file:/C:/Users/junit/workspace/nested/model.xmi"))));
+      }
+
+      @Test
       public void resolveModelURI_WsContext() {
          configureContexts();
          Optional<URI> uri = uriConverter.resolveModelURI(socketCtx);
@@ -220,6 +240,14 @@ public class DefaultModelURIConverterTest {
          uri = uriConverter.resolveModelURI(socketCtx);
          expected = inWorkspace("nested", "model.xmi");
          assertThat("Absolute path inside the workspace was rejected", uri, is(Optional.of(expected)));
+      }
+
+      @Test
+      public void testResolveModelURI_WsContext_FileURIVariant() {
+         configureContexts("file:///C:/Users/junit/workspace/nested/model.xmi");
+         Optional<URI> uri = uriConverter.resolveModelURI(socketCtx);
+
+         assertThat(uri, is(Optional.of(URI.createURI("file:/C:/Users/junit/workspace/nested/model.xmi"))));
       }
 
       @Test
