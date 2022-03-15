@@ -70,7 +70,27 @@ public class DefaultModelURIConverter extends ExtensibleURIConverterImpl impleme
          uri = uri.resolve(getWorkspaceRootDirectoryURI(serverConfiguration));
       }
 
-      return super.normalize(uri);
+      return sanitizeFileURI(super.normalize(uri));
+   }
+
+   /**
+    * Ensure that an URI, if it has file scheme, does not have an empty authority.
+    * This normalizes URIs of the form <tt>file:///path/to/resource.json</tt> into the form
+    * <tt>file:/path/to/resource.json</tt> so that both will identify the same resource.
+    *
+    * @param uri a URI that may have file scheme or may not
+    * @return the sanitized URI
+    */
+   static URI sanitizeFileURI(URI uri) {
+      if (!uri.isRelative() && uri.isFile() && uri.hasAuthority()) {
+         // File URI should only have an authority if they are Windows UNC paths.
+         // An empty authority should be deleted so that the URI looks like file:/path/to/resource.json
+         if (uri.authority().isBlank()) {
+            uri = URI.createHierarchicalURI(uri.scheme(), null /* authority */, uri.device(), uri.segments(),
+               uri.query(), uri.fragment());
+         }
+      }
+      return uri;
    }
 
    @Override
@@ -126,7 +146,7 @@ public class DefaultModelURIConverter extends ExtensibleURIConverterImpl impleme
       // It's either a relative or an absolute URI, but either way, it's not an absolute Windows file path.
       // If there were legitimate backslashes that should have been within path segments, they should have
       // been escaped, so this heuristic handles naïve Windows file URIs
-      return URI.createURI(uri.replace('\\', '/'));
+      return sanitizeFileURI(URI.createURI(uri.replace('\\', '/')));
    }
 
    /**
@@ -201,7 +221,7 @@ public class DefaultModelURIConverter extends ExtensibleURIConverterImpl impleme
          // Compatibility
          @SuppressWarnings("deprecation")
          String adaptedURI = modelResourceManager.adaptModelUri(modelURI.toString());
-         return Optional.ofNullable(adaptedURI).map(URI::createURI);
+         return Optional.ofNullable(adaptedURI).map(URI::createURI).map(DefaultModelURIConverter::sanitizeFileURI);
       }
    }
 
