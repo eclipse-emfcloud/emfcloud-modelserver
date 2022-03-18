@@ -50,6 +50,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultResourceSetFactory;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.ResourceSetFactory;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
@@ -151,8 +152,8 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
             bind(ModelRepository.class).to(DefaultModelRepository.class).in(Singleton.class);
             bind(ModelResourceManager.class).to(DefaultModelResourceManager.class).in(Singleton.class);
             bind(ResourceSetFactory.class).to(DefaultResourceSetFactory.class).in(Singleton.class);
-            bind(URIConverter.class).to(DefaultModelURIConverter.class).in(Singleton.class);
-
+            bind(ModelURIConverter.class).to(DefaultModelURIConverter.class).in(Singleton.class);
+            bind(URIConverter.class).to(ModelURIConverter.class);
          }
       }
 
