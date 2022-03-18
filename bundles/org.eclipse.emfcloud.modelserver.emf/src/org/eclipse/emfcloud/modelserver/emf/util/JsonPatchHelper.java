@@ -33,6 +33,7 @@ import org.eclipse.emfcloud.modelserver.common.patch.AbstractJsonPatchHelper;
 import org.eclipse.emfcloud.modelserver.common.patch.LazyCompoundCommand;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerEditingDomain;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
@@ -50,14 +51,16 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    private final ServerConfiguration serverConfiguration;
    private final Map<String, Codec> codecs;
    private final Codec fallback = new JsonCodecV2();
+   private final ModelURIConverter modelURIConverter;
 
    @Inject
    public JsonPatchHelper(final ModelResourceManager modelManager, final ServerConfiguration serverConfiguration,
-      final Map<String, Codec> codecs) {
+      final Map<String, Codec> codecs, final ModelURIConverter modelURIConverter) {
 
       this.modelManager = modelManager;
       this.serverConfiguration = serverConfiguration;
       this.codecs = Map.copyOf(codecs);
+      this.modelURIConverter = modelURIConverter;
    }
 
    @Override
@@ -81,7 +84,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
       // Currently, trying to access a resource from a different resourceSet will cause
       // a write transaction exception
       // Issue: https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/159
-      URI uri = resourceURI == null ? URI.createURI(modelURI) : resourceURI;
+      URI uri = modelURIConverter.normalize(resourceURI == null ? URI.createURI(modelURI) : resourceURI);
       if (uri.isRelative()) {
          uri = uri.resolve(serverConfiguration.getWorkspaceRootURI());
       }
