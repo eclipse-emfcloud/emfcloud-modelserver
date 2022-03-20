@@ -107,6 +107,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
          String workspacePath = this.serverConfiguration.getWorkspaceRootURI().toFileString();
          if (workspacePath != null) {
+            resourceSets.values().forEach(rs -> rs.getResources().forEach(r -> r.unload()));
             resourceSets.clear();
             editingDomains.clear();
             loadSourceResources(workspacePath);
