@@ -101,4 +101,15 @@ public interface ModelRepository {
    Optional<CCommandExecutionResult> undo(String modeluri);
 
    Optional<CCommandExecutionResult> redo(String modeluri);
+
+   /**
+    * Run an action that composes one or more operations that change the mapping of managed resource sets,
+    * which requires exclusive access to those mappings.
+    *
+    * @param action a complex resource set action
+    */
+   default void runResourceSetAction(final Runnable action) {
+      action.run();
+   }
+
 }

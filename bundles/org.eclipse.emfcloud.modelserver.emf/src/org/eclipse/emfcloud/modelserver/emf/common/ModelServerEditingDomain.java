@@ -32,6 +32,8 @@ public class ModelServerEditingDomain extends TransactionalEditingDomainImpl {
       super(adapterFactory, new ModelServerCommandStack(), resourceSet);
       // turn off validation since we have our own validation mechanism
       setDefaultTransactionOptions(Map.of(Transaction.OPTION_NO_VALIDATION, true));
+
+      ((FactoryImpl) Factory.INSTANCE).mapResourceSet(this); // Ensure traceability from the resource set
    }
 
    @Override

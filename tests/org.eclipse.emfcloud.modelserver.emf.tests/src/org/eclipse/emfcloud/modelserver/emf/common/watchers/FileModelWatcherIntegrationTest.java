@@ -96,8 +96,8 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
     */
    private static class ReconcilingStrategyWithNotification extends ReconcilingStrategy.AlwaysReload {
       @Override
-      public void reconcileModel(final Resource modelResource) {
-         super.reconcileModel(modelResource);
+      public void basicReconcileModel(final Resource modelResource) {
+         super.basicReconcileModel(modelResource);
          Optional.ofNullable(latch.get()).ifPresent(CountDownLatch::countDown);
       }
    }
