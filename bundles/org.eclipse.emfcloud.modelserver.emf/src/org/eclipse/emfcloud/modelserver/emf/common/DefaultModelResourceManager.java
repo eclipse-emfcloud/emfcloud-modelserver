@@ -84,7 +84,8 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    protected ModelWatchersManager watchersManager;
    protected final Map<URI, ResourceSet> resourceSets = Maps.newLinkedHashMap();
    protected final Map<ResourceSet, ModelServerEditingDomain> editingDomains = Maps.newLinkedHashMap();
-   private final Lock resourceSetsLock = new ReentrantLock();
+   /** Lock for synchronization of all access to the {@link #resourceSets} and {@link #editingDomains} maps. */
+   protected final Lock resourceSetsLock = new ReentrantLock();
    protected ResourceSetFactory resourceSetFactory;
 
    // Inject a provider to break the dependency cycle (the helper needs the resource manager)
