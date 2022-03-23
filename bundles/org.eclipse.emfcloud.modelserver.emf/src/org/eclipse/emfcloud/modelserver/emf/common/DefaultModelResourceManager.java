@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -32,6 +36,9 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.emf.transaction.RunnableWithResult;
+import org.eclipse.emf.transaction.TransactionalEditingDomain;
+import org.eclipse.emf.transaction.util.TransactionUtil;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
@@ -44,6 +51,7 @@ import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
 import org.eclipse.emfcloud.modelserver.edit.ModelServerCommand;
 import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribution;
+import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatcher;
 import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatchersManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -76,6 +84,8 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    protected ModelWatchersManager watchersManager;
    protected final Map<URI, ResourceSet> resourceSets = Maps.newLinkedHashMap();
    protected final Map<ResourceSet, ModelServerEditingDomain> editingDomains = Maps.newLinkedHashMap();
+   /** Lock for synchronization of all access to the {@link #resourceSets} and {@link #editingDomains} maps. */
+   protected final Lock resourceSetsLock = new ReentrantLock();
    protected ResourceSetFactory resourceSetFactory;
 
    // Inject a provider to break the dependency cycle (the helper needs the resource manager)
@@ -101,12 +111,15 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    @Initialize
    @Override
    public void initialize() {
+      resourceSetsLock.lock();
       this.isInitializing = true;
+
       try {
          EPackageConfiguration.setup(configurations.toArray(EPackageConfiguration[]::new));
 
          String workspacePath = this.serverConfiguration.getWorkspaceRootURI().toFileString();
          if (workspacePath != null) {
+            resourceSets.values().forEach(this::safeUnload);
             resourceSets.clear();
             editingDomains.clear();
             loadSourceResources(workspacePath);
@@ -115,6 +128,98 @@ public class DefaultModelResourceManager implements ModelResourceManager {
          }
       } finally {
          this.isInitializing = false;
+         resourceSetsLock.unlock();
+      }
+   }
+
+   /**
+    * Safely unload a resource set to ensure that adapters, if any, are removed.
+    * The unload is performed in a read-only transaction on the editing domain for exclusive access
+    * to prevent interleaving of operations from other components such as the {@link ModelWatcher}.
+    *
+    * @param resource the resource to unload
+    */
+   @SuppressWarnings("checkstyle:IllegalCatch") // The point is to trap uncaught exceptions and continue unloading
+   protected final void safeUnload(final ResourceSet resourceSet) {
+      Runnable safeUnloader = () -> {
+         try {
+            resourceSet.getResources().forEach(this::basicSafeUnload);
+            resourceSet.getResources().clear();
+         } catch (RuntimeException e) {
+            LOG.warn("Uncaught exception (probably in an object adapter) while clearing resource set.", e);
+         }
+      };
+
+      Optional.ofNullable(TransactionUtil.getEditingDomain(resourceSet)).ifPresentOrElse(
+         domain -> runExclusive(domain, safeUnloader,
+            () -> "Cannot access editing domain to unload resource set."),
+         safeUnloader);
+   }
+
+   /**
+    * Safely unload a resource to ensure that adapters, if any, are removed.
+    * The unload is performed in a read-only transaction on the editing domain for exclusive access
+    * to prevent interleaving of operations from other components such as the {@link ModelWatcher}.
+    *
+    * @param resource the resource to unload
+    */
+   @SuppressWarnings("checkstyle:IllegalCatch") // The point is to trap uncaught exceptions and continue unloading
+   protected final void safeUnload(final Resource resource) {
+      safeUnloadWithResult(resource, Function.identity());
+   }
+
+   private <T> T safeUnloadWithResult(final Resource resource, final Function<? super Resource, T> result) {
+      RunnableWithResult<T> safeUnloader = new RunnableWithResult.Impl<>() {
+         @Override
+         public void run() {
+            basicSafeUnload(resource);
+            setResult(result.apply(resource));
+         }
+      };
+
+      Optional.ofNullable(TransactionUtil.getEditingDomain(resource)).ifPresentOrElse(
+         domain -> runExclusive(domain, safeUnloader,
+            () -> String.format("Cannot access editing domain to unload resource %s.",
+               Optional.ofNullable(resource.getURI()).map(URI::toString).orElse("<unknown>"))),
+         safeUnloader);
+
+      return safeUnloader.getResult();
+   }
+
+   /**
+    * Safely unload a resource to ensure that adapters, if any, are removed.
+    * This is not synchronized on any transactional editing domain, so it should only be
+    * invoked in such a synchronized context if appropriate.
+    *
+    * @param resource the resource to unload
+    */
+   @SuppressWarnings("checkstyle:IllegalCatch") // The point is to trap uncaught exceptions and continue unloading
+   protected final void basicSafeUnload(final Resource resource) {
+      try {
+         resource.unload();
+      } catch (RuntimeException e) {
+         String resourceURI = Optional.ofNullable(resource.getURI()).map(URI::toString).orElse("<unknown>");
+         LOG.warn(String.format("Uncaught exception (probably in an object adapter) while unloading resource %s.",
+            resourceURI), e);
+      }
+   }
+
+   /**
+    * Run an {@code operation} in an read-only transaction on the given editing {@code domain}.
+    *
+    * @param domain             the editing domain context
+    * @param operation          the operation to run
+    * @param interruptedMessage an optional supplier of a message to log on interrupt while waiting for the transaction.
+    *                              If {@code null}, a generic message will be logged
+    */
+   protected final void runExclusive(final TransactionalEditingDomain domain, final Runnable operation,
+      final Supplier<String> interruptedMessage) {
+      try {
+         domain.runExclusive(operation);
+      } catch (InterruptedException e) {
+         String message = interruptedMessage != null ? interruptedMessage.get()
+            : "Operation was interrupted waiting for access to the resource.";
+         LOG.error(message, e);
       }
    }
 
@@ -125,7 +230,14 @@ public class DefaultModelResourceManager implements ModelResourceManager {
 
    @Override
    public ResourceSet getResourceSet(final String modeluri) {
-      return resourceSets.get(createURI(modeluri));
+      URI uri = createURI(modeluri);
+      resourceSetsLock.lock();
+
+      try {
+         return resourceSets.get(uri);
+      } finally {
+         resourceSetsLock.unlock();
+      }
    }
 
    @Override
@@ -268,7 +380,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       if (resource != null) {
          resourceSet.getResources().remove(resource);
          if (resource.isLoaded()) {
-            resource.unload();
+            safeUnload(resource);
          }
       }
    }
@@ -291,25 +403,37 @@ public class DefaultModelResourceManager implements ModelResourceManager {
     */
    @Override
    public void closeResource(final String modeluri) {
+      resourceSetsLock.lock();
+
+      try {
+         basicCloseResource(modeluri);
+      } finally {
+         resourceSetsLock.unlock();
+      }
+   }
+
+   protected void basicCloseResource(final String modeluri) {
       ResourceSet resourceSet = getResourceSet(modeluri);
       if (resourceSet != null) {
          URI uri = createURI(modeluri);
          boolean resourceStillExists = resourceSet.getURIConverter().exists(uri, resourceSet.getLoadOptions());
          Resource resource = resourceSet.getResource(uri, false);
          if (resource != null) {
-            resource.unload();
             // remove resource and clear resource set and editing domain when necessary
+            boolean wasMainResource = safeUnloadWithResult(resource,
+               res -> {
+                  boolean result = resourceSet.getResources().indexOf(res) == 0;
+                  resourceSet.getResources().remove(res);
+                  return result;
+               });
+
             /*
              * wasMainResource is generally true with this default implementation,
              * but we don't eliminate the case of a loaded library for extensibility.
              */
-            boolean wasMainResource = resourceSet.getResources().indexOf(resource) == 0;
-            resourceSet.getResources().remove(resource);
             if (wasMainResource) {
-               ModelServerEditingDomain domain = getEditingDomain(resourceSet);
-               domain.dispose();
-               editingDomains.remove(resourceSet);
-               resourceSets.remove(uri);
+               // Unload the rest of the resources, too
+               removeResourceSet(uri, resourceSet);
             }
          }
          /*
@@ -351,22 +475,64 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    }
 
    @Override
-   public Collection<ResourceSet> getAllLoadedResourceSets() { return resourceSets.values(); }
+   public Collection<ResourceSet> getAllLoadedResourceSets() {
+      resourceSetsLock.lock();
+
+      try {
+         return resourceSets.values();
+      } finally {
+         resourceSetsLock.unlock();
+      }
+   }
 
    @Override
-   public Set<URI> getAllLoadedModelURIs() { return resourceSets.keySet(); }
+   public Set<URI> getAllLoadedModelURIs() {
+      resourceSetsLock.lock();
+
+      try {
+         return resourceSets.keySet();
+      } finally {
+         resourceSetsLock.unlock();
+      }
+   }
 
    @Override
    public void addResource(final String modeluri, final EObject model) throws IOException {
+      final ResourceSet newResourceSet;
+      final Resource resource;
+
       URI resourceURI = createURI(modeluri);
-      resourceSets.put(resourceURI, resourceSetFactory.createResourceSet(resourceURI));
-      ResourceSet newResourceSet = getResourceSet(modeluri);
-      final Resource resource = newResourceSet.createResource(resourceURI);
-      newResourceSet.getResources().add(resource);
-      resource.getContents().add(model);
+
+      resourceSetsLock.lock();
+
+      try {
+         resourceSets.put(resourceURI, resourceSetFactory.createResourceSet(resourceURI));
+         newResourceSet = getResourceSet(modeluri);
+         resource = newResourceSet.createResource(resourceURI);
+         newResourceSet.getResources().add(resource);
+         resource.getContents().add(model);
+         createEditingDomain(newResourceSet);
+      } finally {
+         resourceSetsLock.unlock();
+      }
+
       resource.save(null);
       watchResourceModifications(resource);
-      createEditingDomain(newResourceSet);
+   }
+
+   protected final void removeResourceSet(final URI modelURI, final ResourceSet resourceSet) {
+      safeUnload(resourceSet);
+
+      resourceSetsLock.lock();
+
+      try {
+         ModelServerEditingDomain domain = getEditingDomain(resourceSet);
+         domain.dispose();
+         editingDomains.remove(resourceSet);
+         resourceSets.remove(modelURI);
+      } finally {
+         resourceSetsLock.unlock();
+      }
    }
 
    /**
@@ -545,10 +711,12 @@ public class DefaultModelResourceManager implements ModelResourceManager {
    @Override
    public boolean saveAll() {
       boolean result = false;
-      for (ResourceSet rs : resourceSets.values()) {
+      final Collection<ResourceSet> resourceSets = getAllLoadedResourceSets();
+      for (ResourceSet rs : resourceSets) {
          boolean tempResult = rs.getResources().stream().allMatch(this::saveResource);
          if (tempResult) {
-            getEditingDomain(rs).saveIsDone();
+            ModelServerEditingDomain domain = (ModelServerEditingDomain) TransactionUtil.getEditingDomain(rs);
+            domain.saveIsDone();
          }
          result = tempResult;
       }
@@ -602,6 +770,17 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       }
 
       return uri.toString();
+   }
+
+   @Override
+   public void runResourceSetAction(final Runnable action) {
+      resourceSetsLock.lock();
+
+      try {
+         action.run();
+      } finally {
+         resourceSetsLock.unlock();
+      }
    }
 
    public static class CommandExecutionContext {

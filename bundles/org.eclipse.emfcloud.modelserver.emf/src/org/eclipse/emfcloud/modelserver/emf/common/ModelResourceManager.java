@@ -121,4 +121,15 @@ public interface ModelResourceManager {
       throws JsonPatchTestException, JsonPatchException {
       throw new UnsupportedOperationException("V2 API is not supported by this implementation");
    }
+
+   /**
+    * Run an action that composes one or more operations that change the mapping of managed resource sets,
+    * which requires exclusive access to those mappings.
+    *
+    * @param action a complex resource set action
+    */
+   default void runResourceSetAction(final Runnable action) {
+      action.run();
+   }
+
 }

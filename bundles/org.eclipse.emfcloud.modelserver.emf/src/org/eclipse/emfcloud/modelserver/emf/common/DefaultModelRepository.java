@@ -200,4 +200,10 @@ public class DefaultModelRepository implements ModelRepository {
       }
       return modeluris;
    }
+
+   @Override
+   public void runResourceSetAction(final Runnable action) {
+      modelResourceManager.runResourceSetAction(action);
+   }
+
 }
