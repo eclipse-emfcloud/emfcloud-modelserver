@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel" copyrightText="Copyright (c) 2022 STMicroelectronics and others.\n\nThis program and the accompanying materials are made available under the\nterms of the Eclipse Public License v. 2.0 which is available at\nhttps://www.eclipse.org/legal/epl-2.0, or the MIT License which is\navailable at https://opensource.org/licenses/MIT.\n\nSPDX-License-Identifier: EPL-2.0 OR MIT"
+    modelDirectory="/org.eclipse.emfcloud.modelserver.edit/src-gen" editDirectory=""
+    editorDirectory="" modelPluginID="org.eclipse.emfcloud.modelserver.edit" modelName="JsonPatch"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" codeFormatting="true"
+    commentFormatting="true" importerID="org.eclipse.emf.importer.ecore" complianceLevel="11.0"
+    copyrightFields="false" operationReflection="true" importOrganizing="true" cleanup="true">
+  <foreignModel>JsonPatch.ecore</foreignModel>
+  <genPackages prefix="JsonPatch" basePackage="org.eclipse.emfcloud.modelserver" disposableProviderFactory="true"
+      ecorePackage="JsonPatch.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="JsonPatch.ecore#//OpKind">
+      <genEnumLiterals ecoreEnumLiteral="JsonPatch.ecore#//OpKind/none"/>
+      <genEnumLiterals ecoreEnumLiteral="JsonPatch.ecore#//OpKind/add"/>
+      <genEnumLiterals ecoreEnumLiteral="JsonPatch.ecore#//OpKind/remove"/>
+      <genEnumLiterals ecoreEnumLiteral="JsonPatch.ecore#//OpKind/replace"/>
+      <genEnumLiterals ecoreEnumLiteral="JsonPatch.ecore#//OpKind/move"/>
+      <genEnumLiterals ecoreEnumLiteral="JsonPatch.ecore#//OpKind/copy"/>
+      <genEnumLiterals ecoreEnumLiteral="JsonPatch.ecore#//OpKind/test"/>
+    </genEnums>
+    <genDataTypes ecoreDataType="JsonPatch.ecore#//Path"/>
+    <genClasses ecoreClass="JsonPatch.ecore#//JsonPatch">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference JsonPatch.ecore#//JsonPatch/patch"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="JsonPatch.ecore#//Operation">
+      <genFeatures property="Readonly" createChild="false" ecoreFeature="ecore:EAttribute JsonPatch.ecore#//Operation/op"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute JsonPatch.ecore#//Operation/path"/>
+      <genOperations ecoreOperation="JsonPatch.ecore#//Operation/getOp"/>
+    </genClasses>
+    <genClasses ecoreClass="JsonPatch.ecore#//Add">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference JsonPatch.ecore#//Add/value"/>
+    </genClasses>
+    <genClasses ecoreClass="JsonPatch.ecore#//Remove"/>
+    <genClasses ecoreClass="JsonPatch.ecore#//Replace">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference JsonPatch.ecore#//Replace/value"/>
+    </genClasses>
+    <genClasses ecoreClass="JsonPatch.ecore#//Move">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute JsonPatch.ecore#//Move/from"/>
+    </genClasses>
+    <genClasses ecoreClass="JsonPatch.ecore#//Copy">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute JsonPatch.ecore#//Copy/from"/>
+    </genClasses>
+    <genClasses ecoreClass="JsonPatch.ecore#//Test">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference JsonPatch.ecore#//Test/value"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="JsonPatch.ecore#//Value">
+      <genOperations ecoreOperation="JsonPatch.ecore#//Value/stringValue"/>
+    </genClasses>
+    <genClasses ecoreClass="JsonPatch.ecore#//BooleanValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute JsonPatch.ecore#//BooleanValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="JsonPatch.ecore#//StringValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute JsonPatch.ecore#//StringValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="JsonPatch.ecore#//NumberValue">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute JsonPatch.ecore#//NumberValue/value"/>
+    </genClasses>
+    <genClasses ecoreClass="JsonPatch.ecore#//ObjectValue">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference JsonPatch.ecore#//ObjectValue/value"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>
