@@ -11,12 +11,16 @@
 package org.eclipse.emfcloud.modelserver.tests.util;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.command.CompoundCommand;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.edit.command.AddCommand;
 import org.eclipse.emf.edit.command.RemoveCommand;
@@ -41,6 +45,34 @@ public final class EMFMatchers {
          @Override
          protected boolean matchesSafely(final EObject item) {
             return EcoreUtil.equals(item, expected);
+         }
+      };
+   }
+
+   /**
+    * Test structural equality of an object with the given {@code expected} shape, {@code except} for
+    * one or more features that are ignored by the comparison.
+    */
+   public static <T extends EObject> Matcher<T> eEqualTo(final T expected, final EStructuralFeature except,
+      final EStructuralFeature... more) {
+
+      Set<EStructuralFeature> exceptedFeatures = new HashSet<>();
+      exceptedFeatures.add(except);
+      exceptedFeatures.addAll(List.of(more));
+
+      @SuppressWarnings("serial")
+      EcoreUtil.EqualityHelper helper = new EcoreUtil.EqualityHelper() {
+         @Override
+         protected boolean haveEqualFeature(final EObject eObject1, final EObject eObject2,
+            final EStructuralFeature feature) {
+            return exceptedFeatures.contains(feature) || super.haveEqualFeature(eObject1, eObject2, feature);
+         }
+      };
+
+      return new CustomTypeSafeMatcher<>("structurally equal to " + expected.eClass().getName()) {
+         @Override
+         protected boolean matchesSafely(final EObject item) {
+            return helper.equals(item, expected);
          }
       };
    }

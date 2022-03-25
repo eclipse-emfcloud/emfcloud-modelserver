@@ -11,6 +11,7 @@
 package org.eclipse.emfcloud.modelserver.client;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
@@ -20,9 +21,19 @@ import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
 public class TypedSubscriptionListener<T> implements NotificationSubscriptionListener<T> {
    private static Logger LOG = LogManager.getLogger(TypedSubscriptionListener.class);
 
-   private final Function<? super String, Optional<T>> updateFunction;
+   private final BiFunction<? super String, ? super String, Optional<? extends T>> updateFunction;
 
-   public TypedSubscriptionListener(final Function<String, Optional<T>> updateFunction) {
+   public TypedSubscriptionListener(final Function<String, Optional<? extends T>> updateFunction) {
+      this(updateFunction, Function.class);
+   }
+
+   public TypedSubscriptionListener(final Function<String, Optional<? extends T>> updateFunction,
+      final Class<?> discriminator) {
+      this((data, type) -> updateFunction.apply(data), BiFunction.class);
+   }
+
+   public TypedSubscriptionListener(final BiFunction<String, String, Optional<? extends T>> updateFunction,
+      final Class<?> discriminator) {
       this.updateFunction = updateFunction;
    }
 
@@ -41,12 +52,14 @@ public class TypedSubscriptionListener<T> implements NotificationSubscriptionLis
             onDirtyChange(isDirty);
             break;
          case JsonResponseType.FULLUPDATE:
-            T fullUpdateData = notification.getData().flatMap(updateFunction)
+            T fullUpdateData = notification.getData()
+               .flatMap(data -> updateFunction.apply(data, notification.getType()))
                .orElseThrow(() -> new RuntimeException("Could not parse 'data' field"));
             onFullUpdate(fullUpdateData);
             break;
          case JsonResponseType.INCREMENTALUPDATE:
-            T incrementalUpdateData = notification.getData().flatMap(updateFunction)
+            T incrementalUpdateData = notification.getData()
+               .flatMap(data -> updateFunction.apply(data, notification.getType()))
                .orElseThrow(() -> new RuntimeException("Could not parse 'data' field"));
             onIncrementalUpdate(incrementalUpdateData);
             break;

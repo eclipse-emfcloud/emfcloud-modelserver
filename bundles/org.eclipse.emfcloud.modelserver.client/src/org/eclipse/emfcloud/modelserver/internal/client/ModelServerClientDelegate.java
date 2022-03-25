@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -808,26 +809,37 @@ public class ModelServerClientDelegate implements AutoCloseable {
    }
 
    public CompletableFuture<Response<Boolean>> undo(final String modelUri) {
-      final Request request = new Request.Builder()
+      return makeCallAndExpectSuccess(requestUndo(modelUri));
+   }
+
+   public Request requestUndo(final String modelUri) {
+      return new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(ModelServerPathsV1.UNDO))
                .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .build();
-
-      return makeCallAndExpectSuccess(request);
    }
 
    public CompletableFuture<Response<Boolean>> redo(final String modelUri) {
-      final Request request = new Request.Builder()
+      return makeCallAndExpectSuccess(requestRedo(modelUri));
+   }
+
+   public Request requestRedo(final String modelUri) {
+      return new Request.Builder()
          .url(
             createHttpUrlBuilder(makeUrl(ModelServerPathsV1.REDO))
                .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri)
                .build())
          .build();
+   }
 
-      return makeCallAndExpectSuccess(request);
+   public CompletableFuture<Response<String>> undoV2(final String modelUri) {
+      return makeCallAndRequireSuccessDataBody(requestUndo(modelUri));
+   }
 
+   public CompletableFuture<Response<String>> redoV2(final String modelUri) {
+      return makeCallAndRequireSuccessDataBody(requestRedo(modelUri));
    }
 
    public CompletableFuture<Response<Boolean>> makeCallAndExpectSuccess(final Request request) {
@@ -845,6 +857,28 @@ public class ModelServerClientDelegate implements AutoCloseable {
    public CompletableFuture<Response<String>> makeCallAndGetDataBody(final Request request) {
       return makeCallAndParseDataField(request)
          .thenApply(this::getBodyOrThrow);
+   }
+
+   public CompletableFuture<Response<String>> makeCallAndRequireSuccessDataBody(final Request request) {
+      CompletableFuture<Response<String>> primary = makeCall(request);
+      CompletableFuture<Response<Boolean>> success = primary
+         .thenApply(response -> parseField(response, JsonResponseMember.TYPE))
+         .thenApply(this::getBodyOrThrow)
+         .thenApply(response -> response.mapBody(body -> body.equals(JsonResponseType.SUCCESS)));
+      CompletableFuture<Response<String>> data = primary
+         .thenApply(response -> parseField(response, JsonResponseMember.DATA))
+         .thenApply(this::getBodyOrThrow);
+      CompletableFuture<Response<String>> result = success.thenCombine(data, (_success, _data) -> {
+         if (!_success.body()) {
+            throw new RuntimeException(_data.body() != null ? _data.body() : "Request failed for an unknown reason.");
+         }
+         return _data;
+      });
+      return result;
+   }
+
+   protected static <A, B> BiFunction<A, B, B> takeB() {
+      return (a, b) -> b;
    }
 
    /**

@@ -11,10 +11,14 @@
 package org.eclipse.emfcloud.modelserver.client;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.function.Function;
 
 public class Response<T> {
+
+   private static final Map<okhttp3.Response, String> RESPONSE_BODIES = new WeakHashMap<>();
 
    private final okhttp3.Response response;
    private final Function<String, T> demarshaller;
@@ -27,19 +31,14 @@ public class Response<T> {
 
    @SuppressWarnings({ "unchecked" })
    public Response(final okhttp3.Response response) {
-      this.response = response;
-      this.demarshaller = (Function<String, T>) Function.<String> identity();
+      this(response, (Function<String, T>) Function.<String> identity());
    }
 
    public Integer getStatusCode() { return this.response.code(); }
 
    public T body() {
       if (body == null) {
-         try {
-            body = this.demarshaller.apply(Objects.requireNonNull(this.response.body()).string());
-         } catch (IOException e) {
-            throw new RuntimeException(e);
-         }
+         body = this.demarshaller.apply(body(this.response));
       }
       return body;
    }
@@ -49,4 +48,16 @@ public class Response<T> {
    public <U> Response<U> mapBody(final Function<T, U> mapper) {
       return new Response<>(this.response, demarshaller.andThen(mapper));
    }
+
+   private static String body(final okhttp3.Response response) {
+      // The response body can only be read once (it's a stream)
+      return RESPONSE_BODIES.computeIfAbsent(response, key -> {
+         try {
+            return Objects.requireNonNull(key.body()).string();
+         } catch (IOException e) {
+            throw new RuntimeException(e);
+         }
+      });
+   }
+
 }

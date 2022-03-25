@@ -11,10 +11,12 @@
 package org.eclipse.emfcloud.modelserver.client.v2;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.eclipse.emfcloud.modelserver.tests.util.MoreMatchers.containsRegex;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -56,10 +58,12 @@ import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Charsets;
 
@@ -70,6 +74,7 @@ import okhttp3.mock.MockInterceptor;
 import okhttp3.mock.Rule;
 import okio.Buffer;
 
+@SuppressWarnings("checkstyle:ThrowsCount")
 public class ModelServerClientV2Test {
 
    private static String BASE_URL = "http://fake-url.com/api/v2/";
@@ -93,7 +98,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void get() throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);
       String getUrl = baseHttpUrlBuilder
@@ -112,7 +116,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getXmi() throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
       String getXmiUrl = baseHttpUrlBuilder
@@ -133,7 +136,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getModelUris()
       throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       String getModelUrisUrl = baseHttpUrlBuilder
@@ -151,7 +153,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getAll() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       String modelUri = "http://fake-model.com";
       final JsonNode content = jsonCodec.encode(eClass);
@@ -171,7 +172,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getAllXmi() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       String modelUri = "http://fake-model.com";
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
@@ -196,7 +196,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getElementById()
       throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);
@@ -218,7 +217,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getElementByIdXMI()
       throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
@@ -241,7 +239,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getElementByName()
       throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(EcoreFactory.eINSTANCE.createEClass());
@@ -262,7 +259,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getElementByNameXMI()
       throws ExecutionException, InterruptedException, EncodingException, MalformedURLException {
       final EClass eClass = EcoreFactory.eINSTANCE.createEClass();
@@ -320,7 +316,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void create() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);
       String createUrl = baseHttpUrlBuilder
@@ -342,7 +337,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void createModel() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       DefaultJsonCodec json = new DefaultJsonCodec();
       final JsonNode expected = json.encode(eClass);
@@ -366,7 +360,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void update() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = jsonCodec.encode(eClass);
       String updateUrl = baseHttpUrlBuilder
@@ -388,7 +381,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void updateWithFormat()
       throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final EClass expected = EcoreFactory.eINSTANCE.createEClass();
@@ -422,7 +414,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getTypeSchema()
       throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = JsonCodec.encode(Json.object(Json.prop(JsonResponseMember.TYPE, Json.text("object"))));
@@ -442,7 +433,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void getUiSchema() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       final JsonNode expected = JsonCodec.encode(Json.object(Json.prop(JsonResponseMember.TYPE, Json.text("object"))));
       String uiSchemaUrl = baseHttpUrlBuilder
@@ -504,7 +494,6 @@ public class ModelServerClientV2Test {
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void edit() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       EClass eClass = EcoreFactory.eINSTANCE.createEClass();
       ((InternalEObject) eClass).eSetProxyURI(URI.createURI("SuperBrewer3000.json#//workflows.0"));
@@ -548,14 +537,13 @@ public class ModelServerClientV2Test {
          });
       ModelServerClientV2 client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.edit("SuperBrewer3000.json", add,
+      final CompletableFuture<Response<String>> f = client.edit("SuperBrewer3000.json", add,
          ModelServerPathParametersV2.FORMAT_JSON_V2);
 
-      assertThat(f.get().body(), is(true));
+      assertThat(f.get().body(), containsString("confirmed"));
    }
 
    @Test
-   @SuppressWarnings({ "checkstyle:ThrowsCount" })
    public void editNativeCommand()
       throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
       AdapterFactoryEditingDomain domain = new AdapterFactoryEditingDomain(new ComposedAdapterFactory(),
@@ -592,11 +580,101 @@ public class ModelServerClientV2Test {
          });
       ModelServerClientV2 client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.edit("SuperBrewer3000.json",
+      final CompletableFuture<Response<String>> f = client.edit("SuperBrewer3000.json",
          AddCommandContribution.clientCommand((AddCommand) add),
          ModelServerPathParametersV2.FORMAT_JSON);
 
-      assertThat(f.get().body(), is(true));
+      assertThat(f.get().body(), containsString("confirmed"));
+   }
+
+   @Test
+   public void editPatch() throws EncodingException, ExecutionException, InterruptedException, MalformedURLException {
+      JsonNode replaceOp = Json.object(Map.of(
+         "op", Json.text("replace"),
+         "path", Json.text("/workflows/0/name"),
+         "value", Json.text("New Workflow Name")));
+      ArrayNode replacePatch = Json.array(replaceOp);
+
+      String editUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPathsV2.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV2.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV2.FORMAT, ModelServerPathParametersV2.FORMAT_JSON_V2)
+         .build().toString();
+
+      Matcher<String> assertion = containsRegex(".*\"path\":\\s*\"/workflows/0/name\"");
+      interceptor.addRule().url(editUrl)
+         .patch().answer(request -> {
+            Buffer buffer = new Buffer();
+            try {
+               request.body().writeTo(buffer);
+            } catch (IOException e) {
+               e.printStackTrace();
+               fail("Failed to capture request body content: " + e.getMessage());
+            }
+
+            // The resulting string is escaped as though for a Java string literal
+            String body = buffer.readString(Charsets.UTF_8).replace("\\\\", "\\").replace("\\\"", "\"");
+
+            // This is the test's assertion
+            if (assertion.matches(body)) {
+               JsonNode modelUpdateResult = Json.object(Map.of(
+                  "message", Json.text("Model successfully updated."),
+                  "patch", replacePatch));
+               return new Rule.Builder().respond(JsonResponse.success(modelUpdateResult).toString());
+            }
+            return new Rule.Builder().respond(JsonResponse.error().toString());
+         });
+      ModelServerClientV2 client = createClient();
+
+      final CompletableFuture<Response<String>> f = client.edit("SuperBrewer3000.json", replacePatch,
+         ModelServerPathParametersV2.FORMAT_JSON_V2);
+
+      assertThat(f.get().body(), assertion);
+   }
+
+   @Test
+   public void editPatchFails()
+      throws EncodingException, InterruptedException, MalformedURLException {
+      JsonNode replaceOp = Json.object(Map.of(
+         "op", Json.text("replace"),
+         "path", Json.text("/workflows/0/name"),
+         "value", Json.text("New Workflow Name")));
+      ArrayNode replacePatch = Json.array(replaceOp);
+
+      String editUrl = baseHttpUrlBuilder
+         .addPathSegment(ModelServerPathsV2.MODEL_BASE_PATH)
+         .addQueryParameter(ModelServerPathParametersV2.MODEL_URI, "SuperBrewer3000.json")
+         .addQueryParameter(ModelServerPathParametersV2.FORMAT, ModelServerPathParametersV2.FORMAT_JSON_V2)
+         .build().toString();
+
+      Matcher<String> assertion = containsRegex(".*\"path\":\\s*\"/workflows/0/name\"");
+      interceptor.addRule().url(editUrl)
+         .patch().answer(request -> {
+            Buffer buffer = new Buffer();
+            try {
+               request.body().writeTo(buffer);
+            } catch (IOException e) {
+               e.printStackTrace();
+               fail("Failed to capture request body content: " + e.getMessage());
+            }
+
+            // The resulting string is escaped as though for a Java string literal
+            String body = buffer.readString(Charsets.UTF_8).replace("\\\\", "\\").replace("\\\"", "\"");
+
+            // This is the test's assertion
+            if (assertion.matches(body)) {
+               return new Rule.Builder().respond(JsonResponse.error("Inapplicable patch").toString());
+            }
+            fail("Did not match the request");
+            // Unreachable
+            return null;
+         });
+      ModelServerClientV2 client = createClient();
+
+      final CompletableFuture<Response<String>> f = client.edit("SuperBrewer3000.json", replacePatch,
+         ModelServerPathParametersV2.FORMAT_JSON_V2);
+
+      assertThrows("Inapplicable patch", ExecutionException.class, f::get);
    }
 
    @Test
@@ -614,8 +692,8 @@ public class ModelServerClientV2Test {
 
       ModelServerClientV2 client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.undo(modelUri);
-      assertThat(f.get().body(), equalTo(true));
+      final CompletableFuture<Response<String>> f = client.undo(modelUri);
+      assertThat(f.get().body(), containsString("Success"));
    }
 
    @Test
@@ -633,8 +711,8 @@ public class ModelServerClientV2Test {
 
       ModelServerClientV2 client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.undo(modelUri);
-      assertThat(f.get().body(), equalTo(false));
+      final CompletableFuture<Response<String>> f = client.undo(modelUri);
+      assertThrows("Cannot undo", ExecutionException.class, f::get);
    }
 
    @Test
@@ -652,8 +730,8 @@ public class ModelServerClientV2Test {
 
       ModelServerClientV2 client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.redo(modelUri);
-      assertThat(f.get().body(), equalTo(true));
+      final CompletableFuture<Response<String>> f = client.redo(modelUri);
+      assertThat(f.get().body(), containsString("Success"));
    }
 
    @Test
@@ -671,8 +749,8 @@ public class ModelServerClientV2Test {
 
       ModelServerClientV2 client = createClient();
 
-      final CompletableFuture<Response<Boolean>> f = client.redo(modelUri);
-      assertThat(f.get().body(), equalTo(false));
+      final CompletableFuture<Response<String>> f = client.redo(modelUri);
+      assertThrows("Cannot undo", ExecutionException.class, f::get);
    }
 
    @Test
@@ -711,9 +789,14 @@ public class ModelServerClientV2Test {
       assertThat(f.get().body(), equalTo(true));
    }
 
-   private ModelServerClientV2 createClient() throws MalformedURLException {
-      return new ModelServerClientV2(
+   protected ModelServerClientV2 createClient() throws MalformedURLException {
+      return createClient(
          new OkHttpClient.Builder().addInterceptor(interceptor).build(),
          BASE_URL);
+   }
+
+   protected ModelServerClientV2 createClient(final OkHttpClient httpClient, final String baseURL)
+      throws MalformedURLException {
+      return new ModelServerClientV2(httpClient, baseURL);
    }
 }

@@ -122,7 +122,7 @@ public class ModelServerClientV2 implements ModelServerClientApi<EObject>, Model
    }
 
    @Override
-   public CompletableFuture<Response<Boolean>> edit(final String modelUri, final CCommand command,
+   public CompletableFuture<Response<String>> edit(final String modelUri, final CCommand command,
       final String format) {
       String checkedFormat = delegate.checkedFormat(format);
       final Request request = new Request.Builder()
@@ -141,11 +141,11 @@ public class ModelServerClientV2 implements ModelServerClientApi<EObject>, Model
                MediaType.parse("application/json")))
          .build();
 
-      return delegate.makeCallAndExpectSuccess(request);
+      return makeCallAndGetDataBody(request);
    }
 
    @Override
-   public CompletableFuture<Response<Boolean>> edit(final String modelUri, final ArrayNode jsonPatch,
+   public CompletableFuture<Response<String>> edit(final String modelUri, final ArrayNode jsonPatch,
       final String format) {
       String checkedFormat = delegate.checkedFormat(format);
       final Request request = new Request.Builder()
@@ -164,7 +164,7 @@ public class ModelServerClientV2 implements ModelServerClientApi<EObject>, Model
                MediaType.parse("application/json")))
          .build();
 
-      return delegate.makeCallAndExpectSuccess(request);
+      return makeCallAndGetDataBody(request);
    }
 
    @Override
@@ -371,13 +371,13 @@ public class ModelServerClientV2 implements ModelServerClientApi<EObject>, Model
    }
 
    @Override
-   public CompletableFuture<Response<Boolean>> undo(final String modelUri) {
-      return delegate.undo(modelUri);
+   public CompletableFuture<Response<String>> undo(final String modelUri) {
+      return delegate.undoV2(modelUri);
    }
 
    @Override
-   public CompletableFuture<Response<Boolean>> redo(final String modelUri) {
-      return delegate.redo(modelUri);
+   public CompletableFuture<Response<String>> redo(final String modelUri) {
+      return delegate.redoV2(modelUri);
    }
 
    protected String getBaseUrl() { return delegate.getBaseUrl(); }
@@ -414,8 +414,16 @@ public class ModelServerClientV2 implements ModelServerClientApi<EObject>, Model
       return delegate.makeCallAndExpectSuccess(request);
    }
 
+   /**
+    * Make a call and extract the {@code data} field from the response body, requiring the
+    * {@code type} field to be {@code "success"}.
+    *
+    * @param request a request
+    * @return a future result providing the data text, or completing exceptionally if the reponse
+    *         type is not a success
+    */
    protected CompletableFuture<Response<String>> makeCallAndGetDataBody(final Request request) {
-      return delegate.makeCallAndGetDataBody(request);
+      return delegate.makeCallAndRequireSuccessDataBody(request);
    }
 
    public WebSocket createWebSocket(final Request request, final WebSocketListener listener) {

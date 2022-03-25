@@ -1,0 +1,118 @@
+{
+"add-boolean": [
+	{
+		"op": "add",
+		"path": "/path/to/booleans/-",
+		"value": true
+	}
+],
+"add-string": [
+	{
+		"op": "add",
+		"path": "/path/to/strings/3",
+		"value": "Hello, world!"
+	}
+],
+"add-number": [
+	{
+		"op": "add",
+		"path": "/path/to/numbers/-",
+		"value": 42
+	}
+],
+"add-object": [
+	{
+		"op": "add",
+		"path": "/path/to/objects/-",
+		"value": {
+			"eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
+			"name": "Foo",
+			"abstract": true
+		}
+	}
+],
+"remove": [
+	{
+		"op": "remove",
+		"path": "/path/to/strings/3"
+	}
+],
+"replace-boolean": [
+	{
+		"op": "replace",
+		"path": "/path/to/booleans/0",
+		"value": true
+	}
+],
+"replace-string": [
+	{
+		"op": "replace",
+		"path": "/path/to/strings/3",
+		"value": "Hello, world!"
+	}
+],
+"replace-number": [
+	{
+		"op": "replace",
+		"path": "/path/to/numbers/1",
+		"value": 42
+	}
+],
+"replace-object": [
+	{
+		"op": "replace",
+		"path": "/path/to/objects/2",
+		"value": {
+			"eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
+			"name": "Foo",
+			"abstract": true
+		}
+	}
+],
+"move": [
+	{
+		"op": "move",
+		"path": "/path/to/there/-",
+		"from": "/path/to/here/3"
+	}
+],
+"copy": [
+	{
+		"op": "copy",
+		"path": "/path/to/there/-",
+		"from": "/path/to/here/3"
+	}
+],
+"test-boolean": [
+	{
+		"op": "test",
+		"path": "/path/to/booleans/0",
+		"value": true
+	}
+],
+"test-string": [
+	{
+		"op": "test",
+		"path": "/path/to/strings/1",
+		"value": "Hello, world!"
+	}
+],
+"test-number": [
+	{
+		"op": "test",
+		"path": "/path/to/numbers/3",
+		"value": 42
+	}
+],
+"test-object": [
+	{
+		"op": "test",
+		"path": "/path/to/objects/2",
+		"value": {
+			"eClass": "http://www.eclipse.org/emf/2002/Ecore#//EClass",
+			"name": "Foo",
+			"abstract": true
+		}
+	}
+]
+}
