@@ -239,8 +239,9 @@ And messages from the server that clients will receive on the `transaction/:id` 
 The model server project features a Java-based client API that eases integration with the model server.
 The interface declaration is as defined below. Please note that the `Model` class is a POJO with a model uri and content.
 
-Note: the Java Client implementation is not ready for v2 yet, but the v1 client can still be used. See Issue #172 for details.
-
+<details>
+	<summary>v1 Client API</summary>
+	
 ```Java
 public interface ModelServerClientApiV1<A> {
 
@@ -322,37 +323,113 @@ public interface ModelServerClientApiV1<A> {
    CompletableFuture<Response<Boolean>> redo(String modelUri);
 }
 ```
+</details>
+
+**v2 Client API:**
+	
+```Java
+public interface ModelServerClientApiV2<A> {
+
+   CompletableFuture<Response<String>> get(String modelUri);
+
+   CompletableFuture<Response<A>> get(String modelUri, String format);
+
+   CompletableFuture<Response<List<Model<String>>>> getAll();
+
+   CompletableFuture<Response<List<Model<A>>>> getAll(String format);
+
+   CompletableFuture<Response<List<String>>> getModelUris();
+
+   CompletableFuture<Response<String>> getModelElementById(String modelUri, String elementid);
+
+   CompletableFuture<Response<A>> getModelElementById(String modelUri, String elementid, String format);
+
+   CompletableFuture<Response<String>> getModelElementByName(String modelUri, String elementname);
+
+   CompletableFuture<Response<A>> getModelElementByName(String modelUri, String elementname, String format);
+
+   CompletableFuture<Response<Boolean>> delete(String modelUri);
+
+   CompletableFuture<Response<Boolean>> close(String modelUri);
+
+   CompletableFuture<Response<String>> create(String modelUri, String createdModelAsJsonText);
+
+   CompletableFuture<Response<A>> create(String modelUri, A createdModel, String format);
+
+   CompletableFuture<Response<String>> update(String modelUri, String updatedModelAsJsonText);
+
+   CompletableFuture<Response<A>> update(String modelUri, A updatedModel, String format);
+
+   CompletableFuture<Response<Boolean>> save(String modelUri);
+
+   CompletableFuture<Response<Boolean>> saveAll();
+
+   CompletableFuture<Response<String>> validate(String modelUri);
+
+   CompletableFuture<Response<String>> getValidationConstraints(String modelUri);
+
+   CompletableFuture<Response<String>> getTypeSchema(String modelUri);
+
+   CompletableFuture<Response<String>> getUiSchema(String schemaName);
+
+   CompletableFuture<Response<Boolean>> configure(ServerConfiguration configuration);
+
+   CompletableFuture<Response<Boolean>> ping();
+
+   CompletableFuture<Response<String>> edit(String modelUri, CCommand command, String format);
+
+   CompletableFuture<Response<String>> edit(String modelUri, ArrayNode jsonPatch, String format);
+
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener);
+
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format);
+
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener, long timeout);
+
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format, long timeout);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, long timeout);
+
+   void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format,
+      long timeout);
+
+   boolean send(String modelUri, String message);
+
+   boolean unsubscribe(String modelUri);
+
+   CompletableFuture<Response<String>> undo(String modelUri);
+
+   CompletableFuture<Response<String>> redo(String modelUri);
+}
+```
+
 
 ### REST API Example
 
 ```Java
 // You can customize the underlying okhttp instance by passing it in as a 1st parameter 
-ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v1/");
+ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v2/");
 
 // perform simple GET
 client.get("SuperBrewer3000.json")
       .thenAccept(response -> System.out.println("GET: " + response.body()));
 
-// perform same GET, but expect an EObject
-client.get("SuperBrewer3000.json", "xmi")
+// perform same GET, but obtain the result as an EObject
+client.get("SuperBrewer3000.json", "json-v2")
       .thenAccept(response -> System.out.println("GET: " + response.body()));
 
 // perform GET ALL
 client.getAll()
       .thenAccept(response -> System.out.println("GET ALL: " + response.body()));
 
-// perform PATCH update
-client.update("SuperBrewer3000.json", "{ <payload> }")
+// replace the model content via a PATCH update
+EObject coffeeMachine = ...;
+client.update("SuperBrewer3000.json", coffeeMachine, "json-v2")
       .thenAccept(response -> System.out.println(response.body()));
-
-// perform PATCH update with XMI format
-client.update("SuperBrewer3000.json", brewingUnit_EObject, "xmi")
-  .thenAccept(response -> {
-    client.get("SuperBrewer3000.json").thenAccept(resp -> {
-      System.out.println(client.decode(resp.body(), "xmi"));
-    });
-  });
-}
 ```
 
 ### Executing Commands
@@ -563,14 +640,15 @@ can't be used to edit multiple resources with a single operation.
 ### WebSocket Subscriptions Example
 
 If you want to be notified about any changes happening on a certain model,
-you can subscribe with a `SubscriptionListener` and define a format for the responses, which is TypedSubscriptionListener for `xmi` in this example.
+you can subscribe with a `SubscriptionListener` and define a format for the responses, which is an `EObjectSubscriptionListener` for `json-v2` format in this example.
 
 Please also see a basic running example in `org.eclipse.emfcloud.modelserver.example.client`.
 
 ```Java
-ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v1/");
+ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v2/");
 String subscriptionId = "SuperBrewer3000.json";
-client.subscribe(subscriptionId, new XmiToEObjectSubscriptionListener() {
+
+client.subscribe(subscriptionId, new EObjectSubscriptionListener(new JsonCodecV2()) {
   @Override
   public void onOpen(final Response<String> response) {
     System.out.println("Connected: " + response.getMessage());
@@ -582,8 +660,8 @@ client.subscribe(subscriptionId, new XmiToEObjectSubscriptionListener() {
   }
 
   @Override
-  public void onIncrementalUpdate(final CCommandExecutionResult incrementalUpdate) {
-    System.out.println("Incremental update from model server received: " + incrementalUpdate.toString());
+  public void onIncrementalUpdate(final JsonPatch patch) {
+     System.out.println("Patch update from model server received: " + patch.toString());
   }
 
   @Override
@@ -598,7 +676,7 @@ client.subscribe(subscriptionId, new XmiToEObjectSubscriptionListener() {
 
   @Override
   public void onFullUpdate(final EObject fullUpdate) {
-    System.out.println("Full <XmiEObject> update from model server received: " + fullUpdate.toString());
+    System.out.println("Full <EObject> update from model server received: " + fullUpdate.toString());
   }
 
   @Override
@@ -628,10 +706,13 @@ client.subscribe(subscriptionId, new XmiToEObjectSubscriptionListener() {
     System.out.println("Closed connection to model server, reason: " + reason);
   }
 });
+
+// ...
+
 client.unsubscribe(subscriptionId);
 ```
 
-The kind of message received depends on the operation. For an `update` call (`PUT` request on the model), the message is the new content of the model (`onFullUpdate`).  For an incremental update applied by a `PATCH` request with an edit command (see above), the message is the result of the command that was executed (`onIncrementalUpdate`). The command execution result consists of the original client command, an execution type (e.g., 'execute', 'undo', 'redo'), the affected objects from the executed command and any recorded changes.
+The kind of message received depends on the operation. For an `update` call (`PATCH` request on the model), the message is the new content of the model (`onFullUpdate`).  For an `edit` call (incremental update applied by a `PATCH` request with an edit command or JSON patch — see above), the message is the result of the command that was executed (`onIncrementalUpdate`). In the case of an API v2 client with `json-v2` message format, the incremental update takes the form of a JSON patch describing the changes performed on the server. The patch can be applied to a local copy of the model to synchronize with the server and is modeled in EMF as a `JsonPatch` object.
 
 ## Contributing
 

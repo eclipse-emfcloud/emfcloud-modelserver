@@ -19,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emfcloud.modelserver.client.EditingContext;
 import org.eclipse.emfcloud.modelserver.client.Model;
 import org.eclipse.emfcloud.modelserver.client.ModelServerClientApi;
 import org.eclipse.emfcloud.modelserver.client.Response;
@@ -165,11 +164,6 @@ public class ModelServerClientV2 implements ModelServerClientApi<EObject>, Model
          .build();
 
       return makeCallAndGetDataBody(request);
-   }
-
-   @Override
-   public EditingContext edit() {
-      return delegate.edit(this, MODEL_BASE_PATH, ModelServerClientV2::encode);
    }
 
    /**
@@ -363,11 +357,6 @@ public class ModelServerClientV2 implements ModelServerClientApi<EObject>, Model
    @Override
    public boolean unsubscribe(final String modelUri) {
       return delegate.unsubscribe(modelUri);
-   }
-
-   @Override
-   public boolean close(final EditingContext editingContext) {
-      return delegate.close(editingContext);
    }
 
    @Override

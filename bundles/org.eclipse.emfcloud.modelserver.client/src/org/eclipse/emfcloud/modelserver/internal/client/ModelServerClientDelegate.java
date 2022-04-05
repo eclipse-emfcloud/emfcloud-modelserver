@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,17 +25,23 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.function.BiFunction;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.UnaryOperator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emfcloud.modelserver.client.EObjectSubscriptionListener;
 import org.eclipse.emfcloud.modelserver.client.EditingContext;
 import org.eclipse.emfcloud.modelserver.client.Model;
 import org.eclipse.emfcloud.modelserver.client.ModelServerNotification;
 import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
+import org.eclipse.emfcloud.modelserver.common.APIVersion;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
@@ -97,6 +104,8 @@ public class ModelServerClientDelegate implements AutoCloseable {
    protected final EPackageConfiguration[] configurations;
 
    private final Map<String, Codec> supportedFormats;
+
+   private final Map<String, EClass> modelTypes = new HashMap<>();
 
    public ModelServerClientDelegate(final String baseUrl, final String defaultFormat,
       final Map<String, Codec> supportedFormats, final EPackageConfiguration... configurations)
@@ -185,7 +194,32 @@ public class ModelServerClientDelegate implements AutoCloseable {
 
       return makeCallAndParseDataField(request)
          .thenApply(resp -> resp.mapBody(body -> body.flatMap(b -> decode(b, checkedFormat))))
-         .thenApply(this::getBodyOrThrow);
+         .thenApply(this::getBodyOrThrow)
+         .thenApply(cacheModelType(modelUri));
+   }
+
+   private UnaryOperator<Response<EObject>> cacheModelType(final String modelUri) {
+      return response -> {
+         EObject model = response.body();
+         if (model != null) {
+            modelTypes.put(modelUri, model.eClass());
+         }
+         return response;
+      };
+   }
+
+   private UnaryOperator<Response<List<Model<EObject>>>> cacheModelTypes() {
+      return response -> {
+         List<Model<EObject>> models = response.body();
+         if (models != null) {
+            models.forEach(model -> {
+               if (model.getContent() != null) {
+                  modelTypes.put(model.getModelUri(), model.getContent().eClass());
+               }
+            });
+         }
+         return response;
+      };
    }
 
    public CompletableFuture<Response<List<Model<String>>>> getAll() {
@@ -238,7 +272,7 @@ public class ModelServerClientDelegate implements AutoCloseable {
             } catch (IOException e) {
                throw new CompletionException(e);
             }
-         }));
+         })).thenApply(this.cacheModelTypes());
    }
 
    public CompletableFuture<Response<List<String>>> getModelUris() {
@@ -635,6 +669,11 @@ public class ModelServerClientDelegate implements AutoCloseable {
       final WebSocket socket = client.newWebSocket(request, new WebSocketListener() {
          @Override
          public void onOpen(@NotNull final WebSocket webSocket, @NotNull final okhttp3.Response response) {
+            if (subscriptionListener instanceof EObjectSubscriptionListener) {
+               APIVersion apiVersion = APIVersion.forRequestURI(webSocket.request().url().encodedPath());
+               hookSubscriptionListener(modelUri, apiVersion, (EObjectSubscriptionListener) subscriptionListener);
+            }
+
             subscriptionListener.onOpen(new Response<>(response,
                body -> require(Optional.ofNullable(body))));
          }
@@ -667,6 +706,39 @@ public class ModelServerClientDelegate implements AutoCloseable {
          }
       });
       openSockets.put(modelUri, socket);
+   }
+
+   void hookSubscriptionListener(final String modelUri, final APIVersion apiVersion,
+      final EObjectSubscriptionListener subscriptionListener) {
+
+      subscriptionListener.setAPIVersion(apiVersion);
+      subscriptionListener.setModelTypeSupplier(() -> getModelType(modelUri));
+   }
+
+   protected EClass getModelType(final String modelUri) {
+      EClass result = modelTypes.get(modelUri);
+      if (result == null) {
+         // This will also cache the result as a side-effect of the GET request
+         result = demandModelType(modelUri);
+      }
+      return result;
+   }
+
+   /**
+    * In the extreme case that a model type is required and has not incidentally been cached,
+    * fetch it from the server.
+    *
+    * @param modelUri the model URI for which to get the root object type
+    * @return the root object type, or {@code null} in case of any failure to fetch it
+    */
+   protected EClass demandModelType(final String modelUri) {
+      try {
+         return get(modelUri, getDefaultFormat()).thenApply(Response::body).thenApply(EObject::eClass).get(30,
+            TimeUnit.SECONDS);
+      } catch (InterruptedException | ExecutionException | TimeoutException e) {
+         LOG.error("Failed to obtain model type for " + modelUri, e);
+         return null;
+      }
    }
 
    public boolean send(final String modelUri, final String message) {
@@ -875,10 +947,6 @@ public class ModelServerClientDelegate implements AutoCloseable {
          return _data;
       });
       return result;
-   }
-
-   protected static <A, B> BiFunction<A, B, B> takeB() {
-      return (a, b) -> b;
    }
 
    /**

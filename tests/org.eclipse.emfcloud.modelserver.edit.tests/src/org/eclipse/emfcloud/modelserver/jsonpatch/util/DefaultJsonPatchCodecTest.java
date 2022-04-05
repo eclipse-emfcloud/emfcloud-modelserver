@@ -49,6 +49,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.base.Suppliers;
 
 public class DefaultJsonPatchCodecTest {
 
@@ -245,7 +246,7 @@ public class DefaultJsonPatchCodecTest {
    @Before
    public void createFixture() {
       codec = new DefaultJsonCodec();
-      fixture = JsonPatchCodec.Factory.DEFAULT.createCodec(codec, EcorePackage.Literals.EPACKAGE);
+      fixture = JsonPatchCodec.Factory.DEFAULT.createCodec(codec, Suppliers.ofInstance(EcorePackage.Literals.EPACKAGE));
    }
 
    @Before

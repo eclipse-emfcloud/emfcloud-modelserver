@@ -10,6 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.client;
 
+import static org.eclipse.emfcloud.modelserver.common.APIVersion.API_V2;
 import static org.eclipse.emfcloud.modelserver.tests.util.EMFMatchers.eEqualTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -44,17 +45,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Suppliers;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CodecSubscriptionListenerTest {
+public class EObjectSubscriptionListenerTest {
 
    private Codec codec;
 
-   private CodecSubscriptionListener fixture;
+   private EObjectSubscriptionListener fixture;
 
    private EPackage model;
 
-   public CodecSubscriptionListenerTest() {
+   public EObjectSubscriptionListenerTest() {
       super();
    }
 
@@ -73,16 +75,14 @@ public class CodecSubscriptionListenerTest {
    public void onIncrementalUpdate() {
       fixture.onNotification(incrementalUpdate());
 
-      ArgumentCaptor<EObject> patchCaptor = ArgumentCaptor.forClass(EObject.class);
+      ArgumentCaptor<JsonPatch> patchCaptor = ArgumentCaptor.forClass(JsonPatch.class);
       verify(fixture).onIncrementalUpdate(patchCaptor.capture());
 
-      EObject patch = patchCaptor.getValue();
-      assertThat(patch, instanceOf(JsonPatch.class));
-      JsonPatch jsonPatch = (JsonPatch) patch;
-      assertThat(jsonPatch.getPatch().size(), is(1));
-      assertThat(jsonPatch.getPatch().get(0), instanceOf(Add.class));
+      JsonPatch patch = patchCaptor.getValue();
+      assertThat(patch.getPatch().size(), is(1));
+      assertThat(patch.getPatch().get(0), instanceOf(Add.class));
 
-      Add addOp = (Add) jsonPatch.getPatch().get(0);
+      Add addOp = (Add) patch.getPatch().get(0);
       assertThat(addOp.getPath(), is("/eSubpackages/-"));
       assertThat(addOp.getValue(), instanceOf(ObjectValue.class));
       ObjectValue added = (ObjectValue) addOp.getValue();
@@ -98,7 +98,10 @@ public class CodecSubscriptionListenerTest {
    public void createFixture() {
       codec = new JsonCodecV2();
       EClass rootClass = EcorePackage.Literals.EPACKAGE;
-      fixture = spy(new CodecSubscriptionListener(codec, rootClass));
+      EObjectSubscriptionListener listener = new EObjectSubscriptionListener(codec);
+      listener.setAPIVersion(API_V2);
+      listener.setModelTypeSupplier(Suppliers.ofInstance(rootClass));
+      fixture = spy(listener);
    }
 
    @Before

@@ -17,33 +17,34 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emfcloud.modelserver.client.CodecSubscriptionListener;
+import org.eclipse.emfcloud.modelserver.client.EObjectSubscriptionListener;
 import org.eclipse.emfcloud.modelserver.client.ModelServerNotification;
 import org.eclipse.emfcloud.modelserver.client.Response;
+import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.APIVersion;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.utils.APIVersionMap;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
 import org.eclipse.emfcloud.modelserver.example.util.PrintUtil;
+import org.eclipse.emfcloud.modelserver.jsonpatch.JsonPatch;
 
 /**
- * A subscription listener that demonstrates the {@link CodecSubscriptionListener} that
+ * A subscription listener that demonstrates the {@link EObjectSubscriptionListener} that
  * provides full and incremental updates as {@link EObject} models.
  */
-public class ExampleCodecSubscriptionListener extends CodecSubscriptionListener {
+public class ExampleEObjectSubscriptionListener extends EObjectSubscriptionListener {
 
    private static final APIVersionMap<Codec> JSON_CODECS = new APIVersionMap<>(Map.of(
-      APIVersion.ZERO.range(APIVersion.of(2)), new JsonCodec(),
-      APIVersion.of(2).range(), new JsonCodecV2()));
+      APIVersion.ZERO.range(APIVersion.API_V2), new JsonCodec(),
+      APIVersion.API_V2.range(), new JsonCodecV2()));
 
    private final String modelUri;
    private final DateFormat df;
 
-   public ExampleCodecSubscriptionListener(final String modelUri, final APIVersion apiVersion, final EClass modelType) {
-      super(JSON_CODECS.get(apiVersion), modelType);
+   public ExampleEObjectSubscriptionListener(final String modelUri, final APIVersion apiVersion) {
+      super(JSON_CODECS.get(apiVersion));
 
       this.modelUri = modelUri;
 
@@ -67,9 +68,16 @@ public class ExampleCodecSubscriptionListener extends CodecSubscriptionListener 
    }
 
    @Override
-   public void onIncrementalUpdate(final EObject incrementalUpdate) {
+   public void onIncrementalUpdate(final JsonPatch patch) {
       printResponse(
-         "Incremental <EObject> update from model server received: " + PrintUtil.toPrettyString(incrementalUpdate));
+         "Incremental <JsonPatch> update from model server received:\n" + PrintUtil.toPrettyString(patch));
+   }
+
+   @Override
+   public void onIncrementalUpdate(final CCommandExecutionResult commandExecutionResult) {
+      printResponse(
+         "Incremental <CCommandExecutionResult> update from model server received:\n"
+            + PrintUtil.toPrettyString(commandExecutionResult));
    }
 
    @Override

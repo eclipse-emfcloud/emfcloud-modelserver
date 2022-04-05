@@ -11,6 +11,7 @@
 package org.eclipse.emfcloud.modelserver.jsonpatch.util;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
@@ -64,11 +65,12 @@ public interface JsonPatchCodec {
        * Create a patch codec that uses the given {@code codec} to decode object values.
        *
        * @param codec     the codec for decoding object values in add/replace/test operations
-       * @param modelType the type of the root model object, required for inference of missing type properties in object
-       *                     values
+       * @param modelType a supplier of the type of the root model object, required for inference of missing type
+       *                     properties in object values but which may not be known at the time of creation of
+       *                     the codec
        * @return the patch codec
        */
-      JsonPatchCodec createCodec(Codec codec, EClass modelType);
+      JsonPatchCodec createCodec(Codec codec, Supplier<? extends EClass> modelType);
 
    }
 

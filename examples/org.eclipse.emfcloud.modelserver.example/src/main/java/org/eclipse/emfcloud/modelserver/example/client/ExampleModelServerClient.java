@@ -10,6 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.example.client;
 
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_JSON;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_JSON_V2;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_XMI;
 
@@ -43,6 +44,7 @@ import org.eclipse.emfcloud.modelserver.edit.command.SetCommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.util.CommandUtil;
 import org.eclipse.emfcloud.modelserver.example.CoffeePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.example.UpdateTaskNameCommandContribution;
+import org.eclipse.emfcloud.modelserver.example.util.PrintUtil;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
 @SuppressWarnings("all")
@@ -65,11 +67,16 @@ public final class ExampleModelServerClient {
    private static final String SUPER_BREWER_3000_COFFEE = "SuperBrewer3000.coffee";
    private static final String SUPER_BREWER_3000_JSON = "SuperBrewer3000.json";
 
-   private static final String FORMAT_ECORE = "ecore";
+   private static final String ARG_AS = "as";
+
+   private static final String ARG_EOBJECT = "eobject";
+
+   private static final APIVersion API_VERSION = APIVersion.API_V2;
 
    private ExampleModelServerClient() {}
 
    public static void main(final String[] args) {
+
       try (
          ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v2/",
             new CoffeePackageConfiguration());
@@ -95,18 +102,16 @@ public final class ExampleModelServerClient {
                if (command.contentEquals("1")) {
                   handleSubscribe(client, new String[] { CMD_SUBSCRIBE, SUPER_BREWER_3000_COFFEE, FORMAT_JSON_V2 });
                } else if (command.contentEquals("2")) {
-                  handleSubscribe(client, new String[] { CMD_SUBSCRIBE, SUPER_BREWER_3000_COFFEE, FORMAT_ECORE });
-               } else if (command.contentEquals("3")) {
                   handleSubscribe(client, new String[] { CMD_SUBSCRIBE, SUPER_BREWER_3000_JSON, FORMAT_JSON_V2 });
-               } else if (command.contentEquals("4")) {
+               } else if (command.contentEquals("3")) {
                   handleSubscribe(client, new String[] { CMD_SUBSCRIBE, COFFEE_ECORE, FORMAT_XMI });
-               } else if (command.contentEquals("5")) {
+               } else if (command.contentEquals("4")) {
                   handleUnsubscribe(client, new String[] { CMD_UNSUBSCRIBE, SUPER_BREWER_3000_COFFEE });
-               } else if (command.contentEquals("6")) {
+               } else if (command.contentEquals("5")) {
                   handleUnsubscribe(client, new String[] { CMD_UNSUBSCRIBE, SUPER_BREWER_3000_JSON });
-               } else if (command.contentEquals("7")) {
+               } else if (command.contentEquals("6")) {
                   handleUnsubscribe(client, new String[] { CMD_UNSUBSCRIBE, COFFEE_ECORE });
-               } else if (command.contentEquals("8")) {
+               } else if (command.contentEquals("7")) {
                   handleRenameWorkflow(client, new String[] { CMD_RENAME_WORKFLOW, "Simple Renamed Workflow" });
                } else if (command.contentEquals(CMD_SUBSCRIBE)) {
                   handleSubscribe(client, commandAndArgs);
@@ -214,9 +219,16 @@ public final class ExampleModelServerClient {
 
    private static void handleGet(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException, IOException {
-      Response<String> response = client.get(commandAndArgs[1]).join();
-      System.out.println("< " + commandAndArgs[1]);
-      System.out.println(Json.parse(response.body()).toPrettyString());
+      if (isAsEObject(commandAndArgs)) {
+         String format = APIVersion.API_V2.range().includes(API_VERSION) ? FORMAT_JSON_V2 : FORMAT_JSON;
+         Response<EObject> response = client.get(commandAndArgs[1], format).join();
+         System.out.println("< " + commandAndArgs[1]);
+         System.out.println(PrintUtil.toPrettyString(response.body()));
+      } else {
+         Response<String> response = client.get(commandAndArgs[1]).join();
+         System.out.println("< " + commandAndArgs[1]);
+         System.out.println(Json.parse(response.body()).toPrettyString());
+      }
    }
 
    private static void handleGetAll(final ModelServerClient client, final String[] commandAndArgs)
@@ -244,28 +256,20 @@ public final class ExampleModelServerClient {
       String modelUri = command.length > 1 ? command[1] : "";
       String format = command.length > 2 ? command[2] : FORMAT_JSON_V2;
 
-      CompletableFuture<SubscriptionListener> futureListener = format.contentEquals(FORMAT_XMI)
-         ? CompletableFuture.completedFuture(new ExampleXMISubscriptionListener(modelUri))
-         : format.contentEquals(FORMAT_ECORE)
-            ? client.get(modelUri, FORMAT_JSON_V2)
-               .thenApply(
-                  model -> new ExampleCodecSubscriptionListener(modelUri, APIVersion.of(2), model.body().eClass()))
-            : CompletableFuture.completedFuture(new ExampleJsonStringSubscriptionListener(modelUri));
+      SubscriptionListener listener = format.contentEquals(FORMAT_XMI)
+         ? new ExampleXMISubscriptionListener(modelUri)
+         : isAsEObject(command)
+            ? new ExampleEObjectSubscriptionListener(modelUri, API_VERSION)
+            : new ExampleJsonStringSubscriptionListener(modelUri);
 
-      futureListener.whenComplete((listener, exception) -> {
-         String nativeFormat = format.contains(FORMAT_ECORE) ?
-         // "ecore" is for the subscription listener only. Underneath it is json-v2
-            FORMAT_JSON_V2
-            : format;
+      client.subscribe(modelUri, listener, format);
+      System.out.println("< OK");
+   }
 
-         if (listener != null) {
-            client.subscribe(modelUri, listener, nativeFormat);
-            System.out.println("< OK");
-         } else {
-            System.err.println("< Failed to get model type");
-            exception.printStackTrace();
-         }
-      });
+   private static boolean isAsEObject(final String[] command) {
+      return command.length >= 2
+         && ARG_AS.equalsIgnoreCase(command[command.length - 2])
+         && ARG_EOBJECT.equalsIgnoreCase(command[command.length - 1]);
    }
 
    private static void handleUnsubscribe(final ModelServerClient client, final String[] command)
@@ -282,27 +286,26 @@ public final class ExampleModelServerClient {
 
    private static void printHelp() {
       System.out.println("Supported commands:");
-      System.out.println("- " + CMD_SUBSCRIBE + " <modelUri> <format>");
+      System.out.println("- " + CMD_SUBSCRIBE + " <modelUri> <format> [as eobject]");
       System.out.println("- " + CMD_UNSUBSCRIBE + " <modelUri>");
-      System.out.println("- " + CMD_GET + " <modelUri>");
+      System.out.println("- " + CMD_GET + " <modelUri> [as eobject]");
       System.out.println("- " + CMD_GET_ALL + " <format>");
       System.out.println("- " + CMD_UPDATE_TASKS + " <name> // adapts all task names in SuperBrewer3000.json (custom)");
       System.out.println("- " + CMD_UNDO + " <modelUri>");
       System.out.println("- " + CMD_REDO + " <modelUri>");
-      System.out.println("- " + CMD_ECORE + " <file> // register an Ecore model used on the server");
+      System.out.println("- " + CMD_ECORE + " <file> // load and register an Ecore model used on the server");
       System.out.println("- " + CMD_PING);
       System.out.println("- " + CMD_HELP);
       System.out.println("- " + CMD_QUIT);
       System.out.println();
       System.out.println("Supported shortcuts:");
       System.out.println("- 1: Subscribe to SuperBrewer3000.coffee in JSON");
-      System.out.println("- 2: Subscribe to SuperBrewer3000.coffee in Ecore");
-      System.out.println("- 3: Subscribe to SuperBrewer3000.json in JSON");
-      System.out.println("- 4: Subscribe to Coffee.ecore in XMI");
-      System.out.println("- 5: Unsubscribe from SuperBrewer3000.coffee");
-      System.out.println("- 6: Unsubscribe from SuperBrewer3000.json");
-      System.out.println("- 7: Unsubscribe from Coffee.ecore");
-      System.out.println("- 8: Rename first workflow to 'Simple Renamed Workflow' in SuperBrewer3000.coffee");
+      System.out.println("- 2: Subscribe to SuperBrewer3000.json in JSON");
+      System.out.println("- 3: Subscribe to Coffee.ecore in XMI");
+      System.out.println("- 4: Unsubscribe from SuperBrewer3000.coffee");
+      System.out.println("- 5: Unsubscribe from SuperBrewer3000.json");
+      System.out.println("- 6: Unsubscribe from Coffee.ecore");
+      System.out.println("- 7: Rename first workflow to 'Simple Renamed Workflow' in SuperBrewer3000.coffee");
    }
 
    private static String toString(final Response<?> response) {

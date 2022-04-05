@@ -10,6 +10,8 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.jsonpatch.util;
 
+import java.util.function.Supplier;
+
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.jsonpatch.util.JsonPatchCodec.Factory;
@@ -24,7 +26,7 @@ public class DefaultJsonPatchCodecFactory implements Factory {
    }
 
    @Override
-   public JsonPatchCodec createCodec(final Codec codec, final EClass modelType) {
+   public JsonPatchCodec createCodec(final Codec codec, final Supplier<? extends EClass> modelType) {
       return new DefaultJsonPatchCodec(codec, modelType);
    }
 

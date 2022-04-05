@@ -10,27 +10,23 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.client;
 
-import java.util.Optional;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
+import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DefaultJsonCodec;
 
-public class JsonToEObjectSubscriptionListener extends TypedSubscriptionListener<EObject> {
-   private static Logger LOG = LogManager.getLogger(JsonToEObjectSubscriptionListener.class);
-
+/**
+ * <p>
+ * An {@link EObject} subscription listener using the {@link ModelServerPathParametersV1#FORMAT_JSON json} format.
+ * </p>
+ * <p>
+ * For API v2 or later, especially using the {@link ModelServerPathParametersV2#FORMAT_JSON_V2 json-v2} format,
+ * use the {@link EObjectSubscriptionListener} class with the appropriate {@link Codec}.
+ * </p>
+ */
+public class JsonToEObjectSubscriptionListener extends EObjectSubscriptionListener {
    public JsonToEObjectSubscriptionListener() {
-      super(JsonToEObjectSubscriptionListener::decode);
-   }
-
-   private static Optional<EObject> decode(final String payload) {
-      try {
-         return new DefaultJsonCodec().decode(payload);
-      } catch (DecodingException e) {
-         LOG.error("Failed to decode notification", e);
-         return Optional.empty();
-      }
+      super(new DefaultJsonCodec());
    }
 }

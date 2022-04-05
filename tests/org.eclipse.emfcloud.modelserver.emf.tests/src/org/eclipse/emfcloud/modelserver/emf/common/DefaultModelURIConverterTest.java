@@ -10,6 +10,8 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import static org.eclipse.emfcloud.modelserver.common.APIVersion.API_V1;
+import static org.eclipse.emfcloud.modelserver.common.APIVersion.API_V2;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
@@ -77,7 +79,7 @@ public class DefaultModelURIConverterTest {
    public static class ApiV2 extends DefaultModelURIConverterTest {
 
       public ApiV2() {
-         super(APIVersion.of(2));
+         super(API_V2);
       }
 
       @Test
@@ -167,7 +169,7 @@ public class DefaultModelURIConverterTest {
    public static class ApiV1 extends DefaultModelURIConverterTest {
 
       public ApiV1() {
-         super(APIVersion.of(1));
+         super(API_V1);
       }
 
       @Test
@@ -307,19 +309,18 @@ public class DefaultModelURIConverterTest {
             }
             binder().bind(ModelResourceManager.class).toInstance(resourceManager);
 
-            APIVersion two = APIVersion.of(2);
             MapBinding<APIVersionRange, Function<? super URI, Optional<URI>>> resolverBindings = MapBinding
                .create(APIVersionRange.class, new TypeLiteral<Function<? super URI, Optional<URI>>>() {});
-            resolverBindings.put(two.range(), DefaultModelURIConverter.APIV2Resolver.class);
-            resolverBindings.put(APIVersion.ZERO.range(two), DefaultModelURIConverter.APIV1Resolver.class);
+            resolverBindings.put(API_V2.range(), DefaultModelURIConverter.APIV2Resolver.class);
+            resolverBindings.put(APIVersion.ZERO.range(API_V2), DefaultModelURIConverter.APIV1Resolver.class);
             resolverBindings.setAnnotationName(DefaultModelURIConverter.MODEL_URI_RESOLVERS);
             resolverBindings.applyBinding(binder());
 
             MapBinding<APIVersionRange, Function<? super URI, URI>> deresolverBindings = MapBinding.create(
                APIVersionRange.class,
                new TypeLiteral<Function<? super URI, URI>>() {});
-            deresolverBindings.put(two.range(), DefaultModelURIConverter.APIV2Deresolver.class);
-            deresolverBindings.put(APIVersion.ZERO.range(two), DefaultModelURIConverter.APIV1Deresolver.class);
+            deresolverBindings.put(API_V2.range(), DefaultModelURIConverter.APIV2Deresolver.class);
+            deresolverBindings.put(APIVersion.ZERO.range(API_V2), DefaultModelURIConverter.APIV1Deresolver.class);
             deresolverBindings.setAnnotationName(DefaultModelURIConverter.MODEL_URI_DERESOLVERS);
             deresolverBindings.applyBinding(binder());
 

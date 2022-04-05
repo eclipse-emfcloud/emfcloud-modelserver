@@ -12,6 +12,7 @@ package org.eclipse.emfcloud.modelserver.jsonpatch.util;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import org.eclipse.emf.common.util.WrappedException;
@@ -58,7 +59,7 @@ public class DefaultJsonPatchCodec implements JsonPatchCodec {
 
    private final TypeInference typeInference;
 
-   public DefaultJsonPatchCodec(final Codec codec, final EClass modelType) {
+   public DefaultJsonPatchCodec(final Codec codec, final Supplier<? extends EClass> modelType) {
       super();
 
       this.codec = codec;
@@ -328,11 +329,11 @@ public class DefaultJsonPatchCodec implements JsonPatchCodec {
       private static final Pattern SLASH = Pattern.compile("/");
       private static final Pattern INDEX = Pattern.compile("^-|\\d+$");
 
-      private final EClass modelType;
+      private final Supplier<? extends EClass> modelType;
 
       private final String typeProperty;
 
-      TypeInference(final EClass modelType, final Codec codec) {
+      TypeInference(final Supplier<? extends EClass> modelType, final Codec codec) {
          super();
 
          this.modelType = modelType;
@@ -372,7 +373,7 @@ public class DefaultJsonPatchCodec implements JsonPatchCodec {
 
       private EClass inferReferenceType(final String path) {
          String relativePath = path.startsWith("/") ? path.substring(1) : path;
-         return inferReferenceType(modelType, List.of(SLASH.split(relativePath)));
+         return inferReferenceType(modelType.get(), List.of(SLASH.split(relativePath)));
       }
 
       private EClass inferReferenceType(final EClass eClass, final List<String> path) {

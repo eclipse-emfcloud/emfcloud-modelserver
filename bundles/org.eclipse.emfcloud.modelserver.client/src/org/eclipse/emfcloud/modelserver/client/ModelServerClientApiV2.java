@@ -90,10 +90,6 @@ public interface ModelServerClientApiV2<A> {
 
    boolean unsubscribe(String modelUri);
 
-   EditingContext edit();
-
-   boolean close(EditingContext editingContext);
-
    CompletableFuture<Response<String>> undo(String modelUri);
 
    CompletableFuture<Response<String>> redo(String modelUri);
