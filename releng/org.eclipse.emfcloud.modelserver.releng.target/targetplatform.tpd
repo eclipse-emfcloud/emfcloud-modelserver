@@ -1,12 +1,12 @@
 target "EMF.cloud Model Server Targetplatform" with source, requirements
 
-location "http://download.eclipse.org/releases/2021-12" {
+location "http://download.eclipse.org/releases/2022-03" {
 	org.eclipse.platform.feature.group [4.22.0,5.0.0)
 	org.eclipse.emf.transaction.feature.group [1.12.0,2.0.0)
-	org.eclipse.emf.sdk.feature.group [2.28.0,3.0.0)
+	org.eclipse.emf.sdk.feature.group [2.29.0,3.0.0)
 }
 
-location "https://download.eclipse.org/tools/orbit/downloads/drops/I20220131095416/repository" {
+location "https://download.eclipse.org/tools/orbit/downloads/drops/R20220302172233/repository" {
 	org.apache.logging.log4j [2.17.1,3.0.0)
 	com.google.gson [2.8.9,3.0.0)
 	com.google.inject [5.0.1,6.0.0)
