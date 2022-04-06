@@ -1,8 +1,12 @@
 /**
- * Copyright (c) 2022 STMicroelectronics and others.\n\nThis program and the accompanying materials are made available
- * under the\nterms of the Eclipse Public License v. 2.0 which is available at\nhttps://www.eclipse.org/legal/epl-2.0,
- * or the MIT License which is\navailable at https://opensource.org/licenses/MIT.\n\nSPDX-License-Identifier: EPL-2.0 OR
- * MIT
+ * Copyright (c) 2022 STMicroelectronics and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
+ * available at https://opensource.org/licenses/MIT.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR MIT
  */
 package org.eclipse.emfcloud.modelserver.jsonpatch.impl;
 
@@ -398,7 +402,7 @@ public class JsonPatchPackageImpl extends EPackageImpl implements JsonPatchPacka
     * @generated
     */
    @Override
-   public EOperation getValue__ValueString() { return valueEClass.getEOperations().get(0); }
+   public EOperation getValue__StringValue() { return valueEClass.getEOperations().get(0); }
 
    /**
     * <!-- begin-user-doc -->
@@ -548,7 +552,7 @@ public class JsonPatchPackageImpl extends EPackageImpl implements JsonPatchPacka
       createEReference(testEClass, TEST__VALUE);
 
       valueEClass = createEClass(VALUE);
-      createEOperation(valueEClass, VALUE___VALUE_STRING);
+      createEOperation(valueEClass, VALUE___STRING_VALUE);
 
       booleanValueEClass = createEClass(BOOLEAN_VALUE);
       createEAttribute(booleanValueEClass, BOOLEAN_VALUE__VALUE);
@@ -654,7 +658,7 @@ public class JsonPatchPackageImpl extends EPackageImpl implements JsonPatchPacka
 
       initEClass(valueEClass, Value.class, "Value", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-      initEOperation(getValue__ValueString(), ecorePackage.getEString(), "valueString", 1, 1, IS_UNIQUE, IS_ORDERED);
+      initEOperation(getValue__StringValue(), ecorePackage.getEString(), "stringValue", 1, 1, IS_UNIQUE, IS_ORDERED);
 
       initEClass(booleanValueEClass, BooleanValue.class, "BooleanValue", !IS_ABSTRACT, !IS_INTERFACE,
          IS_GENERATED_INSTANCE_CLASS);

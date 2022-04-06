@@ -18,22 +18,39 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponseType;
 
+/**
+ * A typed subscription listener that consumes message payloads as type {@code T}.
+ *
+ * @param <T> the message payload type accepted by the listener
+ */
 public class TypedSubscriptionListener<T> implements NotificationSubscriptionListener<T> {
    private static Logger LOG = LogManager.getLogger(TypedSubscriptionListener.class);
 
    private final BiFunction<? super String, ? super String, Optional<? extends T>> updateFunction;
 
+   /**
+    * Initializes me with a function that transforms the message body to the listener's input
+    * type. This function cannot discriminate on the message type but is expected to transform
+    * all message payloads in the same way.
+    *
+    * @param updateFunction the message payload transform
+    */
    public TypedSubscriptionListener(final Function<String, Optional<? extends T>> updateFunction) {
-      this(updateFunction, Function.class);
+      this((data, type) -> updateFunction.apply(data));
    }
 
-   public TypedSubscriptionListener(final Function<String, Optional<? extends T>> updateFunction,
-      final Class<?> discriminator) {
-      this((data, type) -> updateFunction.apply(data), BiFunction.class);
-   }
+   /**
+    * Initializes me with a function that transforms the message body to the listener's input
+    * type. This function is also given the the message type so that it may transform
+    * different message payloads in the diffferent ways.
+    *
+    * @param updateFunction the message payload transform: the first argument is the message payload text
+    *                          and the second is the message type as enumerated in the
+    *                          {@link JsonResponseType} class
+    */
+   public TypedSubscriptionListener(final BiFunction<String, String, Optional<? extends T>> updateFunction) {
+      super();
 
-   public TypedSubscriptionListener(final BiFunction<String, String, Optional<? extends T>> updateFunction,
-      final Class<?> discriminator) {
       this.updateFunction = updateFunction;
    }
 

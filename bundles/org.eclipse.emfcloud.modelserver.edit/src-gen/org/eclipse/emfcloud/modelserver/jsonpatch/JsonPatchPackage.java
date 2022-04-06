@@ -1,8 +1,12 @@
 /**
- * Copyright (c) 2022 STMicroelectronics and others.\n\nThis program and the accompanying materials are made available
- * under the\nterms of the Eclipse Public License v. 2.0 which is available at\nhttps://www.eclipse.org/legal/epl-2.0,
- * or the MIT License which is\navailable at https://opensource.org/licenses/MIT.\n\nSPDX-License-Identifier: EPL-2.0 OR
- * MIT
+ * Copyright (c) 2022 STMicroelectronics and others.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0, or the MIT License which is
+ * available at https://opensource.org/licenses/MIT.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR MIT
  */
 package org.eclipse.emfcloud.modelserver.jsonpatch;
 
@@ -613,14 +617,14 @@ public interface JsonPatchPackage extends EPackage {
    int VALUE_FEATURE_COUNT = 0;
 
    /**
-    * The operation id for the '<em>Value String</em>' operation.
+    * The operation id for the '<em>String Value</em>' operation.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
     * @generated
     * @ordered
     */
-   int VALUE___VALUE_STRING = 0;
+   int VALUE___STRING_VALUE = 0;
 
    /**
     * The number of operations of the '<em>Value</em>' class.
@@ -665,14 +669,14 @@ public interface JsonPatchPackage extends EPackage {
    int BOOLEAN_VALUE_FEATURE_COUNT = VALUE_FEATURE_COUNT + 1;
 
    /**
-    * The operation id for the '<em>Value String</em>' operation.
+    * The operation id for the '<em>String Value</em>' operation.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
     * @generated
     * @ordered
     */
-   int BOOLEAN_VALUE___VALUE_STRING = VALUE___VALUE_STRING;
+   int BOOLEAN_VALUE___STRING_VALUE = VALUE___STRING_VALUE;
 
    /**
     * The number of operations of the '<em>Boolean Value</em>' class.
@@ -717,14 +721,14 @@ public interface JsonPatchPackage extends EPackage {
    int STRING_VALUE_FEATURE_COUNT = VALUE_FEATURE_COUNT + 1;
 
    /**
-    * The operation id for the '<em>Value String</em>' operation.
+    * The operation id for the '<em>String Value</em>' operation.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
     * @generated
     * @ordered
     */
-   int STRING_VALUE___VALUE_STRING = VALUE___VALUE_STRING;
+   int STRING_VALUE___STRING_VALUE = VALUE___STRING_VALUE;
 
    /**
     * The number of operations of the '<em>String Value</em>' class.
@@ -769,14 +773,14 @@ public interface JsonPatchPackage extends EPackage {
    int NUMBER_VALUE_FEATURE_COUNT = VALUE_FEATURE_COUNT + 1;
 
    /**
-    * The operation id for the '<em>Value String</em>' operation.
+    * The operation id for the '<em>String Value</em>' operation.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
     * @generated
     * @ordered
     */
-   int NUMBER_VALUE___VALUE_STRING = VALUE___VALUE_STRING;
+   int NUMBER_VALUE___STRING_VALUE = VALUE___STRING_VALUE;
 
    /**
     * The number of operations of the '<em>Number Value</em>' class.
@@ -821,14 +825,14 @@ public interface JsonPatchPackage extends EPackage {
    int OBJECT_VALUE_FEATURE_COUNT = VALUE_FEATURE_COUNT + 1;
 
    /**
-    * The operation id for the '<em>Value String</em>' operation.
+    * The operation id for the '<em>String Value</em>' operation.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
     * @generated
     * @ordered
     */
-   int OBJECT_VALUE___VALUE_STRING = VALUE___VALUE_STRING;
+   int OBJECT_VALUE___STRING_VALUE = VALUE___STRING_VALUE;
 
    /**
     * The number of operations of the '<em>Object Value</em>' class.
@@ -1080,16 +1084,16 @@ public interface JsonPatchPackage extends EPackage {
    EClass getValue();
 
    /**
-    * Returns the meta object for the '{@link org.eclipse.emfcloud.modelserver.jsonpatch.Value#stringValue() <em>Value
-    * String</em>}' operation.
+    * Returns the meta object for the '{@link org.eclipse.emfcloud.modelserver.jsonpatch.Value#stringValue() <em>String
+    * Value</em>}' operation.
     * <!-- begin-user-doc -->
     * <!-- end-user-doc -->
     *
-    * @return the meta object for the '<em>Value String</em>' operation.
+    * @return the meta object for the '<em>String Value</em>' operation.
     * @see org.eclipse.emfcloud.modelserver.jsonpatch.Value#stringValue()
     * @generated
     */
-   EOperation getValue__ValueString();
+   EOperation getValue__StringValue();
 
    /**
     * Returns the meta object for class '{@link org.eclipse.emfcloud.modelserver.jsonpatch.BooleanValue <em>Boolean
@@ -1429,13 +1433,13 @@ public interface JsonPatchPackage extends EPackage {
       EClass VALUE = eINSTANCE.getValue();
 
       /**
-       * The meta object literal for the '<em><b>Value String</b></em>' operation.
+       * The meta object literal for the '<em><b>String Value</b></em>' operation.
        * <!-- begin-user-doc -->
        * <!-- end-user-doc -->
        *
        * @generated
        */
-      EOperation VALUE___VALUE_STRING = eINSTANCE.getValue__ValueString();
+      EOperation VALUE___STRING_VALUE = eINSTANCE.getValue__StringValue();
 
       /**
        * The meta object literal for the '{@link org.eclipse.emfcloud.modelserver.jsonpatch.impl.BooleanValueImpl

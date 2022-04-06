@@ -39,7 +39,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 /**
  * <p>
  * An implementation of a {@link Codec}-based subscription listener that provides message
- * payloads, whereapplicable, to subclass call-back hooks as {@link EObject}s.
+ * payloads, where applicable, to subclass call-back hooks as {@link EObject}s.
  * </p>
  * <p>
  * For API version 2 or later, this includes support for parsing {@link JsonPatch}es that
@@ -66,7 +66,7 @@ public class EObjectSubscriptionListener extends TypedSubscriptionListener<EObje
    private EObjectSubscriptionListener(final Codec codec, final JsonPatchCodec.Factory patchCodecFactory,
       final ListenerState state) {
 
-      super(decoder(codec, state, patchCodecFactory), BiFunction.class);
+      super(decoder(codec, state, patchCodecFactory));
 
       this.state = state;
    }
