@@ -10,23 +10,18 @@
    <artifactId>org.eclipse.emfcloud.modelserver.tests</artifactId>
    <packaging>${package.type}</packaging>
 
-   <profiles>
-      <profile>
-         <id>m2</id>
-         <dependencies>
-            <dependency>
-               <groupId>org.mockito</groupId>
-               <artifactId>mockito-inline</artifactId>
-               <version>${mockito.inline.version}</version>
-            </dependency>
-            <dependency>
-               <groupId>com.github.gmazzo</groupId>
-               <artifactId>okhttp-mock</artifactId>
-               <version>${gmazzo.okhttp.mock.version}</version>
-            </dependency>
-         </dependencies>
-      </profile>
-   </profiles>
+   <dependencies>
+      <dependency>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-inline</artifactId>
+         <version>${mockito.inline.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>com.github.gmazzo</groupId>
+         <artifactId>okhttp-mock</artifactId>
+         <version>${gmazzo.okhttp.mock.version}</version>
+      </dependency>
+   </dependencies>
 
    <build>
       <plugins>

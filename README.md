@@ -2,11 +2,32 @@
 
 For more information, please visit the [EMF.cloud Website](https://www.eclipse.org/emfcloud/). If you have questions, contact us on our [discussions page](https://github.com/eclipse-emfcloud/emfcloud/discussions) and have a look at our [communication and support options](https://www.eclipse.org/emfcloud/contact/).
 
+## Prerequisites
+
+The following libraries/frameworks need to be installed on your system:
+
+| | |
+|-|-|
+|[Java](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)|`11`|
+|[Maven](https://maven.apache.org/)|`<=3.8.4`|
+
+*Remark:* There is currently a build problem with the latest Maven version `3.8.5`, which causes a build error for the `p2` build. (See also issues #201 and will be investigated and fixed with issue #203).
+
 ## Build
 
 To build the model server as standalone JAR and execute all component tests execute the following maven goal in the root directory:
 
     mvn clean install
+
+*Remark:* If you have installed Maven `3.8.5` and do not want to install a lower version, you can also use the provided maven wrapper scripts (that provide Maven `3.8.4`) to build:
+
+For Ubuntu/MacOS:
+
+    ./mvnw mvn clean install
+
+For Windows:
+
+    ./mvnw.cmd mvn clean install
 
 ### Maven Repositories [![build-status-server](https://img.shields.io/jenkins/build?jobUrl=https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-m2/&label=publish)](https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-m2/)
 
