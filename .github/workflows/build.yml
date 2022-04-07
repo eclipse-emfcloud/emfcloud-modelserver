@@ -22,8 +22,13 @@ jobs:
         with:
           java-version: 11
           
-      - name: Build with Maven
-        run: mvn -B -Pm2 clean verify --file pom.xml
+      - name: Build with Maven on Windows
+        if: matrix.os == 'windows-2019'
+        run: ./mvnw.cmd -B -Pm2 clean verify --file pom.xml
+      
+      - name: Build with Maven on Mac
+        if: matrix.os == 'macos-11'
+        run: ./mvnw -B -Pm2 clean verify --file pom.xml
 
   build-p2:
     strategy:
@@ -44,5 +49,10 @@ jobs:
         with:
           java-version: 11
           
-      - name: Build with Maven
-        run: mvn -B -Pp2 clean verify --file pom.xml
+      - name: Build with Maven on Windows
+        if: matrix.os == 'windows-2019'
+        run: ./mvnw.cmd -B -Pp2 clean verify --file pom.xml
+      
+      - name: Build with Maven on Mac
+        if: matrix.os == 'macos-11'
+        run: ./mvnw -B -Pp2 clean verify --file pom.xml
