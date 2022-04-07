@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,12 +14,21 @@ import java.util.Optional;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 
-public class XmiToEObjectSubscriptionListener extends TypedSubscriptionListener<EObject> {
+/**
+ * <p>
+ * An {@link EObject} subscription listener using the {@link ModelServerPathParametersV1#FORMAT_XMI xmi} format.
+ * </p>
+ * <p>
+ * For API v2 or later, use the {@link EObjectSubscriptionListener} class with the {@link XmiCodec}.
+ * </p>
+ */
+public class XmiToEObjectSubscriptionListener extends EObjectSubscriptionListener {
    public XmiToEObjectSubscriptionListener() {
-      super(XmiToEObjectSubscriptionListener::decode);
+      super(new XmiCodec());
    }
 
    @Override
@@ -32,6 +41,10 @@ public class XmiToEObjectSubscriptionListener extends TypedSubscriptionListener<
 
    public void onIncrementalUpdate(final CCommandExecutionResult command) {}
 
+   /**
+    * @deprecated Since the 0.8 release, this method is no longer used.
+    */
+   @Deprecated
    public static Optional<EObject> decode(final String xmiString) {
       try {
          return new XmiCodec().decode(xmiString);

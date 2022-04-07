@@ -10,6 +10,8 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.di;
 
+import static org.eclipse.emfcloud.modelserver.common.APIVersion.API_V2;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -75,12 +77,12 @@ public final class MultiBindingDefaults {
 
    public static final Map<APIVersionRange, Class<? extends Function<? super URI, Optional<URI>>>> DEFAULT_MODEL_URI_RESOLVERS = Map
       .of(
-         APIVersion.ZERO.range(APIVersion.of(2)), DefaultModelURIConverter.APIV1Resolver.class,
-         APIVersion.of(2).range(), DefaultModelURIConverter.APIV2Resolver.class);
+         APIVersion.ZERO.range(API_V2), DefaultModelURIConverter.APIV1Resolver.class,
+         API_V2.range(), DefaultModelURIConverter.APIV2Resolver.class);
 
    public static final Map<APIVersionRange, Class<? extends Function<? super URI, URI>>> DEFAULT_MODEL_URI_DERESOLVERS = Map
       .of(
-         APIVersion.ZERO.range(APIVersion.of(2)), DefaultModelURIConverter.APIV1Deresolver.class,
-         APIVersion.of(2).range(), DefaultModelURIConverter.APIV2Deresolver.class);
+         APIVersion.ZERO.range(API_V2), DefaultModelURIConverter.APIV1Deresolver.class,
+         API_V2.range(), DefaultModelURIConverter.APIV2Deresolver.class);
 
 }

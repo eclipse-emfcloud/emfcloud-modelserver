@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="jsonpatch" nsURI="http://www.eclipse.org/emfcloud/modelserver/jsonpatch"
+    nsPrefix="patch">
+  <eClassifiers xsi:type="ecore:EClass" name="JsonPatch">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="patch" lowerBound="1" upperBound="-1"
+        eType="#//Operation" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Operation" abstract="true">
+    <eOperations name="getOp" lowerBound="1" eType="#//OpKind">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedVisibility" value="true"/>
+        <details key="documentation" value="Overridden in subclasses to provide the unmodifiable op kind."/>
+      </eAnnotations>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" lowerBound="1" eType="#//OpKind"
+        changeable="false" volatile="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="path" lowerBound="1" eType="#//Path"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="OpKind">
+    <eLiterals name="none"/>
+    <eLiterals name="add" value="1"/>
+    <eLiterals name="remove" value="2"/>
+    <eLiterals name="replace" value="3"/>
+    <eLiterals name="move" value="4"/>
+    <eLiterals name="copy" value="5"/>
+    <eLiterals name="test" value="6"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Path" instanceClassName="java.lang.String"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Add" eSuperTypes="#//Operation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="#//Value"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Remove" eSuperTypes="#//Operation"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Replace" eSuperTypes="#//Operation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="#//Value"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Move" eSuperTypes="#//Operation">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="from" lowerBound="1" eType="#//Path"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Copy" eSuperTypes="#//Operation">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="from" lowerBound="1" eType="#//Path"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Test" eSuperTypes="#//Operation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="#//Value"
+        containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Value" abstract="true">
+    <eOperations name="stringValue" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanValue" eSuperTypes="#//Value">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StringValue" eSuperTypes="#//Value">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NumberValue" eSuperTypes="#//Value">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ObjectValue" eSuperTypes="#//Value">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" lowerBound="1" eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"/>
+  </eClassifiers>
+</ecore:EPackage>

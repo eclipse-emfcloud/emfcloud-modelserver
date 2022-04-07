@@ -10,28 +10,41 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.example.client;
 
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_JSON;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_JSON_V2;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_XMI;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.common.util.WrappedException;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.client.Model;
 import org.eclipse.emfcloud.modelserver.client.ModelServerClient;
 import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.CoffeePackage;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
+import org.eclipse.emfcloud.modelserver.common.APIVersion;
 import org.eclipse.emfcloud.modelserver.edit.command.SetCommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.util.CommandUtil;
 import org.eclipse.emfcloud.modelserver.example.CoffeePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.example.UpdateTaskNameCommandContribution;
+import org.eclipse.emfcloud.modelserver.example.util.PrintUtil;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 
 @SuppressWarnings("all")
@@ -48,14 +61,22 @@ public final class ExampleModelServerClient {
    private static final String CMD_GET_ALL = "getAll";
    private static final String CMD_UNSUBSCRIBE = "unsubscribe";
    private static final String CMD_SUBSCRIBE = "subscribe";
+   private static final String CMD_ECORE = "ecore";
 
    private static final String COFFEE_ECORE = "Coffee.ecore";
    private static final String SUPER_BREWER_3000_COFFEE = "SuperBrewer3000.coffee";
    private static final String SUPER_BREWER_3000_JSON = "SuperBrewer3000.json";
 
+   private static final String ARG_AS = "as";
+
+   private static final String ARG_EOBJECT = "eobject";
+
+   private static final APIVersion API_VERSION = APIVersion.API_V2;
+
    private ExampleModelServerClient() {}
 
    public static void main(final String[] args) {
+
       try (
          ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v2/",
             new CoffeePackageConfiguration());
@@ -108,6 +129,8 @@ public final class ExampleModelServerClient {
                   handleRedo(client, commandAndArgs);
                } else if (command.contentEquals(CMD_PING)) {
                   handlePing(client);
+               } else if (command.contentEquals(CMD_ECORE)) {
+                  handleRegisterEcore(commandAndArgs);
                } else if (command.contentEquals(CMD_HELP)) {
                   printHelp();
                } else {
@@ -125,15 +148,55 @@ public final class ExampleModelServerClient {
 
    }
 
+   private static void handleRegisterEcore(final String[] commandAndArgs)
+      throws InterruptedException, ExecutionException, TimeoutException {
+
+      Future<EPackage> registeredPackage = CompletableFuture.supplyAsync(() -> {
+         EPackage result = null;
+         ResourceSet rset = new ResourceSetImpl();
+         EcorePackage.eINSTANCE.getEAnnotation();
+         rset.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
+
+         File file = new File(commandAndArgs[1]);
+         if (!file.exists()) {
+            System.err.println("< No such Ecore model: " + file);
+         } else {
+            try {
+               Resource res = rset.getResource(URI.createFileURI(file.getAbsolutePath()), true);
+               if (res.getContents().isEmpty() || !(res.getContents().get(0) instanceof EPackage)) {
+                  System.err.println("< No EPackage found in model: " + file);
+               } else {
+                  result = (EPackage) res.getContents().get(0);
+                  if (!EPackage.Registry.INSTANCE.containsKey(result.getNsURI())) {
+                     EPackage.Registry.INSTANCE.put(result.getNsURI(), result);
+                  } else {
+                     result = EPackage.Registry.INSTANCE.getEPackage(result.getNsURI());
+                  }
+               }
+            } catch (WrappedException e) {
+               System.err.printf("< Failed to load Ecore model \"%s\": %s%n", file, e.getMessage());
+            }
+         }
+
+         return result;
+
+      });
+
+      EPackage ePackage = registeredPackage.get();
+      if (ePackage != null) {
+         System.out.printf("< %s%n", ePackage.getNsURI());
+      } // Otherwise we already printed an error
+   }
+
    private static void handleRedo(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException {
-      Response<Boolean> response = client.redo(commandAndArgs[1]).join();
+      Response<String> response = client.redo(commandAndArgs[1]).join();
       System.out.println("< " + toString(response));
    }
 
    private static void handleUndo(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException {
-      Response<Boolean> response = client.undo(commandAndArgs[1]).join();
+      Response<String> response = client.undo(commandAndArgs[1]).join();
       System.out.println("< " + toString(response));
    }
 
@@ -143,22 +206,29 @@ public final class ExampleModelServerClient {
          CommandUtil.createProxy(CoffeePackage.Literals.WORKFLOW, "SuperBrewer3000.coffee#//@workflows.0"),
          EcorePackage.Literals.ENAMED_ELEMENT__NAME,
          commandAndArgs[1]);
-      Response<Boolean> response = client.edit(SUPER_BREWER_3000_COFFEE, command, FORMAT_JSON_V2).join();
+      Response<String> response = client.edit(SUPER_BREWER_3000_COFFEE, command, FORMAT_JSON_V2).join();
       System.out.println("< " + toString(response));
    }
 
    private static void handleUpdateTasks(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException {
       CCommand command = UpdateTaskNameCommandContribution.clientCommand(commandAndArgs[1]);
-      Response<Boolean> response = client.edit(SUPER_BREWER_3000_JSON, command, FORMAT_JSON_V2).join();
+      Response<String> response = client.edit(SUPER_BREWER_3000_JSON, command, FORMAT_JSON_V2).join();
       System.out.println("< " + toString(response));
    }
 
    private static void handleGet(final ModelServerClient client, final String[] commandAndArgs)
       throws InterruptedException, ExecutionException, TimeoutException, IOException {
-      Response<String> response = client.get(commandAndArgs[1]).join();
-      System.out.println("< " + commandAndArgs[1]);
-      System.out.println(Json.parse(response.body()).toPrettyString());
+      if (isAsEObject(commandAndArgs)) {
+         String format = APIVersion.API_V2.range().includes(API_VERSION) ? FORMAT_JSON_V2 : FORMAT_JSON;
+         Response<EObject> response = client.get(commandAndArgs[1], format).join();
+         System.out.println("< " + commandAndArgs[1]);
+         System.out.println(PrintUtil.toPrettyString(response.body()));
+      } else {
+         Response<String> response = client.get(commandAndArgs[1]).join();
+         System.out.println("< " + commandAndArgs[1]);
+         System.out.println(Json.parse(response.body()).toPrettyString());
+      }
    }
 
    private static void handleGetAll(final ModelServerClient client, final String[] commandAndArgs)
@@ -185,11 +255,21 @@ public final class ExampleModelServerClient {
       throws InterruptedException {
       String modelUri = command.length > 1 ? command[1] : "";
       String format = command.length > 2 ? command[2] : FORMAT_JSON_V2;
+
       SubscriptionListener listener = format.contentEquals(FORMAT_XMI)
          ? new ExampleXMISubscriptionListener(modelUri)
-         : new ExampleJsonStringSubscriptionListener(modelUri);
+         : isAsEObject(command)
+            ? new ExampleEObjectSubscriptionListener(modelUri, API_VERSION)
+            : new ExampleJsonStringSubscriptionListener(modelUri);
+
       client.subscribe(modelUri, listener, format);
       System.out.println("< OK");
+   }
+
+   private static boolean isAsEObject(final String[] command) {
+      return command.length >= 2
+         && ARG_AS.equalsIgnoreCase(command[command.length - 2])
+         && ARG_EOBJECT.equalsIgnoreCase(command[command.length - 1]);
    }
 
    private static void handleUnsubscribe(final ModelServerClient client, final String[] command)
@@ -206,13 +286,14 @@ public final class ExampleModelServerClient {
 
    private static void printHelp() {
       System.out.println("Supported commands:");
-      System.out.println("- " + CMD_SUBSCRIBE + " <modelUri> <format>");
+      System.out.println("- " + CMD_SUBSCRIBE + " <modelUri> <format> [as eobject]");
       System.out.println("- " + CMD_UNSUBSCRIBE + " <modelUri>");
-      System.out.println("- " + CMD_GET + " <modelUri>");
+      System.out.println("- " + CMD_GET + " <modelUri> [as eobject]");
       System.out.println("- " + CMD_GET_ALL + " <format>");
       System.out.println("- " + CMD_UPDATE_TASKS + " <name> // adapts all task names in SuperBrewer3000.json (custom)");
       System.out.println("- " + CMD_UNDO + " <modelUri>");
       System.out.println("- " + CMD_REDO + " <modelUri>");
+      System.out.println("- " + CMD_ECORE + " <file> // load and register an Ecore model used on the server");
       System.out.println("- " + CMD_PING);
       System.out.println("- " + CMD_HELP);
       System.out.println("- " + CMD_QUIT);
@@ -227,8 +308,8 @@ public final class ExampleModelServerClient {
       System.out.println("- 7: Rename first workflow to 'Simple Renamed Workflow' in SuperBrewer3000.coffee");
    }
 
-   private static String toString(final Response<Boolean> response) {
-      return response.getStatusCode() + ": " + response.body() + " " + response.getMessage();
+   private static String toString(final Response<?> response) {
+      return response.getStatusCode() + ": " + String.valueOf(response.body()) + " " + response.getMessage();
    }
 
 }

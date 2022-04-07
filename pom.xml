@@ -164,7 +164,7 @@
 				<configuration>
 					<configLocation>emfcloud-checkstyle-8.44.xml</configLocation>
 					<consoleOutput>true</consoleOutput>
-
+			        <suppressionsLocation>.settings/checkstyle-suppressions.xml</suppressionsLocation>
 				</configuration>
 				<executions>
 					<execution>

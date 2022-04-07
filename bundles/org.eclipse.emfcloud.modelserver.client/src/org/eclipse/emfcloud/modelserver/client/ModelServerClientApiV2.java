@@ -65,9 +65,9 @@ public interface ModelServerClientApiV2<A> {
 
    CompletableFuture<Response<Boolean>> ping();
 
-   CompletableFuture<Response<Boolean>> edit(String modelUri, CCommand command, String format);
+   CompletableFuture<Response<String>> edit(String modelUri, CCommand command, String format);
 
-   CompletableFuture<Response<Boolean>> edit(String modelUri, ArrayNode jsonPatch, String format);
+   CompletableFuture<Response<String>> edit(String modelUri, ArrayNode jsonPatch, String format);
 
    void subscribe(String modelUri, SubscriptionListener subscriptionListener);
 
@@ -90,12 +90,8 @@ public interface ModelServerClientApiV2<A> {
 
    boolean unsubscribe(String modelUri);
 
-   EditingContext edit();
+   CompletableFuture<Response<String>> undo(String modelUri);
 
-   boolean close(EditingContext editingContext);
-
-   CompletableFuture<Response<Boolean>> undo(String modelUri);
-
-   CompletableFuture<Response<Boolean>> redo(String modelUri);
+   CompletableFuture<Response<String>> redo(String modelUri);
 
 }

@@ -22,4 +22,12 @@
             genModel="resources/Command.genmodel"/>
    </extension>
 
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated JsonPatch -->
+      <package
+            uri="http://www.eclipse.org/emfcloud/modelserver/jsonpatch"
+            class="org.eclipse.emfcloud.modelserver.jsonpatch.JsonPatchPackage"
+            genModel="resources/JsonPatch.genmodel"/>
+   </extension>
+
 </plugin>

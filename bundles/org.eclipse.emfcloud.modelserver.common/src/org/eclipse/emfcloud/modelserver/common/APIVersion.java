@@ -11,13 +11,24 @@
 package org.eclipse.emfcloud.modelserver.common;
 
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A version of the Model Server API.
  */
 public final class APIVersion implements Comparable<APIVersion> {
 
+   private static final Pattern API_PATTERN = Pattern.compile("^/?api/v(\\d+)\\b");
+
+   /** The indeterminate API version (<tt>0.0.0</tt>). */
    public static final APIVersion ZERO = new APIVersion(0, 0, 0);
+
+   /** The <em>API v1</em> version (<tt>1.0.0</tt>). */
+   public static final APIVersion API_V1 = APIVersion.of(1);
+
+   /** The <em>API v2</em> version (<tt>2.0.0</tt>). */
+   public static final APIVersion API_V2 = APIVersion.of(2);
 
    private final int major;
 
@@ -147,6 +158,17 @@ public final class APIVersion implements Comparable<APIVersion> {
 
    public static APIVersion of(final int major, final int minor, final int patch) {
       return new APIVersion(major, minor, patch);
+   }
+
+   /**
+    * Extract the API version from a request URI.
+    *
+    * @param requestURI a request URI, which usually has a form like {@code "/api/v2/..."}
+    * @return the API version, or {@link #ZERO} if the URI is not a versioned API request URI
+    */
+   public static APIVersion forRequestURI(final String requestURI) {
+      Matcher m = API_PATTERN.matcher(requestURI);
+      return m.find() ? APIVersion.of(Integer.parseInt(m.group(1))) : ZERO;
    }
 
 }
