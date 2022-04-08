@@ -10,10 +10,12 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.tests.util;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
 
 /**
@@ -45,4 +47,41 @@ public final class MoreMatchers {
       };
    }
 
+   public static <T> Matcher<Optional<T>> presentValueThat(final Matcher<? super T> valueMatcher) {
+      return new TypeSafeDiagnosingMatcher<>() {
+         @Override
+         public void describeTo(final Description description) {
+            description.appendText("present Optional that ");
+            description.appendDescriptionOf(valueMatcher);
+         }
+
+         @Override
+         protected boolean matchesSafely(final Optional<T> item, final Description mismatchDescription) {
+            if (item.isEmpty()) {
+               mismatchDescription.appendText("empty Optional");
+               return false;
+            }
+            if (!valueMatcher.matches(item.get())) {
+               mismatchDescription.appendText("value that ");
+               valueMatcher.describeMismatch(item.get(), mismatchDescription);
+               return false;
+            }
+            return true;
+         }
+      };
+   }
+
+   public static <T> Matcher<Optional<T>> emptyOptional() {
+      return new TypeSafeMatcher<>() {
+         @Override
+         public void describeTo(final Description description) {
+            description.appendText("empty optional");
+         }
+
+         @Override
+         protected boolean matchesSafely(final Optional<T> item) {
+            return item.isEmpty();
+         }
+      };
+   }
 }

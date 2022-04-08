@@ -40,6 +40,10 @@ public final class ContextRequest {
       return getParam(context.queryParamMap(), paramKey);
    }
 
+   public static Optional<String> getParam(final WsContext context, final String paramKey) {
+      return getParam(context.queryParamMap(), paramKey);
+   }
+
    public static Optional<String> getParam(final Map<String, List<String>> queryParams, final String paramKey) {
       return queryParams.containsKey(paramKey)
          ? Optional.ofNullable(queryParams.get(paramKey).get(0))

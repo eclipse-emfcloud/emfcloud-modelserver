@@ -11,6 +11,7 @@
 package org.eclipse.emfcloud.modelserver.emf.util;
 
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -30,6 +31,7 @@ import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.patch.AbstractJsonPatchHelper;
+import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
 import org.eclipse.emfcloud.modelserver.common.patch.LazyCompoundCommand;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerEditingDomain;
@@ -154,6 +156,30 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
       while (tx.isActive()) {
          Transaction active = domain.getActiveTransaction();
          active.rollback();
+      }
+   }
+
+   /**
+    * Obtain a {@code path} as a "custom" URI-fragment-based path. The {@code path} may be a JSON Pointer
+    * or it may already be a URI-fragment-based path.
+    *
+    * @param modelURI    the contextual model URI
+    * @param resourceSet the contextual resource set
+    * @param path        the path to convert to a URI fragment path
+    * @return the URI fragment path, or empty if the {@code path} does not resolve to a value in the model
+    */
+   public Optional<String> toURIFragmentPath(final String modelURI, final ResourceSet resourceSet, final String path) {
+      try {
+         SettingValue setting = getSetting(modelURI, resourceSet, path);
+         EObject owner = setting.getEObject();
+         String featureName = setting.getFeature().getName();
+         String fragment = owner.eResource().getURIFragment(owner);
+         String featurePath = setting.getIndex().map(index -> String.format("%s/%s", featureName, index))
+            .orElse(featureName);
+         return Optional.of(String.format("#%s/%s", fragment, featurePath));
+      } catch (JsonPatchException e) {
+         // Unresolved path
+         return Optional.empty();
       }
    }
 

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -37,6 +37,7 @@ import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
 import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
+import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.eclipse.jetty.websocket.api.Session;
 import org.hamcrest.CustomTypeSafeMatcher;
@@ -80,6 +81,8 @@ public class DefaultSessionControllerTest {
    private CodecsManager codecs;
    @Mock
    private ModelValidator modelValidator;
+   @Mock
+   private JsonPatchHelper jsonPatchHelper;
 
    private DefaultSessionController sessionController;
 
@@ -262,6 +265,7 @@ public class DefaultSessionControllerTest {
    @Before
    public void createSessionController() {
       sessionController = Guice.createInjector(new AbstractModule() {
+
          @Override
          protected void configure() {
             bind(ServerConfiguration.class).toInstance(serverConfig);
@@ -270,6 +274,7 @@ public class DefaultSessionControllerTest {
             bind(ModelResourceManager.class).toInstance(modelResourceManager);
             bind(CodecsManager.class).toInstance(codecs);
             bind(ModelValidator.class).toInstance(modelValidator);
+            bind(JsonPatchHelper.class).toInstance(jsonPatchHelper);
          }
       }).getInstance(DefaultSessionController.class);
    }

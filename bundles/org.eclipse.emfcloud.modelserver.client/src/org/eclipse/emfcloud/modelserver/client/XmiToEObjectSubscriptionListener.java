@@ -39,6 +39,7 @@ public class XmiToEObjectSubscriptionListener extends EObjectSubscriptionListene
       onIncrementalUpdate((CCommandExecutionResult) command);
    }
 
+   @Override
    public void onIncrementalUpdate(final CCommandExecutionResult command) {}
 
    /**
