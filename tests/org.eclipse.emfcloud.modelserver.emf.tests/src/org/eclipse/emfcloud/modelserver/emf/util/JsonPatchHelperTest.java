@@ -32,6 +32,7 @@ import org.eclipse.emfcloud.modelserver.emf.di.MultiBindingDefaults;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -39,10 +40,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 
+import io.javalin.websocket.WsContext;
+
 @RunWith(MockitoJUnitRunner.class)
 public class JsonPatchHelperTest {
 
-   private String modelURI;
+   private final URI workspaceURI;
+   private final URI modelURI;
 
    private ResourceSet resourceSet;
 
@@ -52,25 +56,34 @@ public class JsonPatchHelperTest {
    @Mock
    private ModelResourceManager modelResourceManager;
 
-   @Mock
+   @Mock(answer = Answers.CALLS_REAL_METHODS)
    private ModelURIConverter modelURIConverter;
+
+   @Mock
+   private WsContext session;
 
    private JsonPatchHelper patchHelper;
 
    public JsonPatchHelperTest() {
       super();
+
+      File file = new File("resources/Coffee.ecore");
+      URI uri = URI.createFileURI(file.getAbsolutePath());
+      modelURI = uri;
+      workspaceURI = modelURI.trimSegments(1).appendSegment(""); // Ensure trailing separator
    }
 
    @Test
    public void toURIFragmentPath() {
-      Optional<String> path = patchHelper.toURIFragmentPath(modelURI, resourceSet,
+      Optional<String> path = patchHelper.toURIFragmentPath(session,
          "/eClassifiers/2/eStructuralFeatures/3/name");
-      assertThat(path, presentValueThat(is("#//ControlUnit/display/name")));
+      // The Object URI part must include the workspace-relative resource URI
+      assertThat(path, presentValueThat(is("Coffee.ecore#//ControlUnit/display/name")));
    }
 
    @Test
    public void toURIFragmentPath_unresolved() {
-      Optional<String> path = patchHelper.toURIFragmentPath(modelURI, resourceSet,
+      Optional<String> path = patchHelper.toURIFragmentPath(session,
          "/eClassifiers/2/eBogusFeatures/3/name");
       assertThat(path, emptyOptional());
    }
@@ -83,18 +96,18 @@ public class JsonPatchHelperTest {
    public void createModelFixture() {
       resourceSet = new ResourceSetImpl();
       resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl());
-
-      File file = new File("resources/Coffee.ecore");
-      URI uri = URI.createFileURI(file.getAbsolutePath());
-      modelURI = uri.toString();
-      resourceSet.getResource(uri, true);
+      resourceSet.getResource(modelURI, true);
    }
 
    @Before
    public void configureMocks() {
-      when(modelURIConverter.normalize(ArgumentMatchers.any(URI.class))).then(invocation -> invocation.getArgument(0));
+      when(modelURIConverter.normalize(modelURI)).thenReturn(modelURI);
+      when(modelURIConverter.resolveModelURI(session)).thenReturn(Optional.of(modelURI));
+      when(modelURIConverter.deresolveModelURI(ArgumentMatchers.eq(session), ArgumentMatchers.any(URI.class))).then(
+         invocation -> invocation.<URI> getArgument(1).deresolve(workspaceURI));
       when(modelResourceManager.loadResource(ArgumentMatchers.anyString())).then(
          invocation -> Optional.ofNullable(resourceSet.getResource(URI.createURI(invocation.getArgument(0)), true)));
+      when(modelResourceManager.getResourceSet(modelURI.toString())).thenReturn(resourceSet);
    }
 
    @Before

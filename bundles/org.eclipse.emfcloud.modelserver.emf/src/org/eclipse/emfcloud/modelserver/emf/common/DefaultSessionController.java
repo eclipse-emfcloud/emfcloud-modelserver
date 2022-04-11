@@ -37,8 +37,6 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
@@ -50,7 +48,6 @@ import org.jetbrains.annotations.Nullable;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
@@ -260,12 +257,9 @@ public class DefaultSessionController implements SessionController {
    }
 
    protected void broadcastIncrementalUpdatesV2(final String modeluri, final JsonNode jsonPatch) {
-      final Supplier<JsonNode> patchWithURIFragments = Suppliers
-         .memoize(() -> rewritePathsAsURIFragments(modeluri, jsonPatch));
-
       getOpenSessionsV2(modeluri).forEach(session -> {
          if (isPathsAsURIFragments(session)) {
-            session.send(JsonResponse.incrementalUpdate(patchWithURIFragments.get()));
+            session.send(JsonResponse.incrementalUpdate(rewritePathsAsURIFragments(session, jsonPatch)));
          } else {
             session.send(JsonResponse.incrementalUpdate(jsonPatch));
          }
@@ -276,13 +270,13 @@ public class DefaultSessionController implements SessionController {
       return ContextRequest.getParam(session, PATHS).filter(PATHS_URI_FRAGMENTS::equalsIgnoreCase).isPresent();
    }
 
-   protected JsonNode rewritePathsAsURIFragments(final String modeluri, final JsonNode jsonPatch) {
+   protected JsonNode rewritePathsAsURIFragments(final WsContext session, final JsonNode jsonPatch) {
       JsonNode result = jsonPatch.deepCopy();
 
       for (JsonNode next : jsonPatch.isArray() ? result : Collections.singleton(result)) {
          if (next.isObject() && next.has("op") && next.has("path")) {
             ObjectNode operation = (ObjectNode) next;
-            resolvePathAsURIFragment(modeluri, operation.get("path").asText())
+            resolvePathAsURIFragment(session, operation.get("path").asText())
                .ifPresent(path -> operation.set("path", Json.text(path)));
          }
       }
@@ -290,10 +284,8 @@ public class DefaultSessionController implements SessionController {
       return result;
    }
 
-   protected Optional<String> resolvePathAsURIFragment(final String modeluri, final String jsonPointer) {
-      Optional<ResourceSet> resourceSet = modelRepository.getModel(modeluri).map(EObject::eResource)
-         .map(Resource::getResourceSet);
-      return resourceSet.flatMap(rset -> patchHelper.toURIFragmentPath(modeluri, rset, jsonPointer));
+   protected Optional<String> resolvePathAsURIFragment(final WsContext session, final String jsonPointer) {
+      return patchHelper.toURIFragmentPath(session, jsonPointer);
    }
 
    private void broadcastIncrementalUpdate(final WsContext session, final Map<String, JsonNode> updates) {

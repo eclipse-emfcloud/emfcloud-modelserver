@@ -12,6 +12,7 @@ package org.eclipse.emfcloud.modelserver.emf.util;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 import javax.inject.Inject;
 
@@ -22,6 +23,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.change.ChangeDescription;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.transaction.RollbackException;
 import org.eclipse.emf.transaction.Transaction;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
@@ -41,6 +43,9 @@ import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jsonpatch.diff.JsonDiff;
+
+import io.javalin.http.Context;
+import io.javalin.websocket.WsContext;
 
 /**
  * A Helper to create EMF Commands from a Json Patch.
@@ -163,24 +168,59 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
     * Obtain a {@code path} as a "custom" URI-fragment-based path. The {@code path} may be a JSON Pointer
     * or it may already be a URI-fragment-based path.
     *
-    * @param modelURI    the contextual model URI
-    * @param resourceSet the contextual resource set
-    * @param path        the path to convert to a URI fragment path
+    * @param context the request context
+    * @param path    the path to convert to a URI fragment path
     * @return the URI fragment path, or empty if the {@code path} does not resolve to a value in the model
     */
-   public Optional<String> toURIFragmentPath(final String modelURI, final ResourceSet resourceSet, final String path) {
+   public Optional<String> toURIFragmentPath(final Context context, final String path) {
+      return modelURIConverter.resolveModelURI(context).map(
+         modeluri -> toURIFragmentPath(modeluri.toString(), path, modelURIConverter.deresolver(context)));
+   }
+
+   /**
+    * Obtain a {@code path} as a "custom" URI-fragment-based path. The {@code path} may be a JSON Pointer
+    * or it may already be a URI-fragment-based path.
+    *
+    * @param context the subscription session context
+    * @param path    the path to convert to a URI fragment path
+    * @return the URI fragment path, or empty if the {@code path} does not resolve to a value in the model
+    */
+   public Optional<String> toURIFragmentPath(final WsContext context, final String path) {
+      return modelURIConverter.resolveModelURI(context).map(
+         modeluri -> toURIFragmentPath(modeluri.toString(), path, modelURIConverter.deresolver(context)));
+   }
+
+   /**
+    * Obtain a {@code path} as a "custom" URI-fragment-based path. The {@code path} may be a JSON Pointer
+    * or it may already be a URI-fragment-based path.
+    *
+    * @param modelURI           the contextual model URI
+    * @param path               the path to convert to a URI fragment path
+    * @param deresolveObjectURI a function to deresolve the object URI computed in the resulting path
+    */
+   protected String toURIFragmentPath(final String modelURI, final String path,
+      final UnaryOperator<String> deresolveObjectURI) {
+      String result = null;
+
       try {
+         ResourceSet resourceSet = modelManager.getResourceSet(modelURI);
          SettingValue setting = getSetting(modelURI, resourceSet, path);
          EObject owner = setting.getEObject();
-         String featureName = setting.getFeature().getName();
-         String fragment = owner.eResource().getURIFragment(owner);
-         String featurePath = setting.getIndex().map(index -> String.format("%s/%s", featureName, index))
-            .orElse(featureName);
-         return Optional.of(String.format("#%s/%s", fragment, featurePath));
+         URI uri = EcoreUtil.getURI(owner);
+         if (uri == null) {
+            LOG.warn("Target of patch operation is not persisted in the model: " + owner);
+         } else {
+            String featureName = setting.getFeature().getName();
+            String relativeURI = deresolveObjectURI.apply(uri.toString());
+            String featurePath = setting.getIndex().map(index -> String.format("%s/%s", featureName, index))
+               .orElse(featureName);
+            result = String.format("%s/%s", relativeURI, featurePath);
+         }
       } catch (JsonPatchException e) {
-         // Unresolved path
-         return Optional.empty();
+         LOG.error("Unresolved path in patch operation.", e);
       }
+
+      return result;
    }
 
 }
