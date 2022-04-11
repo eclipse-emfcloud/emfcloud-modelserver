@@ -41,9 +41,11 @@ import org.eclipse.emfcloud.modelserver.client.ModelServerNotification;
 import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
+import org.eclipse.emfcloud.modelserver.client.SubscriptionOptions;
 import org.eclipse.emfcloud.modelserver.common.APIVersion;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathsV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
@@ -658,6 +660,40 @@ public class ModelServerClientDelegate implements AutoCloseable {
                   .addQueryParameter(ModelServerPathParametersV1.TIMEOUT, String.valueOf(timeout))
                   .build()
                   .toString()))
+         .build();
+
+      doSubscribe(modelUri, subscriptionListener, request);
+   }
+
+   public void subscribe(final String modelUri, final SubscriptionListener subscriptionListener,
+      final SubscriptionOptions options) {
+
+      if (options == null) {
+         subscribe(modelUri, subscriptionListener);
+         return;
+      }
+
+      HttpUrl.Builder url = createHttpUrlBuilder(makeUrl(ModelServerPathsV1.SUBSCRIPTION))
+         .addQueryParameter(ModelServerPathParametersV1.MODEL_URI, modelUri);
+
+      if (options.isLiveValidation()) {
+         url.addQueryParameter(ModelServerPathParametersV2.LIVE_VALIDATION, "true");
+      }
+      if (options.getTimeout() > 0L) {
+         url.addQueryParameter(ModelServerPathParametersV2.TIMEOUT, String.valueOf(options.getTimeout()));
+      }
+      if (options.getFormat() != null) {
+         url.addQueryParameter(ModelServerPathParametersV2.FORMAT, checkedFormat(options.getFormat()));
+      }
+      if (options.getPathScheme() != null) {
+         url.addQueryParameter(ModelServerPathParametersV2.PATHS, options.getPathScheme());
+      }
+      if (options.hasAdditionalOptions()) {
+         options.getAdditionalOptions().forEach(url::addQueryParameter);
+      }
+
+      Request request = new Request.Builder()
+         .url(makeWsUrl(url.build().toString()))
          .build();
 
       doSubscribe(modelUri, subscriptionListener, request);

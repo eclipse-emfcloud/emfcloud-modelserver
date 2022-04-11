@@ -13,6 +13,7 @@ package org.eclipse.emfcloud.modelserver.example.client;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_JSON;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_JSON_V2;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.FORMAT_XMI;
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.PATHS_URI_FRAGMENTS;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +38,7 @@ import org.eclipse.emfcloud.modelserver.client.Model;
 import org.eclipse.emfcloud.modelserver.client.ModelServerClient;
 import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
+import org.eclipse.emfcloud.modelserver.client.SubscriptionOptions;
 import org.eclipse.emfcloud.modelserver.coffee.model.coffee.CoffeePackage;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.APIVersion;
@@ -68,8 +70,10 @@ public final class ExampleModelServerClient {
    private static final String SUPER_BREWER_3000_JSON = "SuperBrewer3000.json";
 
    private static final String ARG_AS = "as";
-
    private static final String ARG_EOBJECT = "eobject";
+
+   private static final String ARG_WITH = "with";
+   private static final String ARG_URIS = "uris";
 
    private static final APIVersion API_VERSION = APIVersion.API_V2;
 
@@ -253,6 +257,7 @@ public final class ExampleModelServerClient {
 
    private static void handleSubscribe(final ModelServerClient client, final String[] command)
       throws InterruptedException {
+
       String modelUri = command.length > 1 ? command[1] : "";
       String format = command.length > 2 ? command[2] : FORMAT_JSON_V2;
 
@@ -262,14 +267,36 @@ public final class ExampleModelServerClient {
             ? new ExampleEObjectSubscriptionListener(modelUri, API_VERSION)
             : new ExampleJsonStringSubscriptionListener(modelUri);
 
-      client.subscribe(modelUri, listener, format);
+      SubscriptionOptions.Builder options = SubscriptionOptions.builder()
+         .withFormat(format);
+      if (isWithURIs(command)) {
+         options = options.withPathScheme(PATHS_URI_FRAGMENTS);
+      }
+
+      client.subscribe(modelUri, listener, options.build());
       System.out.println("< OK");
    }
 
    private static boolean isAsEObject(final String[] command) {
-      return command.length >= 2
-         && ARG_AS.equalsIgnoreCase(command[command.length - 2])
-         && ARG_EOBJECT.equalsIgnoreCase(command[command.length - 1]);
+      int last = command.length - 1;
+
+      for (int i = 0; i < last; i++) {
+         if (ARG_AS.equalsIgnoreCase(command[i]) && ARG_EOBJECT.equalsIgnoreCase(command[i + 1])) {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   private static boolean isWithURIs(final String[] command) {
+      int last = command.length - 1;
+
+      for (int i = 0; i < last; i++) {
+         if (ARG_WITH.equalsIgnoreCase(command[i]) && ARG_URIS.equalsIgnoreCase(command[i + 1])) {
+            return true;
+         }
+      }
+      return false;
    }
 
    private static void handleUnsubscribe(final ModelServerClient client, final String[] command)
@@ -286,7 +313,7 @@ public final class ExampleModelServerClient {
 
    private static void printHelp() {
       System.out.println("Supported commands:");
-      System.out.println("- " + CMD_SUBSCRIBE + " <modelUri> <format> [as eobject]");
+      System.out.println("- " + CMD_SUBSCRIBE + " <modelUri> <format> [as eobject] [with uris]");
       System.out.println("- " + CMD_UNSUBSCRIBE + " <modelUri>");
       System.out.println("- " + CMD_GET + " <modelUri> [as eobject]");
       System.out.println("- " + CMD_GET_ALL + " <format>");
