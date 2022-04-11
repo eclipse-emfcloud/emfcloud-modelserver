@@ -36,6 +36,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.edit.command.AddCommand;
 import org.eclipse.emf.edit.command.CommandParameter;
+import org.eclipse.emf.edit.command.DeleteCommand;
 import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.eclipse.emf.edit.domain.AdapterFactoryEditingDomain;
@@ -171,10 +172,10 @@ public abstract class AbstractJsonPatchHelper {
 
       // If neither the index nor the feature are present, we delete an Object
       EObject eObjectToDelete = setting.getEObject();
-      EObject parent = eObjectToDelete.eContainer();
-      EStructuralFeature feature = eObjectToDelete.eContainingFeature();
-      return RemoveCommand.create(getEditingDomain(eObjectToDelete), parent, feature,
-         Collections.singleton(eObjectToDelete));
+
+      Command deleteCommand = DeleteCommand.create(getEditingDomain(eObjectToDelete), eObjectToDelete);
+
+      return deleteCommand;
    }
 
    protected Object getDefaultValue(final EStructuralFeature feature) {
