@@ -46,7 +46,6 @@
 
 	<modules>
 		<module>bundles</module>
-		<module>examples</module>
 	</modules>
 
 	<!-- Properties -->
@@ -582,6 +581,7 @@
 				</property>
 			</activation>
 			<modules>
+				<module>examples</module>
 				<module>releng</module>
 				<module>tests</module>
 			</modules>
