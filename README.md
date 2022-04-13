@@ -396,6 +396,9 @@ public interface ModelServerClientApiV2<A> {
 
    void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format,
       long timeout);
+      
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener, SubscriptionOptions options);
+
 
    boolean send(String modelUri, String message);
 
@@ -407,6 +410,52 @@ public interface ModelServerClientApiV2<A> {
 }
 ```
 
+<details>
+	<summary>v2 Subscription Options API</summary>
+
+```java
+public interface SubscriptionOptions extends Serializable {
+
+   String getFormat();
+
+   boolean isLiveValidation();
+
+   long getTimeout();
+
+   String getPathScheme();
+
+   Map<String, String> getAdditionalOptions();
+
+   default boolean hasAdditionalOptions() {
+      return !getAdditionalOptions().isEmpty();
+   }
+
+   static Builder builder() {
+      return new Impl.Builder();
+   }
+
+   interface Builder {
+
+      Builder withFormat(String format);
+
+      Builder withLiveValidation();
+
+      Builder withLiveValidation(boolean validation);
+
+      Builder withTimeout(final long timeout);
+
+      Builder withTimeout(long timeout, TimeUnit unit);
+
+      Builder withPathScheme(String pathScheme);
+
+      Builder withOption(String key, String value);
+
+      SubscriptionOptions build();
+   }
+
+}
+```
+</details>
 
 ### REST API Example
 
@@ -713,6 +762,21 @@ client.unsubscribe(subscriptionId);
 ```
 
 The kind of message received depends on the operation. For an `update` call (`PATCH` request on the model), the message is the new content of the model (`onFullUpdate`).  For an `edit` call (incremental update applied by a `PATCH` request with an edit command or JSON patch — see above), the message is the result of the command that was executed (`onIncrementalUpdate`). In the case of an API v2 client with `json-v2` message format, the incremental update takes the form of a JSON patch describing the changes performed on the server. The patch can be applied to a local copy of the model to synchronize with the server and is modeled in EMF as a `JsonPatch` object.
+
+Subscriptions support a number of options to tweak their behaviour.
+For example, to customize the idle timeout interval and receive incremental updates in which the `Operation`s in the JSON Patches use EObject fragment URIs in the `path` property instead of standard JSON Pointers:
+
+```java
+ModelServerClient client = new ModelServerClient("http://localhost:8081/api/v2/");
+String subscriptionId = "SuperBrewer3000.json";
+SubscriptionListener listener = /* as above */ ;
+
+client.subscribe(subscriptionId, listener, SubscriptionOptions.builder()
+    .withTimeout(60, TimeUnit.SECONDS)
+    .withPathScheme(ModelServerPathParametersV2.PATHS_URI_FRAGMENTS)
+    .build());
+```
+
 
 ## Contributing
 

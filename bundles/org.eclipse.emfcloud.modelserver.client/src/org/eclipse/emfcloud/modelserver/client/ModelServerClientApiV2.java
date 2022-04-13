@@ -69,22 +69,118 @@ public interface ModelServerClientApiV2<A> {
 
    CompletableFuture<Response<String>> edit(String modelUri, ArrayNode jsonPatch, String format);
 
+   /**
+    * Subscribe to notifications from the server about the given model with default options and
+    * not including live validation results.
+    *
+    * @param modelUri             the URI identifying the model to which to subscribe
+    * @param subscriptionListener the listener to call on subscription events
+    *
+    * @see {@link #subscribe(String, SubscriptionListener, SubscriptionOptions)} for a more generic and flexible
+    *      way to specific subscription options
+    */
    void subscribe(String modelUri, SubscriptionListener subscriptionListener);
 
+   /**
+    * Subscribe to notifications from the server about the given model without live validation results,
+    * in the given message {@code format}.
+    *
+    * @param modelUri             the URI identifying the model to which to subscribe
+    * @param subscriptionListener the listener to call on subscription events
+    * @param format               the format in which to encode the subscription messages
+    *
+    * @see {@link #subscribe(String, SubscriptionListener, SubscriptionOptions)} for a more generic and flexible
+    *      way to specific subscription options
+    */
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format);
 
+   /**
+    * Subscribe to notifications from the server about the given model without live validation results.
+    *
+    * @param modelUri             the URI identifying the model to which to subscribe
+    * @param subscriptionListener the listener to call on subscription events
+    * @param timeout              a timeout, in milleseconds, after which idle time to close the subscription
+    *
+    * @see {@link #subscribe(String, SubscriptionListener, SubscriptionOptions)} for a more generic and flexible
+    *      way to specific subscription options
+    */
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, long timeout);
 
+   /**
+    * Subscribe to notifications from the server about the given model without live validation results,
+    * in the given message {@code format}.
+    *
+    * @param modelUri             the URI identifying the model to which to subscribe
+    * @param subscriptionListener the listener to call on subscription events
+    * @param format               the format in which to encode the subscription messages
+    * @param timeout              a timeout, in milleseconds, after which idle time to close the subscription
+    *
+    * @see {@link #subscribe(String, SubscriptionListener, SubscriptionOptions)} for a more generic and flexible
+    *      way to specific subscription options
+    */
    void subscribe(String modelUri, SubscriptionListener subscriptionListener, String format, long timeout);
 
+   /**
+    * Subscribe to notifications from the server about the given model, including live validation
+    * results, but otherwise with default options.
+    *
+    * @param modelUri             the URI identifying the model to which to subscribe
+    * @param subscriptionListener the listener to call on subscription events
+    *
+    * @see {@link #subscribe(String, SubscriptionListener, SubscriptionOptions)} for a more generic and flexible
+    *      way to specific subscription options
+    */
    void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener);
 
+   /**
+    * Subscribe to notifications from the server about the given model, including live validation
+    * results, in the given message {@code format}.
+    *
+    * @param modelUri             the URI identifying the model to which to subscribe
+    * @param subscriptionListener the listener to call on subscription events
+    * @param format               the format in which to encode the subscription messages
+    *
+    * @see {@link #subscribe(String, SubscriptionListener, SubscriptionOptions)} for a more generic and flexible
+    *      way to specific subscription options
+    */
    void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format);
 
+   /**
+    * Subscribe to notifications from the server about the given model, including live validation
+    * results.
+    *
+    * @param modelUri             the URI identifying the model to which to subscribe
+    * @param subscriptionListener the listener to call on subscription events
+    * @param timeout              a timeout, in milleseconds, after which idle time to close the subscription
+    *
+    * @see {@link #subscribe(String, SubscriptionListener, SubscriptionOptions)} for a more generic and flexible
+    *      way to specific subscription options
+    */
    void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, long timeout);
 
+   /**
+    * Subscribe to notifications from the server about the given model, including live validation
+    * results, in the given message {@code format}.
+    *
+    * @param modelUri             the URI identifying the model to which to subscribe
+    * @param subscriptionListener the listener to call on subscription events
+    * @param format               the format in which to encode the subscription messages
+    * @param timeout              a timeout, in milleseconds, after which idle time to close the subscription
+    *
+    * @see {@link #subscribe(String, SubscriptionListener, SubscriptionOptions)} for a more generic and flexible
+    *      way to specific subscription options
+    */
    void subscribeWithValidation(String modelUri, SubscriptionListener subscriptionListener, String format,
       long timeout);
+
+   /**
+    * Subscribe to notifications from the server about the given model.
+    *
+    * @param modelUri             the URI identifying the model to which to subscribe
+    * @param subscriptionListener the listener to call on subscription events
+    * @param options              the subscription options. May be {@code null} if no options are required
+    */
+   void subscribe(String modelUri, SubscriptionListener subscriptionListener, SubscriptionOptions options);
 
    boolean send(String modelUri, String message);
 

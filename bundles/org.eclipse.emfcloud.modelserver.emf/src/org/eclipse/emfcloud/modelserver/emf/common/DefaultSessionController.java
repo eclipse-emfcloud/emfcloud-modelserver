@@ -12,6 +12,8 @@ package org.eclipse.emfcloud.modelserver.emf.common;
 
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1.LIVE_VALIDATION;
 import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1.TIMEOUT;
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.PATHS;
+import static org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2.PATHS_URI_FRAGMENTS;
 import static org.eclipse.emfcloud.modelserver.emf.common.JsonResponse.dirtyState;
 import static org.eclipse.emfcloud.modelserver.emf.common.JsonResponse.fullUpdate;
 import static org.eclipse.emfcloud.modelserver.emf.common.JsonResponse.validationResult;
@@ -38,10 +40,14 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
+import org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest;
+import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
+import org.eclipse.emfcloud.modelserver.jsonschema.Json;
 import org.jetbrains.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
@@ -63,6 +69,9 @@ public class DefaultSessionController implements SessionController {
 
    @Inject
    protected ModelValidator modelValidator;
+
+   @Inject
+   protected JsonPatchHelper patchHelper;
 
    @Override
    public boolean subscribe(final WsContext client, final String modeluri) {
@@ -248,7 +257,35 @@ public class DefaultSessionController implements SessionController {
    }
 
    protected void broadcastIncrementalUpdatesV2(final String modeluri, final JsonNode jsonPatch) {
-      getOpenSessionsV2(modeluri).forEach(session -> session.send(JsonResponse.incrementalUpdate(jsonPatch)));
+      getOpenSessionsV2(modeluri).forEach(session -> {
+         if (isPathsAsURIFragments(session)) {
+            session.send(JsonResponse.incrementalUpdate(rewritePathsAsURIFragments(session, jsonPatch)));
+         } else {
+            session.send(JsonResponse.incrementalUpdate(jsonPatch));
+         }
+      });
+   }
+
+   protected boolean isPathsAsURIFragments(final WsContext session) {
+      return ContextRequest.getParam(session, PATHS).filter(PATHS_URI_FRAGMENTS::equalsIgnoreCase).isPresent();
+   }
+
+   protected JsonNode rewritePathsAsURIFragments(final WsContext session, final JsonNode jsonPatch) {
+      JsonNode result = jsonPatch.deepCopy();
+
+      for (JsonNode next : jsonPatch.isArray() ? result : Collections.singleton(result)) {
+         if (next.isObject() && next.has("op") && next.has("path")) {
+            ObjectNode operation = (ObjectNode) next;
+            resolvePathAsURIFragment(session, operation.get("path").asText())
+               .ifPresent(path -> operation.set("path", Json.text(path)));
+         }
+      }
+
+      return result;
+   }
+
+   protected Optional<String> resolvePathAsURIFragment(final WsContext session, final String jsonPointer) {
+      return patchHelper.toURIFragmentPath(session, jsonPointer);
    }
 
    private void broadcastIncrementalUpdate(final WsContext session, final Map<String, JsonNode> updates) {

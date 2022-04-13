@@ -17,6 +17,7 @@ import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.m
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -203,6 +204,26 @@ public interface ModelURIConverter extends URIConverter {
     */
    default String deresolveModelURI(final WsContext ctx, final String modelURI) {
       return deresolveModelURI(ctx, URI.createURI(modelURI)).toString();
+   }
+
+   /**
+    * Encapsulate the given request context in a function that deresolves model URIs.
+    *
+    * @param ctx the current request context
+    * @return a model URI deresolving function
+    */
+   default UnaryOperator<String> deresolver(final Context ctx) {
+      return modeluri -> deresolveModelURI(ctx, modeluri);
+   }
+
+   /**
+    * Encapsulate the given websocket session context in a function that deresolves model URIs.
+    *
+    * @param ctx the current websocket session context
+    * @return a model URI deresolving function
+    */
+   default UnaryOperator<String> deresolver(final WsContext ctx) {
+      return modeluri -> deresolveModelURI(ctx, modeluri);
    }
 
 }

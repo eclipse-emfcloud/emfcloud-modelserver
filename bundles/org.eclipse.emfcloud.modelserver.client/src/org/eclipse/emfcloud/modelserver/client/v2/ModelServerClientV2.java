@@ -24,6 +24,7 @@ import org.eclipse.emfcloud.modelserver.client.ModelServerClientApi;
 import org.eclipse.emfcloud.modelserver.client.Response;
 import org.eclipse.emfcloud.modelserver.client.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.client.SubscriptionListener;
+import org.eclipse.emfcloud.modelserver.client.SubscriptionOptions;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
@@ -347,6 +348,13 @@ public class ModelServerClientV2 implements ModelServerClientApi<EObject>, Model
       final String format, final long timeout) {
 
       delegate.subscribeWithValidation(modelUri, subscriptionListener, format, timeout);
+   }
+
+   @Override
+   public void subscribe(final String modelUri, final SubscriptionListener subscriptionListener,
+      final SubscriptionOptions options) {
+
+      delegate.subscribe(modelUri, subscriptionListener, options);
    }
 
    @Override
