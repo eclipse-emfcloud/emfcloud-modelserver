@@ -12,11 +12,6 @@ package org.eclipse.emfcloud.modelserver.edit.util;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.emf.common.command.Command;
@@ -26,13 +21,11 @@ import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.change.ChangeDescription;
-import org.eclipse.emf.ecore.change.ChangeFactory;
-import org.eclipse.emf.ecore.change.ChangePackage;
-import org.eclipse.emf.ecore.change.FeatureChange;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.edit.command.CommandParameter;
 import org.eclipse.emf.edit.command.MoveCommand;
 import org.eclipse.emf.edit.command.RemoveCommand;
+import org.eclipse.emf.transaction.util.CompositeChangeDescription;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
@@ -150,94 +143,15 @@ public final class CommandUtil {
          return change1;
       }
 
-      // It's OK to steal resource changes, objects to attach, feature changes,
-      // or even entire change descriptions from the source execution results
-      // from the source change descriptions because those source execution
-      // results will be discarded when we've finished here
-      ChangeDescription result = ChangeFactory.eINSTANCE.createChangeDescription();
-
-      result.getResourceChanges().addAll(change1.getResourceChanges());
-      result.getResourceChanges().addAll(change2.getResourceChanges());
-
-      result.getObjectsToAttach().addAll(change1.getObjectsToAttach());
-      result.getObjectsToAttach().addAll(change2.getObjectsToAttach());
-
-      result.getObjectsToDetach().addAll(change1.getObjectsToDetach());
-      result.getObjectsToDetach().addAll(change2.getObjectsToDetach());
-
-      mergeObjectChanges(result, change1);
-      mergeObjectChanges(result, change2);
+      CompositeChangeDescription result = new CompositeChangeDescription();
+      result.add(change1);
+      result.add(change2);
 
       return result;
    }
 
    private static ChangeDescription asChangeDescription(final EObject probablyChange) {
       return probablyChange instanceof ChangeDescription ? (ChangeDescription) probablyChange : null;
-   }
-
-   private static void mergeObjectChanges(final ChangeDescription dst, final ChangeDescription src) {
-      src.getObjectChanges().forEach(entry -> {
-         if (!dst.getObjectChanges().containsKey(entry.getKey())) {
-            dst.getObjectChanges().add(ChangeFactory.eINSTANCE.createEObjectToChangesMapEntry(entry.getKey()));
-         }
-
-         Map<String, FeatureChange> srcFeatureChanges = mapFeatureChanges(entry.getValue());
-         Map<String, FeatureChange> dstFeatureChanges = mapFeatureChanges(dst.getObjectChanges().get(entry.getKey()));
-
-         Iterator<Map.Entry<String, FeatureChange>> iter = srcFeatureChanges.entrySet().iterator();
-         while (iter.hasNext()) {
-            Map.Entry<String, FeatureChange> srcFC = iter.next();
-            FeatureChange dstFC = dstFeatureChanges.computeIfAbsent(srcFC.getKey(),
-               __ -> {
-                  FeatureChange newFC = ChangeFactory.eINSTANCE.createFeatureChange();
-                  dst.getObjectChanges().get(entry.getKey()).add(newFC);
-                  return newFC;
-               });
-
-            mergeFeatureChanges(dstFC, srcFC.getValue());
-
-            iter.remove();
-         }
-      });
-   }
-
-   private static Map<String, FeatureChange> mapFeatureChanges(
-      final Collection<? extends FeatureChange> featureChanges) {
-      return featureChanges.stream().collect(Collectors.toMap(FeatureChange::getFeatureName, Function.identity(),
-         CommandUtil::pickA, LinkedHashMap::new));
-   }
-
-   private static <T> T pickA(final T a, final T b) {
-      return a;
-   }
-
-   @SuppressWarnings("checkstyle:CyclomaticComplexity")
-   private static void mergeFeatureChanges(final FeatureChange dst, final FeatureChange src) {
-      if (src.isSet()) {
-         dst.setSet(true);
-      }
-
-      if (src.isSetFeature()) {
-         dst.setFeature(src.getFeature());
-      }
-      if (src.isSetFeatureName()) {
-         dst.setFeatureName(src.getFeatureName());
-      }
-
-      // Setting any reference value clears any data value previously set.
-      // Always retain the first data/reference value encountered because
-      // subsequent values don't matter to ChangeDescription::apply
-      if (src.eIsSet(ChangePackage.Literals.FEATURE_CHANGE__DATA_VALUE)
-         && !dst.eIsSet(ChangePackage.Literals.FEATURE_CHANGE__DATA_VALUE)) {
-         dst.setDataValue(src.getDataValue());
-      } else if (src.eIsSet(ChangePackage.Literals.FEATURE_CHANGE__REFERENCE_VALUE)
-         && !dst.eIsSet(ChangePackage.Literals.FEATURE_CHANGE__REFERENCE_VALUE)) {
-         dst.setReferenceValue(src.getReferenceValue());
-      }
-
-      if (src.eIsSet(ChangePackage.Literals.FEATURE_CHANGE__LIST_CHANGES)) {
-         dst.getListChanges().addAll(src.getListChanges());
-      }
    }
 
    public static CCommand compose(final CCommand command1, final CCommand command2) {

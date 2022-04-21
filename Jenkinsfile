@@ -11,7 +11,7 @@ pipeline {
             steps {
                 // ignore test failures since we parse the test results afterwards
                 timeout(30) {
-                    sh 'mvn clean verify -Pm2 -B -Dmaven.test.failure.ignore=true'
+                    sh './mvnw clean verify -Pm2 -B -Dmaven.test.failure.ignore=true'
                 } 
             }
         }
@@ -20,7 +20,7 @@ pipeline {
             steps {
                 // ignore test failures since we parse the test results afterwards
                 timeout(30) {
-                    sh 'mvn clean verify -Pp2 -B -Dmaven.test.failure.ignore=true' 
+                    sh './mvnw clean verify -Pp2 -B -Dmaven.test.failure.ignore=true' 
                 }
             }
         }
