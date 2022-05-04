@@ -11,6 +11,7 @@
 package org.eclipse.emfcloud.modelserver.emf.common;
 
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.accepted;
+import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.badRequest;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.conflict;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.decodingError;
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.encodingError;
@@ -259,14 +260,14 @@ public class DefaultModelController implements ModelController {
       withModel(ctx, modeluri, root -> {
          modelRepository.undo(modeluri).ifPresentOrElse(undoExecution -> {
             final String message = "Successful undo.";
-            Supplier<JsonNode> patchResponse = Suppliers
+            Supplier<Map<URI, JsonNode>> patchResponse = Suppliers
                .memoize(() -> getJSONPatchUpdate(ctx, modeluri, root, undoExecution));
 
             if (isV1API(ctx)) {
                // Don't give V1 API clients the patch result
                success(ctx, message);
             } else {
-               successPatch(ctx, patchResponse.get(), message);
+               successPatch(ctx, modeluri, patchResponse.get(), message);
             }
 
             sessionController.commandExecuted(modeluri, Suppliers.ofInstance(undoExecution), patchResponse);
@@ -283,14 +284,14 @@ public class DefaultModelController implements ModelController {
       withModel(ctx, modeluri, root -> {
          modelRepository.redo(modeluri).ifPresentOrElse(redoExecution -> {
             final String message = "Successful redo.";
-            Supplier<JsonNode> patchResponse = Suppliers
+            Supplier<Map<URI, JsonNode>> patchResponse = Suppliers
                .memoize(() -> getJSONPatchUpdate(ctx, modeluri, root, redoExecution));
 
             if (isV1API(ctx)) {
                // Don't give V1 API clients the patch result
                success(ctx, message);
             } else {
-               successPatch(ctx, patchResponse.get(), message);
+               successPatch(ctx, modeluri, patchResponse.get(), message);
             }
 
             sessionController.commandExecuted(modeluri, Suppliers.ofInstance(redoExecution), patchResponse);
@@ -380,17 +381,18 @@ public class DefaultModelController implements ModelController {
             result = this.modelRepository.executeCommand(modelURI, jsonPatch);
          } catch (JsonPatchTestException | JsonPatchException ex) {
             LOG.error(ex.getMessage(), ex);
+            badRequest(ctx, ex.getMessage());
             return;
          }
       } else {
-         // TODO Handle unsupported Patch/Command type
+         badRequest(ctx, "Unsupported command type: " + pCommand.getType());
          return;
       }
 
       String model = uriConverter.deresolveModelURI(ctx, modelURI);
-      JsonNode patchResult = getJSONPatchUpdate(ctx, modelURI, root, result);
+      Map<URI, JsonNode> patchResult = getJSONPatchUpdate(ctx, modelURI, root, result);
       if (patchResult != null) {
-         successPatch(ctx, patchResult, "Model '%s' successfully updated", model);
+         successPatch(ctx, modelURI, patchResult, "Model '%s' successfully updated", model);
 
          sessionController.commandExecuted(modelURI, Suppliers.ofInstance(result),
             Suppliers.ofInstance(patchResult));
@@ -411,11 +413,11 @@ public class DefaultModelController implements ModelController {
       root.ifPresentOrElse(modelAction, () -> modelNotFound(ctx, modelURI));
    }
 
-   private JsonNode getJSONPatchUpdate(final Context ctx, final String modelURI, final EObject root,
+   private Map<URI, JsonNode> getJSONPatchUpdate(final Context ctx, final String modelURI, final EObject root,
       final CCommandExecutionResult executionResult) {
 
       try {
-         return jsonPatchHelper.getJsonPatch(root, executionResult);
+         return jsonPatchHelper.getJsonPatches(root, executionResult);
       } catch (EncodingException ex) {
          LOG.error(ex.getMessage(), ex);
          return null;

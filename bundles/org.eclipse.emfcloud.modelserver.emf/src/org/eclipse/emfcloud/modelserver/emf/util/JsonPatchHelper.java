@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.util;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -125,13 +127,52 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
       return codec.encode(root);
    }
 
-   public JsonNode getJsonPatch(final EObject root, final CCommandExecutionResult result) throws EncodingException {
-      // TODO Support multiple resource patches.
-      // See issue https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/159
-      JsonNode newModel = getCurrentModel(root);
+   public Map<URI, JsonNode> getJsonPatches(final EObject root, final CCommandExecutionResult result)
+      throws EncodingException {
+
+      if (root.eResource() == null || root.eResource().getResourceSet() == null) {
+         LOG.error("Can't generate Json patches; the specified object doesn't belong to a resourceSet");
+         return null;
+      }
+
+      // Collect new state for all resources
+      ResourceSet resourceSet = root.eResource().getResourceSet();
+      List<Resource> resources = resourceSet.getResources();
+
+      Map<Resource, JsonNode> newState = collectStates(resources);
+      Map<Resource, JsonNode> initialState;
+
+      // Revert the changes and collect the initial state for all resources
+      initialState = revertChangesAndGetState(resourceSet, result);
+      if (initialState == null) {
+         return null;
+      }
+
+      // Create a diff patch between the initial and new state for each resource
+      Map<URI, JsonNode> patches = new HashMap<>();
+      for (Resource resource : resources) {
+         JsonNode newModel = newState.get(resource);
+         JsonNode oldModel = initialState.get(resource);
+
+         JsonNode resourcePatch = diffModel(oldModel, newModel);
+         if (!resourcePatch.isEmpty()) {
+            URI normalizedURI = modelURIConverter.normalize(resource.getURI());
+            patches.put(normalizedURI, resourcePatch);
+         }
+      }
+
+      return patches;
+   }
+
+   private Map<Resource, JsonNode> revertChangesAndGetState(final ResourceSet resourceSet,
+      final CCommandExecutionResult result) throws EncodingException {
+
       ChangeDescription cd = (ChangeDescription) result.getChangeDescription();
-      ModelServerEditingDomain editingDomain = modelManager.getEditingDomain(root.eResource().getResourceSet());
-      JsonNode oldModel = null;
+      ModelServerEditingDomain editingDomain = modelManager.getEditingDomain(resourceSet);
+      List<Resource> resources = resourceSet.getResources();
+
+      Map<Resource, JsonNode> states;
+
       try {
          // Compute the old model by reverting the current change. We need to do that in a write-transaction.
          // Note: we could also apply it on a read-only copy of the model, but this could potentially modify
@@ -139,7 +180,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
          InternalTransaction transaction = editingDomain.startTransaction(false, null);
          try {
             cd.applyAndReverse();
-            oldModel = getCurrentModel(root);
+            states = collectStates(resources);
             cd.applyAndReverse();
             transaction.commit();
          } catch (RollbackException e) {
@@ -154,7 +195,16 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
          LOG.error("Failed to generate JsonPatch", e);
          return null;
       }
-      return diffModel(oldModel, newModel);
+      return states;
+   }
+
+   private Map<Resource, JsonNode> collectStates(final List<Resource> resources) throws EncodingException {
+      Map<Resource, JsonNode> states = new HashMap<>();
+      for (Resource resource : resources) {
+         JsonNode newModel = getCurrentModel(resource.getContents().get(0));
+         states.put(resource, newModel);
+      }
+      return states;
    }
 
    protected void rollback(final Transaction tx, final ModelServerEditingDomain domain) {

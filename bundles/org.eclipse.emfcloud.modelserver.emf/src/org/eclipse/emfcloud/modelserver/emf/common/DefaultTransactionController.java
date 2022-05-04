@@ -18,6 +18,7 @@ import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.s
 import static org.eclipse.emfcloud.modelserver.emf.common.util.ContextResponse.successPatch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
@@ -293,13 +295,13 @@ public class DefaultTransactionController implements TransactionController {
       private void execute(final WsMessageContext ctx, final CCommand command) {
          try {
             CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, command);
-            JsonNode response = getJSONPatchUpdate(execution);
+            Map<URI, JsonNode> response = getJSONPatchUpdates(execution);
             executions.add(execution);
 
             if (response == null) {
                success(ctx, "Model '%s' successfully updated", modelURI);
             } else {
-               successPatch(ctx, response, "Model '%s' successfully updated", modelURI);
+               successPatch(ctx, modelURI, response, "Model '%s' successfully updated", modelURI);
             }
          } catch (DecodingException exception) {
             decodingError(ctx, exception);
@@ -310,14 +312,15 @@ public class DefaultTransactionController implements TransactionController {
          try {
             CCommandExecutionResult execution = modelRepository.executeCommand(modelURI, patch);
 
-            JsonNode response = getJSONPatchUpdate(execution);
+            Map<URI, JsonNode> response = getJSONPatchUpdates(execution);
             if (response == null) {
                // For now, let the original patch stand in for its own result
-               response = patch;
+               response = new HashMap<>();
+               response.put(URI.createURI(this.modelURI), patch);
             }
 
             executions.add(execution);
-            successPatch(ctx, response, "Model '%s' successfully updated", modelURI);
+            successPatch(ctx, modelURI, response, "Model '%s' successfully updated", modelURI);
          } catch (JsonPatchException | JsonPatchTestException exception) {
             error(ctx, "Inapplicable JSON patch", exception);
          }
@@ -348,7 +351,7 @@ public class DefaultTransactionController implements TransactionController {
                executions.stream().reduce(CommandUtil::compose)
                   .ifPresent(aggregate -> {
                      sessionController.commandExecuted(modelURI, Suppliers.ofInstance(aggregate),
-                        Suppliers.memoize(() -> getJSONPatchUpdate(aggregate)));
+                        Suppliers.memoize(() -> getJSONPatchUpdates(aggregate)));
                   });
 
                executions = null;
@@ -359,14 +362,14 @@ public class DefaultTransactionController implements TransactionController {
          }
       }
 
-      private JsonNode getJSONPatchUpdate(final CCommandExecutionResult executionResult) {
+      private Map<URI, JsonNode> getJSONPatchUpdates(final CCommandExecutionResult executionResult) {
          Optional<EObject> root = modelRepository.getModel(modelURI);
          if (root.isEmpty()) {
             return null;
          }
 
          try {
-            return jsonPatchHelper.getJsonPatch(root.get(), executionResult);
+            return jsonPatchHelper.getJsonPatches(root.get(), executionResult);
          } catch (EncodingException ex) {
             LOG.error(ex.getMessage(), ex);
             return null;
