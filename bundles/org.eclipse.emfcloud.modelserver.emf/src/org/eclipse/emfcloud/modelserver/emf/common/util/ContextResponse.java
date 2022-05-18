@@ -11,9 +11,11 @@
 package org.eclipse.emfcloud.modelserver.emf.common.util;
 
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.emf.common.JsonResponse;
@@ -54,20 +56,33 @@ public final class ContextResponse {
     *
     * @param context
     *                         The Context representing the client connection.
-    * @param patch
-    *                         The Json Patch node, showing the diff between the previous state of the model,
-    *                         and the new state (e.g. after a model operation, or undo/redo).
+    * @param modelUri
+    *                         The model URI that was being edited.
+    * @param patches
+    *                         A Map of Json Patch nodes, showing the diff between the previous state of the model,
+    *                         and the new state (e.g. after a model operation, or undo/redo). Each entry corresponds
+    *                         to one modified resource.
     * @param messageFormat
     *                         The message to be attached to the result. Follows {@link String#format(String, Object...)}
     *                         syntax.
     * @param args
     *                         The arguments for the formatted message.
     */
-   public static void successPatch(final Context context, final JsonNode patch, final String messageFormat,
+   public static void successPatch(final Context context, final String modelUri, final Map<URI, JsonNode> patches,
+      final String messageFormat,
       final Object... args) {
+      JsonNode[] allPatches = patches.entrySet().stream()
+         .map(entry -> Json.object(
+            Json.prop("modelUri", Json.text(entry.getKey().toString())),
+            Json.prop("patch", entry.getValue())))
+         .toArray(JsonNode[]::new);
+
+      JsonNode mainPatch = patches.getOrDefault(URI.createURI(modelUri), Json.array());
+
       JsonNode patchAndMessage = Json.object(
          Json.prop("message", Json.text(String.format(messageFormat, args))),
-         Json.prop("patch", patch));
+         Json.prop("patch", mainPatch),
+         Json.prop("allPatches", Json.array(allPatches)));
       success(context, patchAndMessage);
    }
 
@@ -190,20 +205,33 @@ public final class ContextResponse {
     *
     * @param context
     *                         The Context representing the client connection.
-    * @param patch
-    *                         The Json Patch node, showing the diff between the previous state of the model,
-    *                         and the new state (e.g. after a model operation, or undo/redo).
+    * @param modelUri
+    *                         The model URI that was being edited.
+    * @param patches
+    *                         A Map of Json Patch nodes, showing the diff between the previous state of the model,
+    *                         and the new state (e.g. after a model operation, or undo/redo). Each entry corresponds
+    *                         to one modified resource.
     * @param messageFormat
     *                         The message to be attached to the result. Follows {@link String#format(String, Object...)}
     *                         syntax.
     * @param args
     *                         The arguments for the formatted message.
     */
-   public static void successPatch(final WsContext context, final JsonNode patch, final String messageFormat,
+   public static void successPatch(final WsContext context, final String modelUri, final Map<URI, JsonNode> patches,
+      final String messageFormat,
       final Object... args) {
+      JsonNode[] allPatches = patches.entrySet().stream()
+         .map(entry -> Json.object(
+            Json.prop("modelUri", Json.text(entry.getKey().toString())),
+            Json.prop("patch", entry.getValue())))
+         .toArray(JsonNode[]::new);
+
+      JsonNode mainPatch = patches.getOrDefault(URI.createURI(modelUri), Json.array());
+
       JsonNode patchAndMessage = Json.object(
          Json.prop("message", Json.text(String.format(messageFormat, args))),
-         Json.prop("patch", patch));
+         Json.prop("patch", mainPatch),
+         Json.prop("allPatches", Json.array(allPatches)));
       success(context, patchAndMessage);
    }
 

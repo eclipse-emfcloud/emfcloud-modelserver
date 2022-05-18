@@ -10,8 +10,10 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,7 +43,7 @@ public interface ModelListener {
     *                     Not itself {@code null} but it can supply a {@code null} if for some reason it is unavailable
     */
    default void commandExecuted(final String modeluri, final Supplier<? extends CCommandExecutionResult> execution,
-      final Supplier<? extends JsonNode> patch) {
+      final Supplier<Map<URI, JsonNode>> patch) {
 
       CCommandExecutionResult result = execution.get();
       if (result != null) {

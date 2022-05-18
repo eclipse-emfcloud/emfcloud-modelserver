@@ -10,6 +10,9 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.example;
 
+import org.eclipse.emf.common.notify.AdapterFactory;
+import org.eclipse.emf.edit.provider.ComposedAdapterFactory;
+import org.eclipse.emf.edit.provider.ReflectiveItemProviderAdapterFactory;
 import org.eclipse.emfcloud.modelserver.common.Routing;
 import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
 import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
@@ -35,5 +38,15 @@ public class ExampleServerModule extends DefaultModelServerModule {
    protected void configureCommandCodecs(final MapBinding<String, CommandContribution> binding) {
       super.configureCommandCodecs(binding);
       binding.put(UpdateTaskNameCommandContribution.TYPE, UpdateTaskNameCommandContribution.class);
+   }
+
+   @Override
+   protected AdapterFactory provideAdapterFactory() {
+      AdapterFactory provideAdapterFactory = super.provideAdapterFactory();
+      ComposedAdapterFactory factory = provideAdapterFactory instanceof ComposedAdapterFactory
+         ? (ComposedAdapterFactory) provideAdapterFactory
+         : new ComposedAdapterFactory(provideAdapterFactory);
+      factory.addAdapterFactory(new ReflectiveItemProviderAdapterFactory());
+      return provideAdapterFactory;
    }
 }

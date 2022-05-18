@@ -297,6 +297,7 @@ public class DefaultModelControllerTest {
    }
 
    @Test
+   @SuppressWarnings("unchecked")
    public void undoRedo() throws EncodingException, DecodingException {
       ResourceSet rset = new ResourceSetImpl();
       String modeluri = "SuperBrewer3000.json";
@@ -336,10 +337,11 @@ public class DefaultModelControllerTest {
          .thenReturn(Optional.of(CCommandFactory.eINSTANCE.createCommandExecutionResult()));
       when(modelRepository.redo(modeluri))
          .thenReturn(Optional.of(CCommandFactory.eINSTANCE.createCommandExecutionResult()));
-      when(jsonPatchHelper.getJsonPatch(any(), any())).thenReturn(
-         Json.array(Json.object(Map.of("op", Json.text("add")))),
-         Json.array(Json.object(Map.of("op", Json.text("remove")))),
-         Json.array(Json.object(Map.of("op", Json.text("add")))));
+      URI uri = URI.createURI(modeluri);
+      when(jsonPatchHelper.getJsonPatches(any(), any())).thenReturn(
+         Map.of(uri, Json.array(Json.object(Map.of("op", Json.text("add"))))),
+         Map.of(uri, Json.array(Json.object(Map.of("op", Json.text("remove"))))),
+         Map.of(uri, Json.array(Json.object(Map.of("op", Json.text("add"))))));
 
       modelController.executeCommand(context, modeluri);
 
