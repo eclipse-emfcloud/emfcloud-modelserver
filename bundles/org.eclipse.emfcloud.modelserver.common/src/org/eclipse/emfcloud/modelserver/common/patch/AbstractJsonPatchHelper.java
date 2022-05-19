@@ -9,12 +9,23 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.common.patch;
 
+import static org.eclipse.emfcloud.modelserver.common.patch.PatchUtil.ADD;
+import static org.eclipse.emfcloud.modelserver.common.patch.PatchUtil.ANY_INDEX;
+import static org.eclipse.emfcloud.modelserver.common.patch.PatchUtil.MOVE;
+import static org.eclipse.emfcloud.modelserver.common.patch.PatchUtil.OP;
+import static org.eclipse.emfcloud.modelserver.common.patch.PatchUtil.PATH;
+import static org.eclipse.emfcloud.modelserver.common.patch.PatchUtil.REMOVE;
+import static org.eclipse.emfcloud.modelserver.common.patch.PatchUtil.REPLACE;
+import static org.eclipse.emfcloud.modelserver.common.patch.PatchUtil.TEST;
+import static org.eclipse.emfcloud.modelserver.common.patch.PatchUtil.VALUE;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,13 +64,6 @@ public abstract class AbstractJsonPatchHelper {
 
    private static final Logger LOG = LogManager.getLogger(AbstractJsonPatchHelper.class);
 
-   static final String TEST = "test";
-   static final String MOVE = "move";
-   static final String REMOVE = "remove";
-   static final String ADD = "add";
-   static final String OP = "op";
-   static final String REPLACE = "replace";
-   static final String ANY_INDEX = "-";
    static final int NO_INDEX = CommandParameter.NO_INDEX;
 
    /**
@@ -69,8 +73,9 @@ public abstract class AbstractJsonPatchHelper {
     *                       The modeluri on which the patch will be applied.
     * @param resourceSet
     *                       The resourceSet on which the patch should be applied.
-    * @param jsonPatch
-    *                       The json patch to apply.
+    * @param patchNode
+    *                       The json patch to apply. Can be either an array of Operations,
+    *                       or an array of ModelPatches (Array of {modelUri: string, patch: Operation[] } )
     * @return
     *         The EMF Command corresponding to the specified jsonPatch.
     * @throws JsonPatchTestException
@@ -79,7 +84,40 @@ public abstract class AbstractJsonPatchHelper {
     *                                   If the jsonPatch object is invalid (e.g. unsupported operation, missing
     *                                   attribute...)
     */
-   public Command getCommand(final String modelURI, final ResourceSet resourceSet, final ArrayNode jsonPatch)
+   public Command getCommand(final String modelURI, final ResourceSet resourceSet, final ArrayNode patchNode)
+      throws JsonPatchTestException, JsonPatchException {
+
+      // Empty patch
+      if (patchNode.isEmpty()) {
+         return IdentityCommand.INSTANCE;
+      }
+
+      // Simple patch
+      if (PatchUtil.isPatch(patchNode)) {
+         return patchToCommand(modelURI, resourceSet, patchNode);
+      }
+
+      // Multi-resource patch
+      if (StreamSupport.stream(patchNode.spliterator(), false).allMatch(PatchUtil::isModelPatch)) {
+         String label = "Json Multi-Patch";
+         LazyCompoundCommand command = createCompoundCommand(modelURI, label);
+         for (JsonNode patchElement : patchNode) {
+            String modelUri = patchElement.get(PatchUtil.MODEL_URI).textValue();
+            JsonNode patch = patchElement.get(PatchUtil.PATCH);
+            if (PatchUtil.isPatch(patch)) {
+               command.append((() -> patchToCommand(modelUri, resourceSet, (ArrayNode) patch)));
+            } else {
+               throw new IllegalArgumentException("Unrecognized Json patch object: " + patch);
+            }
+         }
+
+         return command;
+      }
+
+      throw new IllegalArgumentException("Unrecognized Json patch object: " + patchNode);
+   }
+
+   protected Command patchToCommand(final String modelURI, final ResourceSet resourceSet, final ArrayNode jsonPatch)
       throws JsonPatchTestException, JsonPatchException {
       if (jsonPatch.isEmpty()) {
          return IdentityCommand.INSTANCE;
@@ -145,7 +183,7 @@ public abstract class AbstractJsonPatchHelper {
 
    protected Command getRemoveCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
       throws JsonPatchException {
-      JsonNode path = patchAction.get("path");
+      JsonNode path = patchAction.get(PATH);
       String jsonPath = path.asText();
       SettingValue setting = getSetting(modelURI, resourceSet, jsonPath);
 
@@ -192,7 +230,7 @@ public abstract class AbstractJsonPatchHelper {
 
    protected Command getAddCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
       throws JsonPatchException {
-      JsonNode path = patchAction.get("path");
+      JsonNode path = patchAction.get(PATH);
       String jsonPath = path.asText();
       SettingValue setting = getSetting(modelURI, resourceSet, jsonPath);
       if (setting.getFeature() == null) {
@@ -321,8 +359,8 @@ public abstract class AbstractJsonPatchHelper {
 
    protected Command getReplaceCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
       throws JsonPatchException {
-      JsonNode path = patchAction.get("path");
-      JsonNode value = patchAction.get("value");
+      JsonNode path = patchAction.get(PATH);
+      JsonNode value = patchAction.get(VALUE);
       SettingValue setting = getSetting(modelURI, resourceSet, path.asText());
       Object emfValue = getEMFValue(modelURI, resourceSet, setting.getFeature(), value);
       if (setting.getIndex().isPresent()) {
