@@ -58,13 +58,13 @@ public final class PatchUtil {
    /**
     * Test if the specified array is a Json Patch (an array of Operations).
     *
-    * @param jsonNode
+    * @param arrayNode
     *                    The node to test.
     * @return
     *         <code>true</code> if the jsonNode is a Json Patch, <code>false</code> otherwise.
     */
-   public static boolean isPatch(final ArrayNode jsonNode) {
-      return StreamSupport.stream(jsonNode.spliterator(), false).allMatch(PatchUtil::isOperation);
+   public static boolean isPatch(final ArrayNode arrayNode) {
+      return StreamSupport.stream(arrayNode.spliterator(), false).allMatch(PatchUtil::isOperation);
    }
 
    /**
