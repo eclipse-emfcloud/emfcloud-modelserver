@@ -10,11 +10,15 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.util;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.UnaryOperator;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
@@ -25,7 +29,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.change.ChangeDescription;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.transaction.RollbackException;
 import org.eclipse.emf.transaction.Transaction;
 import org.eclipse.emf.transaction.TransactionalEditingDomain;
@@ -35,7 +38,6 @@ import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.patch.AbstractJsonPatchHelper;
-import org.eclipse.emfcloud.modelserver.common.patch.JsonPatchException;
 import org.eclipse.emfcloud.modelserver.common.patch.LazyCompoundCommand;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerEditingDomain;
@@ -45,9 +47,9 @@ import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jsonpatch.diff.JsonDiff;
-
-import io.javalin.http.Context;
-import io.javalin.websocket.WsContext;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.MapMaker;
+import com.google.common.collect.Maps;
 
 /**
  * A Helper to create EMF Commands from a Json Patch.
@@ -56,11 +58,27 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
 
    protected static final Logger LOG = LogManager.getLogger(JsonPatchHelper.class);
 
+   protected static final Pattern PATH_SUFFIX_PATTERN = Pattern.compile("/[^/]+(?:/[0-9]+|/-)?$");
+
    private final ModelResourceManager modelManager;
    private final ServerConfiguration serverConfiguration;
    private final Map<String, Codec> codecs;
    private final Codec fallback = new JsonCodecV2();
    private final ModelURIConverter modelURIConverter;
+
+   /**
+    * An externalized mapping of JSON Patches to maps of EMF Object URIs for each of the operations in the patch.
+    * The patch helper may not be a singleton, so all helpers need to share this.
+    */
+   private static final Map<JsonNode, Map<JsonNode, URI>> URI_PATH_MAPPINGS = new MapMaker().weakKeys().weakValues()
+      .makeMap();
+
+   /**
+    * Flag controlling whether to compute object URIs for patches.
+    * The patch helper may not be a singleton, so all helpers need to share this.
+    * If any client wants these mappings, they will be enabled. There is no going back.
+    */
+   private static final AtomicBoolean NEED_OBJECT_URI_MAPPINGS = new AtomicBoolean();
 
    @Inject
    public JsonPatchHelper(final ModelResourceManager modelManager, final ServerConfiguration serverConfiguration,
@@ -157,6 +175,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
          JsonNode resourcePatch = diffModel(oldModel, newModel);
          if (!resourcePatch.isEmpty()) {
             URI normalizedURI = modelURIConverter.normalize(resource.getURI());
+            URI_PATH_MAPPINGS.put(resourcePatch, mapObjectURIs(resourcePatch, oldModel, resource.getURI()));
             patches.put(normalizedURI, resourcePatch);
          }
       }
@@ -215,62 +234,94 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    }
 
    /**
-    * Obtain a {@code path} as a "custom" URI-fragment-based path. The {@code path} may be a JSON Pointer
-    * or it may already be a URI-fragment-based path.
+    * Create a mapping of operation node (bearing a {@code path} property) in the given {@code patch}
+    * to EMF URI of the model object in the old state of the model to which the patch is logically applicable.
+    * This mapping is maintained "on the side" to be retrieved later if necessary to rewrite {@code path}
+    * properties of the patch in terms of EMF URIs.
     *
-    * @param context the request context
-    * @param path    the path to convert to a URI fragment path
-    * @return the URI fragment path, or empty if the {@code path} does not resolve to a value in the model
-    */
-   public Optional<String> toURIFragmentPath(final Context context, final String path) {
-      return modelURIConverter.resolveModelURI(context).map(
-         modeluri -> toURIFragmentPath(modeluri.toString(), path, modelURIConverter.deresolver(context)));
-   }
-
-   /**
-    * Obtain a {@code path} as a "custom" URI-fragment-based path. The {@code path} may be a JSON Pointer
-    * or it may already be a URI-fragment-based path.
+    * @param patch       a JSON patch for which to create a mapping of Operation &rarr; Object-URI
+    * @param oldModel    the previous state of the model to which the {@code patch} is applicable
+    * @param resourceURI the URI of the resource containing the old model
     *
-    * @param context the subscription session context
-    * @param path    the path to convert to a URI fragment path
-    * @return the URI fragment path, or empty if the {@code path} does not resolve to a value in the model
+    * @see <a href="https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/205">Issue 205: API v2: Subscription
+    *      option for URI fragments in update notifications </a>
+    * @see <a href="https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/218">Issue 218: API V2:
+    *      rewritePathsAsURIFragments doesn&apos;t (always?) work for deleted elements</a>
     */
-   public Optional<String> toURIFragmentPath(final WsContext context, final String path) {
-      return modelURIConverter.resolveModelURI(context).map(
-         modeluri -> toURIFragmentPath(modeluri.toString(), path, modelURIConverter.deresolver(context)));
-   }
+   @SuppressWarnings("checkstyle:CyclomaticComplexity")
+   public Map<JsonNode, URI> mapObjectURIs(final JsonNode patch, final JsonNode oldModel, final URI resourceURI) {
+      Map<JsonNode, URI> result = Maps.newHashMap();
 
-   /**
-    * Obtain a {@code path} as a "custom" URI-fragment-based path. The {@code path} may be a JSON Pointer
-    * or it may already be a URI-fragment-based path.
-    *
-    * @param modelURI           the contextual model URI
-    * @param path               the path to convert to a URI fragment path
-    * @param deresolveObjectURI a function to deresolve the object URI computed in the resulting path
-    */
-   protected String toURIFragmentPath(final String modelURI, final String path,
-      final UnaryOperator<String> deresolveObjectURI) {
-      String result = null;
+      // What is the name of the unique identifier property for our codec that we used to create the old model?
+      String idKey = codecs.containsKey(ModelServerPathParametersV2.FORMAT_JSON_V2) ? "$id" : "id";
 
-      try {
-         ResourceSet resourceSet = modelManager.getResourceSet(modelURI);
-         SettingValue setting = getSetting(modelURI, resourceSet, path);
-         EObject owner = setting.getEObject();
-         URI uri = EcoreUtil.getURI(owner);
-         if (uri == null) {
-            LOG.warn("Target of patch operation is not persisted in the model: " + owner);
-         } else {
-            String featureName = setting.getFeature().getName();
-            String relativeURI = deresolveObjectURI.apply(uri.toString());
-            String featurePath = setting.getIndex().map(index -> String.format("%s/%s", featureName, index))
-               .orElse(featureName);
-            result = String.format("%s/%s", relativeURI, featurePath);
+      Iterator<JsonNode> operations = patch.isArray() ? patch.iterator() : Iterators.singletonIterator(patch);
+      while (operations.hasNext()) {
+         JsonNode op = operations.next();
+         JsonNode path = op.get("path");
+         if (path != null && path.isTextual()) {
+            String pointer = path.textValue();
+
+            // The 'pointer' includes a path to the owner object and the property (with possible array index)
+            // of the replaced/added/removed/etc. value. Take that part off to get the owner object URI
+            Matcher propertyMatcher = PATH_SUFFIX_PATTERN.matcher(pointer);
+            if (propertyMatcher.find()) {
+               String suffix = propertyMatcher.group();
+               pointer = pointer.substring(0, propertyMatcher.start());
+               JsonNode target = oldModel.at(pointer);
+               if (!target.isMissingNode() && target.has(idKey)) {
+                  URI objectURI = resourceURI.appendFragment(target.get(idKey).asText() + suffix);
+                  result.put(op, objectURI);
+               }
+            }
          }
-      } catch (JsonPatchException e) {
-         LOG.error("Unresolved path in patch operation.", e);
       }
 
       return result;
    }
+
+   /**
+    * For a given {@code patch}, obtain a function that retrieves the URI path of the EMF model object and property
+    * (in the old state of the model) to which some operation in that {@code patch} applies. This mapping is only
+    * available for patches created by the {@link #getJsonPatches(EObject, CCommandExecutionResult)} API.
+    *
+    * @param patch a patch for which to get an Object URI function
+    * @return a function that returns the original object URI, extend as appropriate by a property name, of the object
+    *         to which an input operation is applicable, that it identifies in the old state of the model by the JSON
+    *         pointer in its {@code path} property. The function will return {@code null} for operations that don't
+    *         trace to any model object
+    *
+    * @see #getJsonPatches(EObject, CCommandExecutionResult)
+    * @see #setNeedObjectURIMappings(boolean)
+    * @see #isNeedObjectURIMappings()
+    */
+   public Function<JsonNode, URI> getObjectURIFunction(final JsonNode patch) {
+      Map<JsonNode, URI> mapping = URI_PATH_MAPPINGS.getOrDefault(patch, Collections.emptyMap());
+      return mapping::get;
+   }
+
+   /**
+    * Set whether to provide {@linkplain #getObjectURIFunction(JsonNode) object URI mappings} for patches
+    * that I compute from command execution results.
+    *
+    * @param needObjectURIMappings whether object URI mappings will be needed
+    *
+    * @see #isNeedObjectURIMappings()
+    * @see #getObjectURIFunction(JsonNode)
+    */
+   public void setNeedObjectURIMappings(final boolean needObjectURIMappings) {
+      NEED_OBJECT_URI_MAPPINGS.compareAndSet(false, needObjectURIMappings);
+   }
+
+   /**
+    * Query whether I provide {@linkplain #getObjectURIFunction(JsonNode) object URI mappings} for patches
+    * that I compute from command execution results.
+    *
+    * @return whether I compute object URI mappings
+    *
+    * @see #setNeedObjectURIMappings(boolean)
+    * @see #getObjectURIFunction(JsonNode)
+    */
+   public boolean isNeedObjectURIMappings() { return NEED_OBJECT_URI_MAPPINGS.get(); }
 
 }
