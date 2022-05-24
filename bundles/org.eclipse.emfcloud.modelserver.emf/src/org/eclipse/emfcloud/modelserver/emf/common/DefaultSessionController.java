@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -95,6 +96,11 @@ public class DefaultSessionController implements SessionController {
       Long timeout = getLongParam(client, TIMEOUT).orElse(SessionController.NO_TIMEOUT);
       modelUrisToClientsV2.computeIfAbsent(modeluri, clients -> ConcurrentHashMap.newKeySet()).add(client);
       client.session.setIdleTimeout(timeout);
+
+      // Don't do the work of creating object URI mappings for patches if no subscriber wants them
+      patchHelper.setNeedObjectURIMappings(modelUrisToClientsV2.values().stream()
+         .flatMap(Set::stream).anyMatch(this::isPathsAsURIFragments));
+
       success(client);
       dirtyState(client, modelRepository.getDirtyState(modeluri));
       return true;
@@ -287,20 +293,19 @@ public class DefaultSessionController implements SessionController {
 
    protected JsonNode rewritePathsAsURIFragments(final WsContext session, final JsonNode jsonPatch) {
       JsonNode result = jsonPatch.deepCopy();
+      Function<JsonNode, URI> uriFunction = patchHelper.getObjectURIFunction(jsonPatch);
 
       for (JsonNode next : jsonPatch.isArray() ? result : Collections.singleton(result)) {
          if (next.isObject() && next.has("op") && next.has("path")) {
             ObjectNode operation = (ObjectNode) next;
-            resolvePathAsURIFragment(session, operation.get("path").asText())
-               .ifPresent(path -> operation.set("path", Json.text(path)));
+            URI uriPath = uriFunction.apply(operation);
+            if (uriPath != null) {
+               operation.set("path", Json.text(uriPath.toString()));
+            }
          }
       }
 
       return result;
-   }
-
-   protected Optional<String> resolvePathAsURIFragment(final WsContext session, final String jsonPointer) {
-      return patchHelper.toURIFragmentPath(session, jsonPointer);
    }
 
    private void broadcastIncrementalUpdate(final WsContext session, final Map<String, JsonNode> updates) {
