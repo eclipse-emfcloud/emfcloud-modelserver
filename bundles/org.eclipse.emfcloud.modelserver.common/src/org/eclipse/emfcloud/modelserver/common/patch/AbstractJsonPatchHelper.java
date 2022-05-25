@@ -291,9 +291,13 @@ public abstract class AbstractJsonPatchHelper {
          }
       }
 
-      Command create = AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-         setting.getFeature(), Collections.singleton(objectToAdd));
-      result = result == null ? create : result.chain(create);
+      Command addOrSet = feature.isMany()
+         ? AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+            setting.getFeature(), Collections.singleton(objectToAdd))
+         : SetCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(), feature,
+            objectToAdd);
+      result = result == null ? addOrSet : result.chain(addOrSet);
+
       return result;
    }
 
