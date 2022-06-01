@@ -31,13 +31,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.command.IdentityCommand;
+import org.eclipse.emf.common.util.Enumerator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EEnumLiteral;
 import org.eclipse.emf.ecore.EFactory;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
@@ -392,28 +392,25 @@ public abstract class AbstractJsonPatchHelper {
       if (feature instanceof EAttribute) {
          // Attributes
          if (feature.getEType() instanceof EEnum) {
-            getEMFEnumValue((EEnum) feature.getEType(), value);
-         } else {
-            return getPrimitiveEMFValue((EAttribute) feature, value);
+            return getEMFEnumValue((EEnum) feature.getEType(), value);
          }
-      } else {
-         // References
-         JsonNode refNode = value.get(JsonConstants.REF_ATTR);
-         JsonNode idNode = value.get(JsonConstants.ID_ATTR);
-         if (refNode == null && idNode == null) {
-            throw new JsonPatchException("Reference values should include a $ref or an $id attribute");
-         }
-         String objectId = refNode == null ? idNode.asText() : refNode.asText();
-         return getEObject(modelURI, URI.createURI(objectId));
+         return getPrimitiveEMFValue((EAttribute) feature, value);
       }
+      // References
+      JsonNode refNode = value.get(JsonConstants.REF_ATTR);
+      JsonNode idNode = value.get(JsonConstants.ID_ATTR);
+      if (refNode == null && idNode == null) {
+         throw new JsonPatchException("Reference values should include a $ref or an $id attribute");
+      }
+      String objectId = refNode == null ? idNode.asText() : refNode.asText();
+      return getEObject(modelURI, URI.createURI(objectId));
       // TODO Support custom datatypes & array-values. See
       // https://github.com/eclipse-emfcloud/emfcloud-modelserver/issues/162
-      return null;
    }
 
-   protected EEnumLiteral getEMFEnumValue(final EEnum enumType, final JsonNode value) throws JsonPatchException {
+   protected Enumerator getEMFEnumValue(final EEnum enumType, final JsonNode value) throws JsonPatchException {
       if (value.isTextual()) {
-         EEnumLiteral literal = enumType.getEEnumLiteral(value.asText());
+         Enumerator literal = enumType.getEEnumLiteral(value.asText()).getInstance();
          if (literal != null) {
             return literal;
          }
