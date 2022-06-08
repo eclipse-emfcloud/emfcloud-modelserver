@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,6 +14,7 @@ import static org.eclipse.emfcloud.modelserver.jsonschema.Json.prop;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
+import java.util.Map;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -37,11 +38,14 @@ public class DefaultJsonSchemaConverterEClassTest extends DefaultJsonSchemaConve
 
    private static final String ECLASS_NAME = "TestEClass";
    private static final String REFECLASS_NAME = "TestEClass2";
+   private static final String MAPENTRYECLASS_NAME = "StringToStringMapEntry";
    private static final String REFERENCE_NAME = "testReference";
    private static final String ATTRIBUTE_NAME = "testAttribute";
 
    private EClass eClass;
    private EClass refClass;
+   /** An EClass used for correspondence with EMap entries. */
+   private EClass mapEntryClass;
    private EReference eReference;
    private EReference eReference2;
 
@@ -56,6 +60,12 @@ public class DefaultJsonSchemaConverterEClassTest extends DefaultJsonSchemaConve
 
       refClass = EcoreFactory.eINSTANCE.createEClass();
       refClass.setName(REFECLASS_NAME);
+
+      mapEntryClass = EcoreFactory.eINSTANCE.createEClass();
+      mapEntryClass.setName(MAPENTRYECLASS_NAME);
+      mapEntryClass.setInstanceClass(Map.Entry.class);
+      mapEntryClass.getEAttributes().add(EcoreTestUtil.stringEAttribute("key", 0, 1));
+      mapEntryClass.getEAttributes().add(EcoreTestUtil.stringEAttribute("value", 0, 1));
    }
 
    @Test
@@ -216,6 +226,26 @@ public class DefaultJsonSchemaConverterEClassTest extends DefaultJsonSchemaConve
             prop(ATTRIBUTE_NAME, Json.object(prop("type", Json.text("string")))))),
          prop("additionalProperties", Json.bool(false)),
          prop("required", Json.array(Collections.singletonList(ATTRIBUTE_NAME))));
+
+      assertEquals(expected, actual);
+   }
+
+   @Test
+   public void createJsonSchemaFromEClassWithEMapReference() {
+      eReference = EcoreTestUtil.eReference(REFERENCE_NAME, 0, -1, mapEntryClass);
+      eReference.setContainment(true);
+      eClass.getEStructuralFeatures().add(eReference);
+
+      final JsonNode actual = jsonSchemaCreator.from(eClass);
+      final ObjectNode expected = Json.object(
+         prop("$id", Json.text(getIdHelper(eClass))),
+         prop("title", Json.text(ECLASS_NAME)),
+         prop("type", Json.text("object")),
+         prop("properties", Json.object(
+            prop(REFERENCE_NAME, Json.object(
+               prop("type", Json.text("object")),
+               prop("additionalProperties", Json.object(prop("type", Json.text("string")))))))),
+         prop("additionalProperties", Json.bool(false)));
 
       assertEquals(expected, actual);
    }
