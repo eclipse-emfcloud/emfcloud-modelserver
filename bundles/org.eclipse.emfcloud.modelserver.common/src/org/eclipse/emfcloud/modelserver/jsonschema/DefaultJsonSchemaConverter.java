@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -10,8 +10,10 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.jsonschema;
 
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -126,20 +128,46 @@ public class DefaultJsonSchemaConverter implements JsonSchemaConverter {
    }
 
    protected JsonNode createJsonSchema(final EReference eReference, final boolean featureAsAttribute) {
+      EClass eReferenceType = eReference.getEReferenceType();
       final ObjectNode objectNode = Json.object();
-      if (eReference.getUpperBound() > 1 || eReference.getUpperBound() == -1) {
-         objectNode.set("type", Json.text("array"));
-         JsonNode feature = Json.object();
-         if (!featureAsAttribute) {
-            feature = createJsonSchemaFromEClass(eReference.getEReferenceType());
+      if (eReference.isMany()) {
+         if (Map.Entry.class.equals(eReferenceType.getInstanceClass()) && eReference.isContainment()) {
+            // eReference points to a Map$Entry EClass and should be translated as a Map Object
+            EStructuralFeature keyFeature = eReferenceType.getEStructuralFeature("key");
+            if (!Optional.ofNullable(keyFeature).filter(EAttribute.class::isInstance).filter(f -> !f.isMany())
+               .isPresent()) {
+               // there is no key attribute in the Map$Entry EClass. The metamodel is incorrect and cannot be supported.
+               String msg = MessageFormat.format(
+                  "The EClass {0} has instance type name 'java.util.Map$Entry', but no 'key' monovalued attribute. It is incorrect, and schema cannot be generated for referencing property {1}::{2}.",
+                  eReferenceType.getName(), eReference.getEContainingClass().getName(), eReference.getName());
+               throw new IllegalArgumentException(msg);
+            }
+            EStructuralFeature valueFeature = eReferenceType.getEStructuralFeature("value");
+            if (!Optional.ofNullable(valueFeature).filter(f -> !f.isMany()).isPresent()) {
+               // there is no value feature in the Map$Entry EClass. The metamodel is incorrect and cannot be supported.
+               String msg = MessageFormat.format(
+                  "The EClass {0} has instance type name 'java.util.Map$Entry', but no 'value' monovalued property. It is incorrect, and schema cannot be generated for referencing property {1}::{2}.",
+                  eReferenceType.getName(), eReference.getEContainingClass().getName(), eReference.getName());
+               throw new IllegalArgumentException(msg);
+            }
+            objectNode.set("type", Json.text("object"));
+            JsonNode valueType = createJsonSchemaFromEStructuralFeature(valueFeature);
+            objectNode.set("additionalProperties", valueType);
          } else {
-            feature = Json.object().set("$ref",
-               TextNode.valueOf("#/definitions/" + eReference.getEType().getName().trim().toLowerCase()));
+            // eReference is multivalued and should be translated as an array
+            objectNode.set("type", Json.text("array"));
+            JsonNode feature = Json.object();
+            if (!featureAsAttribute) {
+               feature = createJsonSchemaFromEClass(eReferenceType);
+            } else {
+               feature = Json.object().set("$ref",
+                  TextNode.valueOf("#/definitions/" + eReference.getEType().getName().trim().toLowerCase()));
+            }
+            objectNode.set("items", feature);
          }
-         objectNode.set("items", feature);
          return objectNode;
       }
-      return createJsonSchema(eReference.getEReferenceType(), true);
+      return createJsonSchema(eReferenceType, true);
    }
 
    protected ObjectNode createJsonSchema(final EAttribute eAttribute) {
