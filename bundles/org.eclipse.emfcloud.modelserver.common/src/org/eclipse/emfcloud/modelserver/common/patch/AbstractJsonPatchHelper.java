@@ -239,15 +239,19 @@ public abstract class AbstractJsonPatchHelper {
       }
 
       JsonNode value = patchAction.get("value");
+      EStructuralFeature feature = setting.getFeature();
       Command result;
-      if (setting.getFeature() instanceof EReference) {
+      if (feature instanceof EReference) {
          // References
          result = getAddReferenceCommand(modelURI, resourceSet, setting, value);
       } else {
          // Attributes
-         Object emfValue = getEMFValue(modelURI, resourceSet, setting.getFeature(), value);
-         result = AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-            setting.getFeature(), Collections.singleton(emfValue));
+         Object emfValue = getEMFValue(modelURI, resourceSet, feature, value);
+         result = setting.getFeature().isMany()
+            ? AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+               feature, Collections.singleton(emfValue))
+            : SetCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(), feature,
+               emfValue);
       }
 
       return result;
