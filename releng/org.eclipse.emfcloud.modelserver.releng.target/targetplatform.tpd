@@ -33,4 +33,5 @@ location "https://download.eclipse.org/emfcloud/emfjson-jackson/p2/releases/2.0.
 location "https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/9.4.44.v20210927/" {
 	org.eclipse.jetty.websocket.server [9.4.44,10.0.0)
 	org.eclipse.jetty.server [9.4.44,10.0.0)
+	org.eclipse.jetty.util [9.4.44,10.0.0)
 }

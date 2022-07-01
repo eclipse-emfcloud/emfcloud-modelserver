@@ -91,6 +91,11 @@
          <artifactId>javalin</artifactId>
          <version>${javalin.version}</version>
       </dependency>
+      <dependency>
+         <groupId>org.apache.logging.log4j</groupId>
+         <artifactId>log4j-slf4j-impl</artifactId>
+         <version>${apache.logging.log4j.version}</version>
+      </dependency>
    </dependencies>
 
    <build>
@@ -206,6 +211,17 @@
                            <groupId>io.javalin</groupId>
                            <artifactId>javalin</artifactId>
                            <version>${javalin.version}</version>
+                           <classifier>sources</classifier>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.apache.logging.log4j</groupId>
+                           <artifactId>log4j-slf4j-impl</artifactId>
+                           <version>${apache.logging.log4j.version}</version>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.apache.logging.log4j</groupId>
+                           <artifactId>log4j-slf4j-impl</artifactId>
+                           <version>${apache.logging.log4j.version}</version>
                            <classifier>sources</classifier>
                         </artifactItem>
                      </artifactItems>
