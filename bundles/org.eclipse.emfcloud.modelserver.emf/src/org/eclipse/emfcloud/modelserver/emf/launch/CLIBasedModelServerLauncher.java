@@ -16,7 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.di.ModelServerModule;
-import org.eclipse.emfcloud.modelserver.emf.di.ProviderDefaults;
 
 import com.google.inject.Injector;
 
@@ -38,12 +37,8 @@ public class CLIBasedModelServerLauncher extends ModelServerLauncher {
             parser.printHelp();
             return;
          }
-         if (parser.optionExists(CLIParser.OPTION_LOG_CONFIGURATION)) {
-            parser.parseLogConfigurationPath().ifPresent(ModelServerLauncher::configureLogger);
-         }
-         if (parser.optionExists(CLIParser.OPTION_ENABLE_DEV_LOGGING)) {
-            ProviderDefaults.enableDevLogging();
-         }
+         super.run(parser.parseLogConfigurationPath().orElse(null),
+            parser.optionExists(CLIParser.OPTION_ENABLE_DEV_LOGGING));
       } catch (UnrecognizedOptionException e) {
          LOG.error("Unrecognized command line argument(s) used!\n");
          parser.printHelp();
@@ -53,8 +48,6 @@ public class CLIBasedModelServerLauncher extends ModelServerLauncher {
          parser.printHelp();
          return;
       }
-
-      super.run();
    }
 
    @Override

@@ -115,6 +115,7 @@
 		<kotlin.stdlib.common.version>1.4.10</kotlin.stdlib.common.version>
 		<squareup.okhttp.version>4.9.1</squareup.okhttp.version>
 		<squareup.okio.version>2.10.0</squareup.okio.version>
+		<jetty.version>9.4.44.v20210927</jetty.version>
 		<jetty.websocket.version>9.4.44.v20210927</jetty.websocket.version>
 		<javalin.version>4.3.0</javalin.version>
 		<mockito.inline.version>3.2.4</mockito.inline.version>
@@ -376,7 +377,7 @@
 				<repository>
 					<id>wso2</id>
 					<name>WSO2</name>
-					<url>http://dist.wso2.org/maven2/</url>
+					<url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
 				</repository>
 			</repositories>
 
@@ -385,17 +386,17 @@
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-slf4j-impl</artifactId>
-					<version>${apache.logging.log4j.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.logging.log4j</groupId>
 					<artifactId>log4j-core</artifactId>
 					<version>${apache.logging.log4j.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.logging.log4j</groupId>
 					<artifactId>log4j-web</artifactId>
+					<version>${apache.logging.log4j.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-slf4j-impl</artifactId>
 					<version>${apache.logging.log4j.version}</version>
 				</dependency>
 				<dependency>
@@ -487,6 +488,21 @@
 					<groupId>org.hamcrest</groupId>
 					<artifactId>hamcrest-core</artifactId>
 					<version>${hamcrest.core.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>jetty-server</artifactId>
+					<version>${jetty.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.jetty.websocket</groupId>
+					<artifactId>websocket-server</artifactId>
+					<version>${jetty.websocket.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>jetty-util</artifactId>
+					<version>${jetty.version}</version>
 				</dependency>
 			</dependencies>
 

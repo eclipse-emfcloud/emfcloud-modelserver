@@ -10,16 +10,20 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.launch;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Set;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.di.ModelServerModule;
+import org.eclipse.emfcloud.modelserver.emf.di.ProviderDefaults;
 
 import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
@@ -56,6 +60,26 @@ public class ModelServerLauncher implements Runnable {
 
    @Override
    public void run() {
+      doRun();
+   }
+
+   public void run(final String logConfigurationFilePath) {
+      run(logConfigurationFilePath, false);
+   }
+
+   public void run(final String logConfigurationFilePath, final boolean enableDevLogging) {
+      configureLogging(logConfigurationFilePath, enableDevLogging);
+      doRun();
+   }
+
+   protected void configureLogging(final String logConfigurationFilePath, final boolean enableDevLogging) {
+      ModelServerLauncher.configureLogger(logConfigurationFilePath);
+      if (enableDevLogging) {
+         ProviderDefaults.enableDevLogging();
+      }
+   }
+
+   protected void doRun() {
       Injector runInjector = getInjector();
 
       ServerConfiguration configuration = getServerConfiguration(runInjector);
@@ -68,10 +92,6 @@ public class ModelServerLauncher implements Runnable {
          return;
       }
 
-      doRun(startup, configuration);
-   }
-
-   protected void doRun(final ModelServerStartup startup, final ServerConfiguration configuration) {
       startup.start(EntryPointType.REST, configuration.getServerPort());
    }
 
@@ -104,7 +124,18 @@ public class ModelServerLauncher implements Runnable {
       });
    }
 
-   public static void configureLogger(final String configurationFilePath) {
-      Configurator.initialize(null, configurationFilePath);
+   protected static void configureLogger(final String configurationFilePath) {
+      if (configurationFilePath != null && !configurationFilePath.isEmpty()) {
+         LoggerContext context = (LoggerContext) LogManager.getContext(false);
+         File file = new File(configurationFilePath);
+         // this will force a reconfiguration
+         context.setConfigLocation(file.toURI());
+      } else {
+         configureDefaultLogging();
+      }
+   }
+
+   protected static void configureDefaultLogging() {
+      Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.INFO);
    }
 }

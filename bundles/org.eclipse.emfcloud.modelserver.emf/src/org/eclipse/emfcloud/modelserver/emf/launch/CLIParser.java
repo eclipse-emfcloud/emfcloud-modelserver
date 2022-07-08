@@ -135,9 +135,10 @@ public final class CLIParser {
       printHelp(this.processName, this.options);
    }
 
-   public static void printHelp(final String processName, final Options options) {
+   public static void printHelp(final String executableName, final Options options) {
       HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp(90, processName, "\noptions:", options, "", true);
+      String cmdLineSyntax = "java -jar " + executableName;
+      formatter.printHelp(90, cmdLineSyntax, "\noptions:", options, "", true);
    }
 
    public static Options getDefaultCLIOptions() {

@@ -208,6 +208,17 @@
                            <version>${javalin.version}</version>
                            <classifier>sources</classifier>
                         </artifactItem>
+                        <artifactItem>
+                           <groupId>org.apache.logging.log4j</groupId>
+                           <artifactId>log4j-slf4j-impl</artifactId>
+                           <version>${apache.logging.log4j.version}</version>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.apache.logging.log4j</groupId>
+                           <artifactId>log4j-slf4j-impl</artifactId>
+                           <version>${apache.logging.log4j.version}</version>
+                           <classifier>sources</classifier>
+                        </artifactItem>
                      </artifactItems>
                      <overWriteIfNewer>true</overWriteIfNewer>
                      <outputDirectory>lib</outputDirectory>

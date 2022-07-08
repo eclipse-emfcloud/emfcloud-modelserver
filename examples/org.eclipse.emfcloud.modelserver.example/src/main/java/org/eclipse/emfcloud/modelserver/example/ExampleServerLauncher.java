@@ -40,7 +40,7 @@ public final class ExampleServerLauncher {
    private static final String UISCHEMA_MERGE_FILE = "merge.json";
    private static final String UISCHEMA_WATERTANK_FILE = "watertank.json";
    private static final String UISCHEMA_WEIGHTEDFLOW_FILE = "weightedflow.json";
-   private static final String PROCESS_NAME = "java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar";
+   private static final String EXECUTABLE_NAME = "org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar";
 
    private static Logger LOG = LogManager.getLogger(ExampleServerLauncher.class);
 
@@ -54,7 +54,7 @@ public final class ExampleServerLauncher {
    }
 
    protected static CLIParser createCLIParser(final String[] args) {
-      CLIParser parser = new CLIParser(args, CLIParser.getDefaultCLIOptions(), PROCESS_NAME, 8081);
+      CLIParser parser = new CLIParser(args, CLIParser.getDefaultCLIOptions(), EXECUTABLE_NAME, 8081);
       ensureWorkspaceRoot(parser);
       return parser;
    }
