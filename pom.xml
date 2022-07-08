@@ -377,7 +377,7 @@
 				<repository>
 					<id>wso2</id>
 					<name>WSO2</name>
-					<url>http://dist.wso2.org/maven2/</url>
+					<url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
 				</repository>
 			</repositories>
 

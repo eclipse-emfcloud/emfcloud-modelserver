@@ -4,7 +4,7 @@
             <id>wso2-mirror</id>
             <mirrorOf>wso2</mirrorOf>
             <name>WSO2 mirror to unblock.</name>
-            <url>http://dist.wso2.org/maven2/</url>
+            <url>http://maven.wso2.org/nexus/content/groups/wso2-public/</url>
             <blocked>false</blocked>
         </mirror>
     </mirrors>
