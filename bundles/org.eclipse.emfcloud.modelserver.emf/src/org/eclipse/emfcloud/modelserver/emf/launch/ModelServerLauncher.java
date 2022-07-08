@@ -12,7 +12,6 @@ package org.eclipse.emfcloud.modelserver.emf.launch;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.logging.log4j.Level;
@@ -64,16 +63,16 @@ public class ModelServerLauncher implements Runnable {
       doRun();
    }
 
-   public void run(final Optional<String> logConfigurationFilePath) {
+   public void run(final String logConfigurationFilePath) {
       run(logConfigurationFilePath, false);
    }
 
-   public void run(final Optional<String> logConfigurationFilePath, final boolean enableDevLogging) {
+   public void run(final String logConfigurationFilePath, final boolean enableDevLogging) {
       configureLogging(logConfigurationFilePath, enableDevLogging);
       doRun();
    }
 
-   protected void configureLogging(final Optional<String> logConfigurationFilePath, final boolean enableDevLogging) {
+   protected void configureLogging(final String logConfigurationFilePath, final boolean enableDevLogging) {
       ModelServerLauncher.configureLogger(logConfigurationFilePath);
       if (enableDevLogging) {
          ProviderDefaults.enableDevLogging();
@@ -125,10 +124,10 @@ public class ModelServerLauncher implements Runnable {
       });
    }
 
-   public static void configureLogger(final Optional<String> configurationFilePath) {
-      if (configurationFilePath.isPresent()) {
+   protected static void configureLogger(final String configurationFilePath) {
+      if (configurationFilePath != null && !configurationFilePath.isEmpty()) {
          LoggerContext context = (LoggerContext) LogManager.getContext(false);
-         File file = new File(configurationFilePath.get());
+         File file = new File(configurationFilePath);
          // this will force a reconfiguration
          context.setConfigLocation(file.toURI());
       } else {

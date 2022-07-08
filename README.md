@@ -576,47 +576,53 @@ All commands are executed on a transactional command stack within an **EMF trans
 
 **v2 Patch, using an EMF Command:**
 
+```json
 {
-"type": "modelserver.emfcommand",
-"data": {
-"eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//CompoundCommand",
-"type": "compound",
-"commands": [
-{
-"eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
-"type": "set",
-"owner": {
-"eClass": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
-"$ref": "SuperBrewer3000.json#//@workflows.0"
-          },
-          "feature": "name",
-          "dataValues": ["Auto Brew"]
-        },
-        {
-          "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
-          "type": "add",
-          "owner": {
-            "eClass": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
-            "$ref": "SuperBrewer3000.json#//@workflows.0"
-},
-"feature": "nodes",
-"objectValues": [
-{
-"eClass": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
-"$ref": "//@commands.1/@objectsToAdd.0"
+    "type": "modelserver.emfcommand",
+    "data": {
+        "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//CompoundCommand",
+        "type": "compound",
+        "commands": [
+            {
+                "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
+                "type": "set",
+                "owner": {
+                    "eClass": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+                    "$ref": "SuperBrewer3000.json#//@workflows.0"
+                },
+                "feature": "name",
+                "dataValues": [
+                    "Auto Brew"
+                ]
+            },
+            {
+                "eClass": "http://www.eclipse.org/emfcloud/modelserver/command#//Command",
+                "type": "add",
+                "owner": {
+                    "eClass": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+                    "$ref": "SuperBrewer3000.json#//@workflows.0"
+                },
+                "feature": "nodes",
+                "objectValues": [
+                    {
+                        "eClass": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+                        "$ref": "//@commands.1/@objectsToAdd.0"
+                    }
+                ],
+                "objectsToAdd": [
+                    {
+                        "eClass": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+                        "name": "Brew"
+                    }
+                ],
+                "indices": [
+                    1
+                ]
+            }
+        ]
+    }
 }
-],
-"objectsToAdd": [
-{
-"eClass": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
-"name": "Brew"
-}
-],
-"indices": [1]
-}
-]
-}
-}
+```
 
 This is a JSON representation of an EMF `CompoundCommand` containing two commands, a
 `SetCommand` that changes the name of the first workflow in the model, and an
@@ -645,24 +651,24 @@ All commands are executed on a transactional command stack within an **EMF trans
 **v2 Patch, using a Json Patch with EMF-like paths:**
 
 ```json
-{
-  "type": "modelserver.patch",
-  "data": [
-    {
-      "op": "replace",
-      "path": "SuperBrewer3000.json#//@workflows.0/name",
-      "value": "Auto Brew"
-    },
-    {
-      "op": "add",
-      "path": "SuperBrewer3000.json#//@workflows.0/nodes/-",
-      "value": {
-        "$type": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
-        "name": "Brew"
+  {
+    "type": "modelserver.patch",
+    "data": [
+      {
+        "op": "replace",
+        "path": "SuperBrewer3000.json#//@workflows.0/name",
+        "value": "Auto Brew"
+      },
+      {
+        "op": "add",
+        "path": "SuperBrewer3000.json#//@workflows.0/nodes/-",
+        "value": {
+          "$type": "http://www.eclipsesource.com/modelserver/example/coffeemodel#//AutomaticTask",
+          "name": "Brew"
+        }
       }
-    }
-  ]
-}
+    ]
+  }
 ```
 
 This Json Patch is equivalent to the EMF Command above, and can be used in the same way. This is the recommended format to use for Web clients,

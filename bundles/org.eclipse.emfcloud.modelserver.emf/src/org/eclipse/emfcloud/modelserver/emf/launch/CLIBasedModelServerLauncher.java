@@ -37,7 +37,8 @@ public class CLIBasedModelServerLauncher extends ModelServerLauncher {
             parser.printHelp();
             return;
          }
-         super.run(parser.parseLogConfigurationPath(), parser.optionExists(CLIParser.OPTION_ENABLE_DEV_LOGGING));
+         super.run(parser.parseLogConfigurationPath().orElse(null),
+            parser.optionExists(CLIParser.OPTION_ENABLE_DEV_LOGGING));
       } catch (UnrecognizedOptionException e) {
          LOG.error("Unrecognized command line argument(s) used!\n");
          parser.printHelp();

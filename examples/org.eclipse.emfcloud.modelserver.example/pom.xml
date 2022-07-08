@@ -65,14 +65,15 @@
          <scope>provided</scope>
       </dependency>
       <dependency>
+         <groupId>org.eclipse.emfcloud.modelserver</groupId>
+         <artifactId>org.eclipse.emfcloud.modelserver.lib</artifactId>
+         <version>${project.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
          <groupId>commons-io</groupId>
          <artifactId>commons-io</artifactId>
          <version>${commons.io.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.logging.log4j</groupId>
-         <artifactId>log4j-core</artifactId>
-         <version>${apache.logging.log4j.version}</version>
       </dependency>
    </dependencies>
 

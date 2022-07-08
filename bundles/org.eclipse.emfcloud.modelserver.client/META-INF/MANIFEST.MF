@@ -20,4 +20,4 @@ Export-Package: org.eclipse.emfcloud.modelserver.client,
  org.eclipse.emfcloud.modelserver.client.v2,
  org.eclipse.emfcloud.modelserver.internal.client;x-internal:=true
 Bundle-Vendor: EclipseSource
-Import-Package: org.apache.logging.log4j;version="2.17.1"
+Import-Package: org.apache.logging.log4j;version="[2.17.1,3.0.0)"
