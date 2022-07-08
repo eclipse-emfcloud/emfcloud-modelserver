@@ -265,7 +265,7 @@ public class DefaultSessionController implements SessionController {
             // model has been deleted
             session.send(fullUpdate(NullNode.getInstance()));
          } else {
-            session.send(fullUpdate(encoder.encode(session, updatedModel)));
+            session.send(fullUpdate(encoder.encode(modeluri, session, updatedModel)));
          }
       } catch (EncodingException e) {
          LOG.error("Broadcast full update of " + modeluri + " failed", e);
@@ -274,7 +274,7 @@ public class DefaultSessionController implements SessionController {
 
    protected void broadcastIncrementalUpdates(final String modeluri, final CCommandExecutionResult execution) {
       Map<String, JsonNode> updates = encodeIfPresent(modeluri, execution);
-      getOpenSessions(modeluri).forEach(session -> broadcastIncrementalUpdate(session, updates));
+      getOpenSessions(modeluri).forEach(session -> broadcastIncrementalUpdate(modeluri, session, updates));
    }
 
    protected void broadcastIncrementalUpdatesV2(final String modeluri, final JsonNode jsonPatch) {
@@ -308,8 +308,9 @@ public class DefaultSessionController implements SessionController {
       return result;
    }
 
-   private void broadcastIncrementalUpdate(final WsContext session, final Map<String, JsonNode> updates) {
-      String sessionFormat = encoder.findFormat(session);
+   private void broadcastIncrementalUpdate(final String modelUri, final WsContext session,
+      final Map<String, JsonNode> updates) {
+      String sessionFormat = encoder.findFormat(modelUri, session);
       JsonNode update = updates.get(sessionFormat);
       session.send(JsonResponse.incrementalUpdate(update));
    }
@@ -383,7 +384,7 @@ public class DefaultSessionController implements SessionController {
       Map<String, JsonNode> encodings = new HashMap<>();
       if (hasSession(modeluri)) {
          try {
-            encodings = encoder.encode(execution);
+            encodings = encoder.encode(modeluri, execution);
          } catch (EncodingException exception) {
             LOG.error("Pre encoding of undo/redo command for " + modeluri + " failed", exception);
          }

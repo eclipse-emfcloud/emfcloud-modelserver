@@ -38,12 +38,12 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.emfcloud.modelserver.command.CCommandExecutionResult;
 import org.eclipse.emfcloud.modelserver.command.CCommandFactory;
-import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
-import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
+import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerEditingDomain;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelURIConverter;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecProvider;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.di.MultiBindingDefaults;
 import org.junit.Assume;
@@ -183,8 +183,8 @@ public class JsonPatchHelperTest {
             bind(ModelResourceManager.class).toInstance(modelResourceManager);
             bind(ModelURIConverter.class).toInstance(modelURIConverter);
 
-            MapBinding<String, Codec> codecBinding = MapBinding.create(String.class, Codec.class);
-            codecBinding.putAll(MultiBindingDefaults.DEFAULT_CODECS);
+            MultiBinding<CodecProvider> codecBinding = MultiBinding.create(CodecProvider.class);
+            codecBinding.addAll(MultiBindingDefaults.DEFAULT_CODECS);
             codecBinding.applyBinding(binder());
          }
       }).getInstance(JsonPatchHelper.class);

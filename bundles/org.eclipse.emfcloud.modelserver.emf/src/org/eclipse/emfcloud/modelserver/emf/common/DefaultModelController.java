@@ -104,7 +104,7 @@ public class DefaultModelController implements ModelController {
 
       try {
          this.modelRepository.addModel(modeluri, root.get());
-         final JsonNode encoded = codecs.encode(ctx, root.get());
+         final JsonNode encoded = codecs.encode(modeluri, ctx, root.get());
          success(ctx, encoded);
          this.sessionController.modelCreated(modeluri);
       } catch (EncodingException ex) {
@@ -146,7 +146,7 @@ public class DefaultModelController implements ModelController {
          final Map<URI, EObject> allModels = this.modelRepository.getAllModels();
          Map<URI, JsonNode> encodedEntries = Maps.newLinkedHashMap();
          for (Map.Entry<URI, EObject> entry : allModels.entrySet()) {
-            final JsonNode encoded = codecs.encode(ctx, entry.getValue());
+            final JsonNode encoded = codecs.encode(entry.getKey().toString(), ctx, entry.getValue());
             encodedEntries.put(uriConverter.deresolveModelURI(ctx, entry.getKey()), encoded);
          }
          success(ctx, JsonCodec.encode(encodedEntries));
@@ -165,7 +165,7 @@ public class DefaultModelController implements ModelController {
          return;
       }
       try {
-         success(ctx, JsonCodec.encode(codecs.encode(ctx, root.get())));
+         success(ctx, JsonCodec.encode(codecs.encode(modeluri, ctx, root.get())));
       } catch (EncodingException exception) {
          encodingError(ctx, exception);
       }
@@ -180,7 +180,7 @@ public class DefaultModelController implements ModelController {
          return;
       }
       try {
-         success(ctx, codecs.encode(ctx, element.get()));
+         success(ctx, codecs.encode(modeluri, ctx, element.get()));
       } catch (EncodingException exception) {
          encodingError(ctx, exception);
       }
@@ -195,7 +195,7 @@ public class DefaultModelController implements ModelController {
          return;
       }
       try {
-         success(ctx, codecs.encode(ctx, element.get()));
+         success(ctx, codecs.encode(modeluri, ctx, element.get()));
       } catch (EncodingException exception) {
          encodingError(ctx, exception);
       }
@@ -213,7 +213,7 @@ public class DefaultModelController implements ModelController {
          return;
       }
       try {
-         response(ctx, JsonResponse.fullUpdate(codecs.encode(ctx, newRoot.get())));
+         response(ctx, JsonResponse.fullUpdate(codecs.encode(modeluri, ctx, newRoot.get())));
       } catch (EncodingException exception) {
          encodingError(ctx, exception);
       }

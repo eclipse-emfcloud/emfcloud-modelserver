@@ -21,7 +21,6 @@ import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.Routing;
-import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
 import org.eclipse.emfcloud.modelserver.common.utils.MultiBinding;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
@@ -53,6 +52,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
 import org.eclipse.emfcloud.modelserver.emf.common.SingleThreadModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.TransactionController;
 import org.eclipse.emfcloud.modelserver.emf.common.UriHelper;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecProvider;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.watchers.DIModelWatchersManager;
@@ -224,8 +224,8 @@ public class DefaultModelServerModule extends ModelServerModule {
     *
     * @param binding map binding from format to codec
     */
-   protected void configureCodecs(final MapBinding<String, Codec> binding) {
-      binding.putAll(MultiBindingDefaults.DEFAULT_CODECS);
+   protected void configureCodecs(final MultiBinding<CodecProvider> binding) {
+      binding.addAll(MultiBindingDefaults.DEFAULT_CODECS);
    }
 
    protected void configureCommandCodecs(final MapBinding<String, CommandContribution> binding) {
@@ -250,7 +250,8 @@ public class DefaultModelServerModule extends ModelServerModule {
       configure(MultiBinding.create(EPackageConfiguration.class), this::configureEPackages);
       configure(MultiBinding.create(Routing.class), this::configureRoutings);
       configure(MapBinding.create(EntryPointType.class, AppEntryPoint.class), this::configureAppEntryPoints);
-      configure(MapBinding.create(String.class, Codec.class), this::configureCodecs);
+      // configure(MapBinding.create(String.class, Codec.class), this::configureCodecs);
+      configure(MultiBinding.create(CodecProvider.class), this::configureCodecs);
       configure(MapBinding.create(String.class, CommandContribution.class), this::configureCommandCodecs);
       configure(MultiBinding.create(ModelWatcher.Factory.class), this::configureModelWatcherFactories);
       configure(MultiBinding.create(PatchCommandHandler.class), this::configurePatchCommandHandlers);

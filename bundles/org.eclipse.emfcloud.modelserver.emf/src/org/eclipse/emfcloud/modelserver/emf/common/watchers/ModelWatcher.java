@@ -22,7 +22,7 @@ public interface ModelWatcher {
    /**
     * Factory to create a {@link ModelWatcher} from a supported {@link Resource}.
     */
-   public interface Factory {
+   interface Factory {
 
       /**
        * Test whether factory can handle this model resource (test often based on URI).

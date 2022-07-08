@@ -48,7 +48,7 @@ public interface CodecsManager {
     * @return a map containing all format strings and their encoded JsonNodes
     * @throws EncodingException
     */
-   Map<String, JsonNode> encode(EObject eObject) throws EncodingException;
+   Map<String, JsonNode> encode(String modelUri, EObject eObject) throws EncodingException;
 
    /**
     * Encode an EObject to a JsonNode.
@@ -58,7 +58,7 @@ public interface CodecsManager {
     * @return JsonNode
     * @throws EncodingException when encoding failed
     */
-   JsonNode encode(Context context, EObject eObject) throws EncodingException;
+   JsonNode encode(String modelUri, Context context, EObject eObject) throws EncodingException;
 
    /**
     * Encode an EObject to a JsonNode.
@@ -68,7 +68,7 @@ public interface CodecsManager {
     * @return JsonNode
     * @throws EncodingException when encoding failed
     */
-   JsonNode encode(WsContext context, EObject eObject) throws EncodingException;
+   JsonNode encode(String modelUri, WsContext context, EObject eObject) throws EncodingException;
 
    /**
     * Decode a JsonNode to an EObject.
@@ -78,7 +78,7 @@ public interface CodecsManager {
     * @return the decoded EObject
     * @throws DecodingException when decoding failed
     */
-   Optional<EObject> decode(Context context, String payload) throws DecodingException;
+   Optional<EObject> decode(String modelUri, Context context, String payload) throws DecodingException;
 
    /**
     * Decode a JsonNode to an EObject.
@@ -100,7 +100,7 @@ public interface CodecsManager {
     * @return the decoded EObject
     * @throws DecodingException when decoding failed
     */
-   Optional<EObject> decode(WsContext context, String payload) throws DecodingException;
+   Optional<EObject> decode(String modelUri, WsContext context, String payload) throws DecodingException;
 
    /**
     * Decode a JsonNode to an EObject.
@@ -120,7 +120,7 @@ public interface CodecsManager {
     * @param context the javalin websocket context
     * @return format string
     */
-   String findFormat(WsContext context);
+   String findFormat(String modelUri, WsContext context);
 
    /**
     * Obtains the codec that handles the format of the websocket.
@@ -128,6 +128,6 @@ public interface CodecsManager {
     * @param context the javalin websocket context
     * @return the codec for the websocket's format
     */
-   Codec findCodec(WsContext context);
+   Codec findCodec(String modelUri, WsContext context);
 
 }

@@ -22,11 +22,7 @@ import org.eclipse.emfcloud.modelserver.common.APIVersion;
 import org.eclipse.emfcloud.modelserver.common.APIVersionRange;
 import org.eclipse.emfcloud.modelserver.common.AppEntryPoint;
 import org.eclipse.emfcloud.modelserver.common.EntryPointType;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.Routing;
-import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
-import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 import org.eclipse.emfcloud.modelserver.edit.CommandContribution;
 import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
 import org.eclipse.emfcloud.modelserver.edit.command.AddCommandContribution;
@@ -37,8 +33,8 @@ import org.eclipse.emfcloud.modelserver.edit.command.UpdateModelCommandContribut
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRoutingV1;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerRoutingV2;
-import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
-import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecProvider;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.DefaultCodecsProvider;
 import org.eclipse.emfcloud.modelserver.emf.common.watchers.FileModelWatcher;
 import org.eclipse.emfcloud.modelserver.emf.common.watchers.ModelWatcher;
 import org.eclipse.emfcloud.modelserver.emf.configuration.CommandPackageConfiguration;
@@ -60,10 +56,8 @@ public final class MultiBindingDefaults {
    public static final Map<EntryPointType, Class<? extends AppEntryPoint>> DEFAULT_APP_ENTRY_POINTS = Map.of(
       EntryPointType.REST, ModelServerEntryPoint.class);
 
-   public static final Map<String, Class<? extends Codec>> DEFAULT_CODECS = Map.of(
-      ModelServerPathParameters.FORMAT_XMI, XmiCodec.class,
-      ModelServerPathParameters.FORMAT_JSON, JsonCodec.class,
-      ModelServerPathParametersV2.FORMAT_JSON_V2, JsonCodecV2.class);
+   public static final List<Class<? extends CodecProvider>> DEFAULT_CODECS = List.of(
+      DefaultCodecsProvider.class);
 
    public static final Map<String, Class<? extends CommandContribution>> DEFAULT_COMMAND_CODECS = Map.of(
       EMFCommandType.ADD, AddCommandContribution.class,
