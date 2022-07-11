@@ -250,7 +250,6 @@ public class DefaultModelServerModule extends ModelServerModule {
       configure(MultiBinding.create(EPackageConfiguration.class), this::configureEPackages);
       configure(MultiBinding.create(Routing.class), this::configureRoutings);
       configure(MapBinding.create(EntryPointType.class, AppEntryPoint.class), this::configureAppEntryPoints);
-      // configure(MapBinding.create(String.class, Codec.class), this::configureCodecs);
       configure(MultiBinding.create(CodecProvider.class), this::configureCodecs);
       configure(MapBinding.create(String.class, CommandContribution.class), this::configureCommandCodecs);
       configure(MultiBinding.create(ModelWatcher.Factory.class), this::configureModelWatcherFactories);

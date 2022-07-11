@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -83,12 +82,6 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
     */
    private static final AtomicBoolean NEED_OBJECT_URI_MAPPINGS = new AtomicBoolean();
 
-   private Optional<CodecProvider> getBestCodecProvider(final String modelUri, final String format) {
-      return this.codecProvider.stream()
-         .sorted((cp1, cp2) -> cp2.getPriority(modelUri, format) - cp1.getPriority(modelUri, format))
-         .findFirst();
-   }
-
    @Inject
    public JsonPatchHelper(final ModelResourceManager modelManager, final ServerConfiguration serverConfiguration,
       final Set<CodecProvider> codecProvider, final ModelURIConverter modelURIConverter) {
@@ -144,8 +137,8 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    }
 
    public JsonNode getCurrentModel(final String modelUri, final EObject root) throws EncodingException {
-      Codec codec = this.getBestCodecProvider(modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
-         .map(cp -> cp.getCodec(modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)).get().orElse(fallback);
+      Codec codec = CodecProvider.getBestCodec(this.codecProvider, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
+         .orElse(fallback);
 
       if (codec instanceof Codec.Internal) {
          // Do not make a copy in a one-off resource for serialization as Codec.encode(EObject) does
@@ -263,7 +256,8 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
       Map<JsonNode, URI> result = Maps.newHashMap();
       String modelUri = resourceURI.toString();
       // What is the name of the unique identifier property for our codec that we used to create the old model?
-      String idKey = this.getBestCodecProvider(modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
+      String idKey = CodecProvider
+         .getBestCodecProvider(this.codecProvider, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
          .isPresent() ? "$id" : "id";
 
       Iterator<JsonNode> operations = patch.isArray() ? patch.iterator() : Iterators.singletonIterator(patch);

@@ -10,36 +10,38 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common.codecs;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 
-import com.google.common.collect.Sets;
-
 public class DefaultCodecsProvider implements CodecProvider {
 
-   private final Set<String> supportedFormats = Sets.newHashSet(ModelServerPathParametersV2.FORMAT_XMI,
-      ModelServerPathParametersV2.FORMAT_JSON, ModelServerPathParametersV2.FORMAT_JSON_V2);
+   private final Map<String, Supplier<Codec>> supportedFormats = new LinkedHashMap<>();
 
-   @Override
-   public Optional<Codec> getCodec(final String modelUri, final String format) {
-      if (ModelServerPathParametersV2.FORMAT_XMI.equals(format)) {
-         return Optional.of(new XmiCodec());
-      }
-      if (ModelServerPathParametersV2.FORMAT_JSON.equals(format)) {
-         return Optional.of(new JsonCodec());
-      }
-      if (ModelServerPathParametersV2.FORMAT_JSON_V2.equals(format)) {
-         return Optional.of(new JsonCodecV2());
-      }
-      return Optional.empty();
+   public DefaultCodecsProvider() {
+      this.supportedFormats.put(ModelServerPathParametersV2.FORMAT_XMI, XmiCodec::new);
+      this.supportedFormats.put(ModelServerPathParametersV2.FORMAT_JSON, JsonCodec::new);
+      this.supportedFormats.put(ModelServerPathParametersV2.FORMAT_JSON_V2, JsonCodecV2::new);
+
    }
 
    @Override
-   public Set<String> getAllFormats() { return supportedFormats; }
+   public Optional<Codec> getCodec(final String modelUri, final String format) {
+      Supplier<Codec> codecSupplier = supportedFormats.get(format);
+      if (codecSupplier == null) {
+         return Optional.empty();
+      }
+      return Optional.of(codecSupplier.get());
+   }
+
+   @Override
+   public Set<String> getAllFormats() { return supportedFormats.keySet(); }
 
    @Override
    public int getPriority(final String modelUri, final String format) {

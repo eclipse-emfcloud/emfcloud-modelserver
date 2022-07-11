@@ -71,6 +71,15 @@ public class EMFCommandHandler implements PatchCommandHandler {
 
    @FunctionalInterface
    private interface Decoder<C> {
+      /**
+       * Decode the requested payload.
+       *
+       * @param modelUri the modelUri of the request, can be null
+       * @param context  the context
+       * @param payload  the payload of the request
+       * @return the EObject of the payload if decodable, empty otherwise
+       * @throws DecodingException
+       */
       Optional<EObject> decode(String modelUri, C context, String payload) throws DecodingException;
    }
 
