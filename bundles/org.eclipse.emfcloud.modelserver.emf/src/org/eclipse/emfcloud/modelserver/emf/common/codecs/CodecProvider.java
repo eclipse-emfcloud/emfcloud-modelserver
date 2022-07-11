@@ -50,8 +50,7 @@ public interface CodecProvider {
       final Collection<? extends CodecProvider> codecProviders,
       final String modelUri, final String format) {
       return codecProviders.stream()
-         .sorted((cp1, cp2) -> cp2.getPriority(modelUri, format) - cp1.getPriority(modelUri, format))
-         .findFirst();
+         .max((cp1, cp2) -> cp1.getPriority(modelUri, format) - cp2.getPriority(modelUri, format));
    }
 
    static Optional<Codec> getBestCodec(final Collection<? extends CodecProvider> codecProviders,

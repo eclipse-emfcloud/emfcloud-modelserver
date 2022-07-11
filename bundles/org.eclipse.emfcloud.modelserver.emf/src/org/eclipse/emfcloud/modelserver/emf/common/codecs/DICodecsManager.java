@@ -10,6 +10,7 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common.codecs;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
@@ -35,6 +38,7 @@ import io.javalin.websocket.WsContext;
 
 public class DICodecsManager implements CodecsManager {
 
+   protected static final Logger LOG = LogManager.getLogger(DICodecsManager.class);
    /** The format we prefer to use. */
    private String preferredFormat = ModelServerPathParameters.FORMAT_JSON;
 
@@ -62,16 +66,17 @@ public class DICodecsManager implements CodecsManager {
    @Override
    public Map<String, JsonNode> encode(final String modelUri, final EObject eObject) throws EncodingException {
       Map<String, JsonNode> encodings = new LinkedHashMap<>();
-      this.codecProviders.forEach(cp -> {
-         cp.getAllFormats().forEach(f -> {
-            cp.getCodec(modelUri, f).ifPresent(c -> {
-               try {
-                  encodings.put(f, c.encode(eObject));
-               } catch (EncodingException e) {
-                  e.printStackTrace();
-               }
-            });
-         });
+      HashSet<String> uniqueFormats = this.codecProviders.stream().collect(HashSet::new,
+         (acc, cp) -> acc.addAll(cp.getAllFormats()), Set<String>::addAll);
+      uniqueFormats.stream().forEach(f -> {
+         CodecProvider.getBestCodec(codecProviders, modelUri, f).map(c -> {
+            try {
+               return c.encode(eObject);
+            } catch (EncodingException e) {
+               LOG.error(e.getMessage(), e);
+            }
+            return null;
+         }).ifPresent(n -> encodings.put(f, n));
       });
       return encodings;
    }
