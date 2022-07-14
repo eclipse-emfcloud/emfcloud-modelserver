@@ -128,9 +128,8 @@ public class DefaultModelControllerTest {
       Optional<Resource> resource = Optional.of(set.getResource(uri, true));
 
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI(System.getProperty("user.home")));
-      when(codecProvider.getAllFormats()).thenReturn(Collections.singleton(ModelServerPathParametersV1.FORMAT_XMI));
-      when(codecProvider.getPriority(any(), any())).thenReturn(1);
-      when(codecProvider.getCodec(any(), any())).thenReturn(Optional.of(new XmiCodec()));
+      when(codecProvider.getCodec(any(), eq(ModelServerPathParametersV1.FORMAT_XMI)))
+         .thenReturn(Optional.of(new XmiCodec()));
       codecs = new DICodecsManager(Collections.singleton(codecProvider));
       when(modelRepository.getModel(getModelUri("TestError.ecore").toString()))
          .thenReturn(Optional.of(resource.get().getContents().get(0)));
