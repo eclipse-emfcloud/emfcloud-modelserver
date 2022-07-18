@@ -204,8 +204,8 @@ public abstract class AbstractJsonPatchHelper {
       }
 
       // if we are in a feature which is a list, remove the element from said feature
-      if (eObject.eContainingFeature() != null && eObject.eContainingFeature().isMany()) {
-         return RemoveCommand.create(getEditingDomain(eObject), eObject.eContainer(), eObject.eContainingFeature(),
+      if (eObject.eContainmentFeature() != null && eObject.eContainmentFeature().isMany()) {
+         return RemoveCommand.create(getEditingDomain(eObject), eObject.eContainer(), eObject.eContainmentFeature(),
             eObject);
       }
 
