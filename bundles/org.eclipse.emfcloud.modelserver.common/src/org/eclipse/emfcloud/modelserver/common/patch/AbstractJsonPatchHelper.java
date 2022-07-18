@@ -211,25 +211,12 @@ public abstract class AbstractJsonPatchHelper {
 
       // If the feature is present, but index is absent, we unset the value (i.e. set it to default value)
       if (setting.getFeature() != null) {
-         Object defaultValue = getDefaultValue(setting.getFeature());
-         return SetCommand.create(getEditingDomain(eObject), eObject, setting.getFeature(), defaultValue);
+         return SetCommand.create(getEditingDomain(eObject), eObject, setting.getFeature(), SetCommand.UNSET_VALUE);
       }
 
       Command deleteCommand = DeleteCommand.create(getEditingDomain(eObject), eObject);
 
       return deleteCommand;
-   }
-
-   protected Object getDefaultValue(final EStructuralFeature feature) {
-      Object defaultValue = feature.getDefaultValue();
-      if (defaultValue == null && feature.isMany()) {
-         // Special case for lists default value.
-         // If the feature represents a collection, and 'null' is specified as the default
-         // value, we need to use an empty collection instead. Otherwise, SetCommand(object, feature, null)
-         // will cause a NPE.
-         return Collections.emptyList();
-      }
-      return defaultValue;
    }
 
    protected Command getAddCommand(final String modelURI, final ResourceSet resourceSet, final JsonNode patchAction)
@@ -611,7 +598,7 @@ public abstract class AbstractJsonPatchHelper {
       }
 
       int lastSegmentPos = jsonPath.lastIndexOf('/');
-      if (lastSegmentPos < 0 || lastSegmentPos >= jsonPath.length()) {
+      if (lastSegmentPos < 0 || lastSegmentPos >= (jsonPath.length() - 1)) {
          throw new JsonPatchException("Failed to parse Json Path: " + jsonPath);
       }
       // XXX if the edited object is the root element, its positional URI will be '/'
