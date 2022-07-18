@@ -187,31 +187,35 @@ public abstract class AbstractJsonPatchHelper {
       String jsonPath = path.asText();
       SettingValue setting = getSetting(modelURI, resourceSet, jsonPath);
 
+      // If neither the index nor the feature are present, we delete an Object
+      EObject eObject = setting.getEObject();
+
       // If the index is present, we remove a value from a list
       if (setting.getIndex().isPresent()) {
          int index = setting.getIndex().get();
          if (index == CommandParameter.NO_INDEX) {
             // If the index is "-", remove the last value from the list
-            Object currentValue = setting.getEObject().eGet(setting.getFeature());
+            Object currentValue = eObject.eGet(setting.getFeature());
             if (currentValue instanceof Collection) {
                index = ((Collection<?>) currentValue).size() - 1;
             }
          }
-         return RemoveCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-            setting.getFeature(), index);
+         return RemoveCommand.create(getEditingDomain(eObject), eObject, setting.getFeature(), index);
+      }
+
+      // if we are in a feature which is a list, remove the element from said feature
+      if (eObject.eContainingFeature() != null && eObject.eContainingFeature().isMany()) {
+         return RemoveCommand.create(getEditingDomain(eObject), eObject.eContainer(), eObject.eContainingFeature(),
+            eObject);
       }
 
       // If the feature is present, but index is absent, we unset the value (i.e. set it to default value)
       if (setting.getFeature() != null) {
          Object defaultValue = getDefaultValue(setting.getFeature());
-         return SetCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(), setting.getFeature(),
-            defaultValue);
+         return SetCommand.create(getEditingDomain(eObject), eObject, setting.getFeature(), defaultValue);
       }
 
-      // If neither the index nor the feature are present, we delete an Object
-      EObject eObjectToDelete = setting.getEObject();
-
-      Command deleteCommand = DeleteCommand.create(getEditingDomain(eObjectToDelete), eObjectToDelete);
+      Command deleteCommand = DeleteCommand.create(getEditingDomain(eObject), eObject);
 
       return deleteCommand;
    }
@@ -599,11 +603,6 @@ public abstract class AbstractJsonPatchHelper {
     */
    protected SettingValue getSettingFromCustomPath(final String modelURI, final String jsonPath)
       throws JsonPatchException {
-      int lastSegmentPos = jsonPath.lastIndexOf('/');
-      if (lastSegmentPos < 0 || lastSegmentPos >= jsonPath.length()) {
-         throw new JsonPatchException("Failed to parse Json Path: " + jsonPath);
-      }
-
       // The path may represent an EObject (without feature or index). In that case,
       // directly return it.
       EObject eObject = getEObject(modelURI, URI.createURI(jsonPath));
@@ -611,6 +610,10 @@ public abstract class AbstractJsonPatchHelper {
          return new SettingValue(eObject);
       }
 
+      int lastSegmentPos = jsonPath.lastIndexOf('/');
+      if (lastSegmentPos < 0 || lastSegmentPos >= jsonPath.length()) {
+         throw new JsonPatchException("Failed to parse Json Path: " + jsonPath);
+      }
       // XXX if the edited object is the root element, its positional URI will be '/'
       // Since we expect path as <id>/<feature>, the expected path in that case is
       // "//feature" and not "/feature" (Although "/feature" would be a valid Json Pointer path)
