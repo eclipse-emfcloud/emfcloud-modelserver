@@ -28,7 +28,6 @@ public class DefaultCodecsProvider implements CodecProvider {
       this.supportedFormats.put(ModelServerPathParametersV2.FORMAT_XMI, XmiCodec::new);
       this.supportedFormats.put(ModelServerPathParametersV2.FORMAT_JSON, JsonCodec::new);
       this.supportedFormats.put(ModelServerPathParametersV2.FORMAT_JSON_V2, JsonCodecV2::new);
-
    }
 
    @Override

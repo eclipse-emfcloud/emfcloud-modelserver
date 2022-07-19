@@ -274,7 +274,7 @@ public class DefaultSessionController implements SessionController {
 
    protected void broadcastIncrementalUpdates(final String modeluri, final CCommandExecutionResult execution) {
       Map<String, JsonNode> updates = encodeIfPresent(modeluri, execution);
-      getOpenSessions(modeluri).forEach(session -> broadcastIncrementalUpdate(modeluri, session, updates));
+      getOpenSessions(modeluri).forEach(session -> broadcastIncrementalUpdate(session, updates));
    }
 
    protected void broadcastIncrementalUpdatesV2(final String modeluri, final JsonNode jsonPatch) {
@@ -308,9 +308,9 @@ public class DefaultSessionController implements SessionController {
       return result;
    }
 
-   private void broadcastIncrementalUpdate(final String modelUri, final WsContext session,
+   private void broadcastIncrementalUpdate(final WsContext session,
       final Map<String, JsonNode> updates) {
-      String sessionFormat = encoder.findFormat(modelUri, session);
+      String sessionFormat = encoder.findFormat(session);
       JsonNode update = updates.get(sessionFormat);
       session.send(JsonResponse.incrementalUpdate(update));
    }

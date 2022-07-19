@@ -237,7 +237,7 @@ public class DefaultSessionControllerTest {
       Field sessionField = WsContext.class.getDeclaredField("session");
       FieldSetter.setField(validClientCtx, sessionField, session);
 
-      when(codecs.findFormat(modelUri, validClientCtx)).thenReturn(ModelServerPathParametersV1.FORMAT_JSON);
+      when(codecs.findFormat(validClientCtx)).thenReturn(ModelServerPathParametersV1.FORMAT_JSON);
 
       when(repository.hasModel(modelUri)).thenReturn(true);
    }

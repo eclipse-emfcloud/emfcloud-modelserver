@@ -84,25 +84,25 @@ public class DICodecsManager implements CodecsManager {
    @Override
    public JsonNode encode(final String modelUri, final Context context, final EObject eObject)
       throws EncodingException {
-      return findFormat(modelUri, context.queryParamMap()).encode(eObject);
+      return findCodec(modelUri, context.queryParamMap()).encode(eObject);
    }
 
    @Override
    public JsonNode encode(final String modelUri, final WsContext context, final EObject eObject)
       throws EncodingException {
-      return findFormat(modelUri, context.queryParamMap()).encode(eObject);
+      return findCodec(modelUri, context.queryParamMap()).encode(eObject);
    }
 
    @Override
    public Optional<EObject> decode(final String modelUri, final Context context, final String payload)
       throws DecodingException {
-      return findFormat(modelUri, context.queryParamMap()).decode(payload);
+      return findCodec(modelUri, context.queryParamMap()).decode(payload);
    }
 
    @Override
    public Optional<EObject> decode(final Context context, final String payload, final URI workspaceURI)
       throws DecodingException {
-      return findFormat(workspaceURI.toString(), context.queryParamMap()).decode(payload, workspaceURI);
+      return findCodec(workspaceURI.toString(), context.queryParamMap()).decode(payload, workspaceURI);
    }
 
    @Override
@@ -118,7 +118,7 @@ public class DICodecsManager implements CodecsManager {
    }
 
    @Override
-   public String findFormat(final String modelUri, final WsContext context) {
+   public String findFormat(final WsContext context) {
       String format = context.queryParam(ModelServerPathParametersV1.FORMAT);
       if (format != null) {
          return format;
@@ -128,24 +128,17 @@ public class DICodecsManager implements CodecsManager {
 
    @Override
    public Codec findCodec(final String modelUri, final WsContext context) {
-      String format = findFormat(modelUri, context);
-      // return Optional.ofNullable(formatToCodec.get(format)).orElseGet(JsonCodec::new);
+      String format = findFormat(context);
       return getCodec(modelUri, format).orElseGet(JsonCodec::new);
    }
 
-   protected Codec findFormat(final String modelUri, final Map<String, List<String>> queryParams) {
+   protected Codec findCodec(final String modelUri, final Map<String, List<String>> queryParams) {
       String format = ContextRequest.getParam(queryParams, ModelServerPathParametersV1.FORMAT).orElse(preferredFormat);
       return getCodec(modelUri, format).orElseGet(JsonCodec::new);
    }
 
    private Optional<Codec> getCodec(final String modelUri, final String format) {
-      Optional<CodecProvider> first = this.codecProviders.stream()
-         .sorted((cp1, cp2) -> cp2.getPriority(modelUri, format) - cp1.getPriority(modelUri, format)).findFirst();
-      if (first.isEmpty()) {
-         return Optional.empty();
-      }
-      return first.get().getCodec(modelUri, format);
-
+      return CodecProvider.getBestCodec(codecProviders, modelUri, format);
    }
 
    @Inject(optional = true)

@@ -64,7 +64,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
 
    private final ModelResourceManager modelManager;
    private final ServerConfiguration serverConfiguration;
-   private final Set<CodecProvider> codecProvider;
+   private final Set<CodecProvider> codecProviders;
    private final Codec fallback = new JsonCodecV2();
    private final ModelURIConverter modelURIConverter;
 
@@ -84,11 +84,11 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
 
    @Inject
    public JsonPatchHelper(final ModelResourceManager modelManager, final ServerConfiguration serverConfiguration,
-      final Set<CodecProvider> codecProvider, final ModelURIConverter modelURIConverter) {
+      final Set<CodecProvider> codecProviders, final ModelURIConverter modelURIConverter) {
 
       this.modelManager = modelManager;
       this.serverConfiguration = serverConfiguration;
-      this.codecProvider = codecProvider;
+      this.codecProviders = codecProviders;
       this.modelURIConverter = modelURIConverter;
    }
 
@@ -137,7 +137,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    }
 
    public JsonNode getCurrentModel(final String modelUri, final EObject root) throws EncodingException {
-      Codec codec = CodecProvider.getBestCodec(this.codecProvider, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
+      Codec codec = CodecProvider.getBestCodec(this.codecProviders, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
          .orElse(fallback);
 
       if (codec instanceof Codec.Internal) {
@@ -257,7 +257,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
       String modelUri = resourceURI.toString();
       // What is the name of the unique identifier property for our codec that we used to create the old model?
       String idKey = CodecProvider
-         .getBestCodecProvider(this.codecProvider, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
+         .getBestCodecProvider(this.codecProviders, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
          .isPresent() ? "$id" : "id";
 
       Iterator<JsonNode> operations = patch.isArray() ? patch.iterator() : Iterators.singletonIterator(patch);

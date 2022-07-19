@@ -44,7 +44,8 @@ public interface CodecsManager {
    /**
     * Encode an EObject to JsonNodes in all available formats.
     *
-    * @param eObject
+    * @param modelUri The ModelUri of the request, null if not available
+    * @param eObject  The EObject to encode
     * @return a map containing all format strings and their encoded JsonNodes
     * @throws EncodingException
     */
@@ -53,8 +54,9 @@ public interface CodecsManager {
    /**
     * Encode an EObject to a JsonNode.
     *
-    * @param context the javalin http context
-    * @param eObject EObject to encode
+    * @param modelUri The ModelUri of the request, null if not available
+    * @param context  the javalin http context
+    * @param eObject  EObject to encode
     * @return JsonNode
     * @throws EncodingException when encoding failed
     */
@@ -63,8 +65,9 @@ public interface CodecsManager {
    /**
     * Encode an EObject to a JsonNode.
     *
-    * @param context the javalin websocket context
-    * @param eObject EObject to encode
+    * @param modelUri The ModelUri of the request, null if not available
+    * @param context  the javalin websocket context
+    * @param eObject  EObject to encode
     * @return JsonNode
     * @throws EncodingException when encoding failed
     */
@@ -73,8 +76,9 @@ public interface CodecsManager {
    /**
     * Decode a JsonNode to an EObject.
     *
-    * @param context the javalin http context
-    * @param payload tthe String payload holding EObject definition to decode
+    * @param modelUri The ModelUri of the request, null if not available
+    * @param context  the javalin http context
+    * @param payload  tthe String payload holding EObject definition to decode
     * @return the decoded EObject
     * @throws DecodingException when decoding failed
     */
@@ -95,8 +99,9 @@ public interface CodecsManager {
    /**
     * Decode a JsonNode to an EObject.
     *
-    * @param context the javalin websocket context
-    * @param payload tthe String payload holding EObject definition to decode
+    * @param modelUri The ModelUri of the request, null if not available
+    * @param context  the javalin websocket context
+    * @param payload  tthe String payload holding EObject definition to decode
     * @return the decoded EObject
     * @throws DecodingException when decoding failed
     */
@@ -120,12 +125,13 @@ public interface CodecsManager {
     * @param context the javalin websocket context
     * @return format string
     */
-   String findFormat(String modelUri, WsContext context);
+   String findFormat(WsContext context);
 
    /**
     * Obtains the codec that handles the format of the websocket.
     *
-    * @param context the javalin websocket context
+    * @param modelUri The ModelUri of the request, null if not available
+    * @param context  the javalin websocket context
     * @return the codec for the websocket's format
     */
    Codec findCodec(String modelUri, WsContext context);
