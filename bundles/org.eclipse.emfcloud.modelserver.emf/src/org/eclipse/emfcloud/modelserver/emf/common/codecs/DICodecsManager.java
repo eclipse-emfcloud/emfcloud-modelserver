@@ -69,7 +69,7 @@ public class DICodecsManager implements CodecsManager {
       HashSet<String> uniqueFormats = this.codecProviders.stream().collect(HashSet::new,
          (acc, cp) -> acc.addAll(cp.getAllFormats()), Set<String>::addAll);
       uniqueFormats.stream().forEach(f -> {
-         CodecProvider.getBestCodec(codecProviders, modelUri, f).map(c -> {
+         CodecProvider.getCodec(codecProviders, modelUri, f).map(c -> {
             try {
                return c.encode(eObject);
             } catch (EncodingException e) {
@@ -138,7 +138,7 @@ public class DICodecsManager implements CodecsManager {
    }
 
    private Optional<Codec> getCodec(final String modelUri, final String format) {
-      return CodecProvider.getBestCodec(codecProviders, modelUri, format);
+      return CodecProvider.getCodec(codecProviders, modelUri, format);
    }
 
    @Inject(optional = true)

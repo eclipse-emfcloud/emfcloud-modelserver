@@ -46,16 +46,16 @@ public interface CodecProvider {
     */
    Optional<Codec> getCodec(String modelUri, String format);
 
-   static Optional<? extends CodecProvider> getBestCodecProvider(
+   static Optional<? extends CodecProvider> getCodecProvider(
       final Collection<? extends CodecProvider> codecProviders,
       final String modelUri, final String format) {
       return codecProviders.stream()
          .max((cp1, cp2) -> cp1.getPriority(modelUri, format) - cp2.getPriority(modelUri, format));
    }
 
-   static Optional<Codec> getBestCodec(final Collection<? extends CodecProvider> codecProviders,
+   static Optional<Codec> getCodec(final Collection<? extends CodecProvider> codecProviders,
       final String modelUri, final String format) {
-      Optional<? extends CodecProvider> bestCodecProvider = getBestCodecProvider(codecProviders, modelUri, format);
+      Optional<? extends CodecProvider> bestCodecProvider = getCodecProvider(codecProviders, modelUri, format);
       if (bestCodecProvider.isEmpty()) {
          return Optional.empty();
       }

@@ -78,7 +78,7 @@ public interface CodecsManager {
     *
     * @param modelUri The ModelUri of the request, null if not available
     * @param context  the javalin http context
-    * @param payload  tthe String payload holding EObject definition to decode
+    * @param payload  the String payload holding EObject definition to decode
     * @return the decoded EObject
     * @throws DecodingException when decoding failed
     */
@@ -88,7 +88,7 @@ public interface CodecsManager {
     * Decode a JsonNode to an EObject.
     *
     * @param context      the javalin http context
-    * @param payload      tthe String payload holding EObject definition to decode
+    * @param payload      the String payload holding EObject definition to decode
     * @param workspaceURI the URI to access to the model from the workspace
     * @return the decoded EObject
     * @throws DecodingException when decoding failed
@@ -101,7 +101,7 @@ public interface CodecsManager {
     *
     * @param modelUri The ModelUri of the request, null if not available
     * @param context  the javalin websocket context
-    * @param payload  tthe String payload holding EObject definition to decode
+    * @param payload  the String payload holding EObject definition to decode
     * @return the decoded EObject
     * @throws DecodingException when decoding failed
     */
@@ -111,7 +111,7 @@ public interface CodecsManager {
     * Decode a JsonNode to an EObject.
     *
     * @param context      the javalin websocket context
-    * @param payload      tthe String payload holding EObject definition to decode
+    * @param payload      the String payload holding EObject definition to decode
     * @param workspaceURI the URI to access to the model from the workspace
     * @return the decoded EObject
     * @throws DecodingException when decoding failed

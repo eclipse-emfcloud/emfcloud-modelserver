@@ -137,7 +137,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    }
 
    public JsonNode getCurrentModel(final String modelUri, final EObject root) throws EncodingException {
-      Codec codec = CodecProvider.getBestCodec(this.codecProviders, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
+      Codec codec = CodecProvider.getCodec(this.codecProviders, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
          .orElse(fallback);
 
       if (codec instanceof Codec.Internal) {
@@ -257,7 +257,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
       String modelUri = resourceURI.toString();
       // What is the name of the unique identifier property for our codec that we used to create the old model?
       String idKey = CodecProvider
-         .getBestCodecProvider(this.codecProviders, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
+         .getCodecProvider(this.codecProviders, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
          .isPresent() ? "$id" : "id";
 
       Iterator<JsonNode> operations = patch.isArray() ? patch.iterator() : Iterators.singletonIterator(patch);
