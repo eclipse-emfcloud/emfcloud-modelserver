@@ -38,10 +38,8 @@ import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.URIConverter;
 import org.eclipse.emf.ecore.util.EcoreAdapterFactory;
-import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.di.AbstractModuleWithInitializers;
-import org.eclipse.emfcloud.modelserver.common.utils.MapBinding;
 import org.eclipse.emfcloud.modelserver.edit.CommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.AbstractResourceTest;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelRepository;
@@ -53,6 +51,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.ResourceSetFactory;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecProvider;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EPackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.EcorePackageConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
@@ -125,7 +124,7 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
 
          private Multibinder<ModelWatcher.Factory> watcherFactoryBinder;
          private Multibinder<EPackageConfiguration> ePackageConfigurationBinder;
-         private MapBinding<String, Codec> codecBinding;
+         private Multibinder<CodecProvider> codecBinding;
 
          @Override
          protected void configure() {
@@ -137,9 +136,8 @@ public class FileModelWatcherIntegrationTest extends AbstractResourceTest {
             watcherFactoryBinder = Multibinder.newSetBinder(binder(), ModelWatcher.Factory.class);
             watcherFactoryBinder.addBinding().to(FileModelWatcher.Factory.class);
 
-            codecBinding = MapBinding.create(String.class, Codec.class);
-            codecBinding.putAll(MultiBindingDefaults.DEFAULT_CODECS);
-            codecBinding.applyBinding(binder());
+            codecBinding = Multibinder.newSetBinder(binder(), CodecProvider.class);
+            codecBinding.addBinding().to(MultiBindingDefaults.DEFAULT_CODECS.get(0));
 
             bind(ServerConfiguration.class).toInstance(serverConfig);
             bind(CommandCodec.class).toInstance(commandCodec);

@@ -49,7 +49,7 @@ public class EMFCommandHandler implements PatchCommandHandler {
 
    private <C> PatchCommand<CCommand> getPatchCommand(final C ctx, final JsonNode payload, final Decoder<C> decoder) {
       try {
-         Optional<EObject> decodedCCommand = decoder.decode(ctx, new ObjectMapper().writeValueAsString(payload));
+         Optional<EObject> decodedCCommand = decoder.decode(null, ctx, new ObjectMapper().writeValueAsString(payload));
          if (decodedCCommand.isPresent() && decodedCCommand.get() instanceof CCommand) {
             return new PatchCommand<>() {
 
@@ -71,7 +71,16 @@ public class EMFCommandHandler implements PatchCommandHandler {
 
    @FunctionalInterface
    private interface Decoder<C> {
-      Optional<EObject> decode(C context, String payload) throws DecodingException;
+      /**
+       * Decode the requested payload.
+       *
+       * @param modelUri the modelUri of the request, can be null
+       * @param context  the context
+       * @param payload  the payload of the request
+       * @return the EObject of the payload if decodable, empty otherwise
+       * @throws DecodingException
+       */
+      Optional<EObject> decode(String modelUri, C context, String payload) throws DecodingException;
    }
 
 }

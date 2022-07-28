@@ -190,7 +190,7 @@ public class DefaultSessionControllerTest {
       result.getDetails().put("myCustomDetail", "test");
       result.getDetails().put("fancyInfo", "more testing");
 
-      when(codecs.encode(result)).thenReturn(encodings);
+      when(codecs.encode(modelUri, result)).thenReturn(encodings);
       sessionController.commandExecuted(modelUri, () -> result, () -> null);
 
       verify(validClientCtx).send(argThat(jsonNodeThat(

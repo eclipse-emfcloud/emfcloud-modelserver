@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -42,6 +43,7 @@ import org.eclipse.emfcloud.modelserver.common.patch.LazyCompoundCommand;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelServerEditingDomain;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelURIConverter;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecProvider;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodecV2;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 
@@ -62,7 +64,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
 
    private final ModelResourceManager modelManager;
    private final ServerConfiguration serverConfiguration;
-   private final Map<String, Codec> codecs;
+   private final Set<CodecProvider> codecProviders;
    private final Codec fallback = new JsonCodecV2();
    private final ModelURIConverter modelURIConverter;
 
@@ -82,11 +84,11 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
 
    @Inject
    public JsonPatchHelper(final ModelResourceManager modelManager, final ServerConfiguration serverConfiguration,
-      final Map<String, Codec> codecs, final ModelURIConverter modelURIConverter) {
+      final Set<CodecProvider> codecProviders, final ModelURIConverter modelURIConverter) {
 
       this.modelManager = modelManager;
       this.serverConfiguration = serverConfiguration;
-      this.codecs = Map.copyOf(codecs);
+      this.codecProviders = codecProviders;
       this.modelURIConverter = modelURIConverter;
    }
 
@@ -134,8 +136,9 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
       return JsonDiff.asJson(oldModel, newModel);
    }
 
-   public JsonNode getCurrentModel(final EObject root) throws EncodingException {
-      Codec codec = codecs.getOrDefault(ModelServerPathParametersV2.FORMAT_JSON_V2, fallback);
+   public JsonNode getCurrentModel(final String modelUri, final EObject root) throws EncodingException {
+      Codec codec = CodecProvider.getCodec(this.codecProviders, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
+         .orElse(fallback);
 
       if (codec instanceof Codec.Internal) {
          // Do not make a copy in a one-off resource for serialization as Codec.encode(EObject) does
@@ -220,7 +223,7 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    private Map<Resource, JsonNode> collectStates(final List<Resource> resources) throws EncodingException {
       Map<Resource, JsonNode> states = new HashMap<>();
       for (Resource resource : resources) {
-         JsonNode newModel = getCurrentModel(resource.getContents().get(0));
+         JsonNode newModel = getCurrentModel(resource.getURI().toString(), resource.getContents().get(0));
          states.put(resource, newModel);
       }
       return states;
@@ -251,9 +254,11 @@ public class JsonPatchHelper extends AbstractJsonPatchHelper {
    @SuppressWarnings("checkstyle:CyclomaticComplexity")
    public Map<JsonNode, URI> mapObjectURIs(final JsonNode patch, final JsonNode oldModel, final URI resourceURI) {
       Map<JsonNode, URI> result = Maps.newHashMap();
-
+      String modelUri = resourceURI.toString();
       // What is the name of the unique identifier property for our codec that we used to create the old model?
-      String idKey = codecs.containsKey(ModelServerPathParametersV2.FORMAT_JSON_V2) ? "$id" : "id";
+      String idKey = CodecProvider
+         .getCodecProvider(this.codecProviders, modelUri, ModelServerPathParametersV2.FORMAT_JSON_V2)
+         .isPresent() ? "$id" : "id";
 
       Iterator<JsonNode> operations = patch.isArray() ? patch.iterator() : Iterators.singletonIterator(patch);
       while (operations.hasNext()) {

@@ -63,6 +63,7 @@ import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.XmiCodec;
 import org.eclipse.emfcloud.modelserver.edit.CommandExecutionType;
 import org.eclipse.emfcloud.modelserver.edit.EMFCommandType;
+import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecProvider;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.DICodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.JsonCodec;
@@ -112,6 +113,8 @@ public class DefaultModelControllerTest {
    private JsonPatchHelper jsonPatchHelper;
    @InjectMocks
    private DefaultModelValidator modelValidator;
+   @Mock
+   private CodecProvider codecProvider;
 
    private CodecsManager codecs;
 
@@ -125,7 +128,9 @@ public class DefaultModelControllerTest {
       Optional<Resource> resource = Optional.of(set.getResource(uri, true));
 
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI(System.getProperty("user.home")));
-      codecs = new DICodecsManager(Map.of(ModelServerPathParametersV1.FORMAT_XMI, new XmiCodec()));
+      when(codecProvider.getCodec(any(), eq(ModelServerPathParametersV1.FORMAT_XMI)))
+         .thenReturn(Optional.of(new XmiCodec()));
+      codecs = new DICodecsManager(Collections.singleton(codecProvider));
       when(modelRepository.getModel(getModelUri("TestError.ecore").toString()))
          .thenReturn(Optional.of(resource.get().getContents().get(0)));
       when(modelRepository.loadResource(getModelUri("TestError.ecore").toString())).thenReturn(resource);
