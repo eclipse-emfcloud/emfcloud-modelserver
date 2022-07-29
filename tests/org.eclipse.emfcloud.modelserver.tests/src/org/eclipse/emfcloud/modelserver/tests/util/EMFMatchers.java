@@ -10,6 +10,10 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.tests.util;
 
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,6 +23,8 @@ import java.util.Set;
 
 import org.eclipse.emf.common.command.Command;
 import org.eclipse.emf.common.command.CompoundCommand;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.ENamedElement;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -26,6 +32,7 @@ import org.eclipse.emf.edit.command.AddCommand;
 import org.eclipse.emf.edit.command.RemoveCommand;
 import org.eclipse.emf.edit.command.SetCommand;
 import org.hamcrest.CustomTypeSafeMatcher;
+import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 /**
@@ -161,6 +168,35 @@ public final class EMFMatchers {
             return false;
          }
       };
+   }
+
+   public static Matcher<Object> eNamedElement(final Class<? extends ENamedElement> expectedType, final String name) {
+      return eNamedElement(expectedType, is(name));
+   }
+
+   public static Matcher<Object> eNamedElement(final Class<? extends ENamedElement> expectedType,
+      final Matcher<? super String> nameMatcher) {
+      Matcher<Object> typeFeature = instanceOf(expectedType);
+      @SuppressWarnings({ "unchecked", "rawtypes" })
+      Matcher<Object> nameFeature = (Matcher) new FeatureMatcher<ENamedElement, String>(nameMatcher, "name", "name") {
+         @Override
+         protected String featureValueOf(final ENamedElement actual) {
+            return actual.getName();
+         }
+      };
+
+      return both(typeFeature).and(nameFeature);
+   }
+
+   public static Matcher<Object> eObjectOfClass(final String eClassName) {
+      return new CustomTypeSafeMatcher<>("EObject of class " + eClassName) {
+         @Override
+         protected boolean matchesSafely(final Object item) {
+            EClass eClass = (item instanceof EObject) ? ((EObject) item).eClass() : null;
+            return eClass != null && Objects.equals(eClass.getName(), eClassName);
+         }
+      };
+
    }
 
 }
