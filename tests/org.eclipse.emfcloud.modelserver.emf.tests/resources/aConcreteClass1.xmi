@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test:ConcreteClass1
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:test="http://www.eclipse.org/emfcloud/modelserver/2022/test"
+    xsi:schemaLocation="http://www.eclipse.org/emfcloud/modelserver/2022/test Test1.ecore"
+    Name="Test Instance"
+    type="testing">
+  <multiValuedAttr>a</multiValuedAttr>
+  <multiValuedAttr>b</multiValuedAttr>
+  <multiValuedAttr>c</multiValuedAttr>
+</test:ConcreteClass1>

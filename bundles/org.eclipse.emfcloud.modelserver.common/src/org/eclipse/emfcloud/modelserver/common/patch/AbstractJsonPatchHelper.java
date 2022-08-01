@@ -239,8 +239,11 @@ public abstract class AbstractJsonPatchHelper {
          // Attributes
          Object emfValue = getEMFValue(modelURI, resourceSet, feature, value);
          result = setting.getFeature().isMany()
-            ? AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-               feature, Collections.singleton(emfValue))
+            ? setting.getIndex()
+               .map(index -> AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+                  feature, Collections.singleton(emfValue), index))
+               .orElseGet(() -> AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+                  feature, Collections.singleton(emfValue)))
             : SetCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(), feature,
                emfValue);
       }
@@ -287,8 +290,11 @@ public abstract class AbstractJsonPatchHelper {
       }
 
       Command addOrSet = feature.isMany()
-         ? AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
-            setting.getFeature(), Collections.singleton(objectToAdd))
+         ? setting.getIndex()
+            .map(index -> AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+               setting.getFeature(), Collections.singleton(objectToAdd), index))
+            .orElseGet(() -> AddCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(),
+               setting.getFeature(), Collections.singleton(objectToAdd)))
          : SetCommand.create(getEditingDomain(setting.getEObject()), setting.getEObject(), feature,
             objectToAdd);
       result = result == null ? addOrSet : result.chain(addOrSet);

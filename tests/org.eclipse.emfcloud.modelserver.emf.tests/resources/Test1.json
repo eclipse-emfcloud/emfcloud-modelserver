@@ -1,7 +1,8 @@
 {
   "eClass" : "http://www.eclipse.org/emf/2002/Ecore#//EPackage",
   "name" : "test1",
-  "nsURI" : "",
+  "nsPrefix": "test",
+  "nsURI" : "http://www.eclipse.org/emfcloud/modelserver/2022/test",
   "eClassifiers" : [ {
     "eClass" : "http://www.eclipse.org/emf/2002/Ecore#//EClass",
     "name" : "AbstractClass1",
@@ -28,6 +29,15 @@
         "eClass" : "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
         "$ref" : "http://www.eclipse.org/emf/2002/Ecore#//EString"
       }
+    },
+    {
+      "eClass" : "http://www.eclipse.org/emf/2002/Ecore#//EAttribute",
+      "name" : "multiValuedAttr",
+      "eType" : {
+        "eClass" : "http://www.eclipse.org/emf/2002/Ecore#//EDataType",
+        "$ref" : "http://www.eclipse.org/emf/2002/Ecore#//EString"
+      },
+      "upperBound" : -1
     } ]
   } ]
 }
