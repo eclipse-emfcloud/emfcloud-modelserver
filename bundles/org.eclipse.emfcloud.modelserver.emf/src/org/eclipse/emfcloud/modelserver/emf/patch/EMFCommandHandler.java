@@ -12,11 +12,13 @@ package org.eclipse.emfcloud.modelserver.emf.patch;
 
 import java.util.Optional;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emfcloud.modelserver.command.CCommand;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.patch.PatchCommand;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,6 +34,9 @@ public class EMFCommandHandler implements PatchCommandHandler {
    @Inject
    private CodecsManager codecs;
 
+   @Inject
+   private ModelURIConverter uriConverter;
+
    @Override
    public boolean handles(final String type) {
       return ModelServerPathParametersV2.EMF_COMMAND.equals(type);
@@ -39,17 +44,21 @@ public class EMFCommandHandler implements PatchCommandHandler {
 
    @Override
    public PatchCommand<CCommand> getPatchCommand(final Context ctx, final JsonNode payload) {
-      return getPatchCommand(ctx, payload, codecs::decode);
+      String modelUri = uriConverter.resolveModelURI(ctx).map(URI::toString).orElse(null);
+      return getPatchCommand(ctx, modelUri, payload, codecs::decode);
    }
 
    @Override
    public PatchCommand<?> getPatchCommand(final WsContext ctx, final JsonNode payload) {
-      return getPatchCommand(ctx, payload, codecs::decode);
+      String modelUri = uriConverter.resolveModelURI(ctx).map(URI::toString).orElse(null);
+      return getPatchCommand(ctx, modelUri, payload, codecs::decode);
    }
 
-   private <C> PatchCommand<CCommand> getPatchCommand(final C ctx, final JsonNode payload, final Decoder<C> decoder) {
+   private <C> PatchCommand<CCommand> getPatchCommand(final C ctx, final String modelUri, final JsonNode payload,
+      final Decoder<C> decoder) {
       try {
-         Optional<EObject> decodedCCommand = decoder.decode(null, ctx, new ObjectMapper().writeValueAsString(payload));
+         Optional<EObject> decodedCCommand = decoder.decode(modelUri, ctx,
+            new ObjectMapper().writeValueAsString(payload));
          if (decodedCCommand.isPresent() && decodedCCommand.get() instanceof CCommand) {
             return new PatchCommand<>() {
 
