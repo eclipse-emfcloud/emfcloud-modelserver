@@ -24,7 +24,6 @@ import io.javalin.plugin.json.JavalinJackson;
 public final class ProviderDefaults {
    protected static final Logger LOG = LogManager.getLogger(ProviderDefaults.class);
 
-   private static ObjectMapper objectMapper = EMFModule.setupDefaultMapper();
    private static boolean isDevLoggingEnabled;
 
    private ProviderDefaults() {}
@@ -34,7 +33,7 @@ public final class ProviderDefaults {
    }
 
    public static ObjectMapper provideObjectMapper() {
-      return ProviderDefaults.objectMapper;
+      return EMFModule.setupDefaultMapper();
    }
 
    public static void enableDevLogging() {
