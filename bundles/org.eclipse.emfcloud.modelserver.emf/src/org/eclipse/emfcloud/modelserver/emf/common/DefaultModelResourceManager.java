@@ -314,9 +314,10 @@ public class DefaultModelResourceManager implements ModelResourceManager {
       try {
          ResourceSet rset = getResourceSet(modeluri);
          URI resourceURI = createURI(modeluri);
-         Optional<Resource> loadedResource = Optional.ofNullable(rset.getResource(resourceURI, false))
+         // Note that the resource set may be absent if the resource does not exist
+         Optional<Resource> loadedResource = Optional.ofNullable(rset).map(rs -> rs.getResource(resourceURI, false))
             .filter(Resource::isLoaded);
-         if (loadedResource.isPresent()) {
+         if (loadedResource.isPresent() || rset == null) {
             return loadedResource;
          }
          // do load the resource and watch for modifications
@@ -324,7 +325,7 @@ public class DefaultModelResourceManager implements ModelResourceManager {
          resource.load(Collections.EMPTY_MAP);
          watchResourceModifications(resource);
          return Optional.of(resource);
-      } catch (final Throwable e) {
+      } catch (final Exception e) {
          handleLoadError(modeluri, this.isInitializing, e);
          return Optional.empty();
       }

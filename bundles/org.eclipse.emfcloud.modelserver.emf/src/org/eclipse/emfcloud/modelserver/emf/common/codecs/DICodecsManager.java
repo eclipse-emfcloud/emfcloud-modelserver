@@ -27,6 +27,7 @@ import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -44,13 +45,15 @@ public class DICodecsManager implements CodecsManager {
 
    private final Set<CodecProvider> codecProviders = new LinkedHashSet<>();
 
-   /**
-    * Injected constructor.
-    *
-    * @param codecProviders the CodecProvider
-    */
    @Inject
-   public DICodecsManager(final Set<CodecProvider> codecProviders) {
+   private ModelURIConverter uriConverter;
+
+   public DICodecsManager() {
+      super();
+   }
+
+   @Inject
+   private void addCodecProviders(final Set<CodecProvider> codecProviders) {
       this.codecProviders.addAll(codecProviders);
    }
 
@@ -90,7 +93,7 @@ public class DICodecsManager implements CodecsManager {
    @Override
    public JsonNode encode(final String modelUri, final WsContext context, final EObject eObject)
       throws EncodingException {
-      return findCodec(modelUri, context.queryParamMap()).encode(eObject);
+      return findCodec(modelUri, context).encode(eObject);
    }
 
    @Override
@@ -102,7 +105,9 @@ public class DICodecsManager implements CodecsManager {
    @Override
    public Optional<EObject> decode(final Context context, final String payload, final URI workspaceURI)
       throws DecodingException {
-      return findCodec(workspaceURI.toString(), context.queryParamMap()).decode(payload, workspaceURI);
+
+      URI modelUri = uriConverter.resolveModelURI(context).orElse(workspaceURI);
+      return findCodec(modelUri.toString(), context.queryParamMap()).decode(payload, workspaceURI);
    }
 
    @Override
@@ -114,7 +119,9 @@ public class DICodecsManager implements CodecsManager {
    @Override
    public Optional<EObject> decode(final WsContext context, final String payload, final URI workspaceURI)
       throws DecodingException {
-      return findCodec(workspaceURI.toString(), context).decode(payload, workspaceURI);
+
+      URI modelUri = uriConverter.resolveModelURI(context).orElse(workspaceURI);
+      return findCodec(modelUri.toString(), context).decode(payload, workspaceURI);
    }
 
    @Override

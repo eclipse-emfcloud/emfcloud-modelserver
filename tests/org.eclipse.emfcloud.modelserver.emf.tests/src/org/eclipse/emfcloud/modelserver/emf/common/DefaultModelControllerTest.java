@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -88,6 +89,9 @@ import org.mockito.stubbing.Answer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Suppliers;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.TypeLiteral;
 
 import io.javalin.http.Context;
 
@@ -130,7 +134,16 @@ public class DefaultModelControllerTest {
       when(serverConfiguration.getWorkspaceRootURI()).thenReturn(URI.createFileURI(System.getProperty("user.home")));
       when(codecProvider.getCodec(any(), eq(ModelServerPathParametersV1.FORMAT_XMI)))
          .thenReturn(Optional.of(new XmiCodec()));
-      codecs = new DICodecsManager(Collections.singleton(codecProvider));
+      codecs = Guice.createInjector(new AbstractModule() {
+         @Override
+         protected void configure() {
+            super.configure();
+
+            bind(ModelURIConverter.class).toInstance(uriConverter);
+            bind(new TypeLiteral<Set<CodecProvider>>() {}).toInstance(Collections.singleton(codecProvider));
+         }
+      }).getInstance(DICodecsManager.class);
+
       when(modelRepository.getModel(getModelUri("TestError.ecore").toString()))
          .thenReturn(Optional.of(resource.get().getContents().get(0)));
       when(modelRepository.loadResource(getModelUri("TestError.ecore").toString())).thenReturn(resource);
