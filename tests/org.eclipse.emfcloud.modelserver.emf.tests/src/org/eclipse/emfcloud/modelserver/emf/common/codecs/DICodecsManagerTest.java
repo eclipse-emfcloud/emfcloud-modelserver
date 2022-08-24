@@ -64,6 +64,7 @@ public class DICodecsManagerTest {
       super();
    }
 
+   @SuppressWarnings("deprecation")
    @Test
    public void encode_context() throws EncodingException {
       codecsManager.encode(modelUri, requestCtx, EcorePackage.Literals.EANNOTATION__SOURCE);
@@ -78,6 +79,7 @@ public class DICodecsManagerTest {
       verify(codecsManager).findCodec(modelUri, sessionCtx);
    }
 
+   @SuppressWarnings("deprecation")
    @Test
    public void decode_context() throws DecodingException {
       codecsManager.decode(modelUri, requestCtx, json);
@@ -92,6 +94,7 @@ public class DICodecsManagerTest {
       verify(codecsManager).findCodec(modelUri, sessionCtx);
    }
 
+   @SuppressWarnings("deprecation")
    @Test
    public void decode_contextWithWorkspaceURI() throws DecodingException {
       codecsManager.decode(requestCtx, json, WORKSPACE_URI);
@@ -121,6 +124,8 @@ public class DICodecsManagerTest {
 
       json = Json.object().set("eClass", Json.text(EcoreUtil.getURI(EcorePackage.Literals.EPACKAGE).toString()))
          .toString();
+
+      when(requestCtx.matchedPath()).thenReturn("/api/v1"); // This is all we need of the path for these tests
 
       codecsManager = spy(Guice.createInjector(new AbstractModule() {
          @Override

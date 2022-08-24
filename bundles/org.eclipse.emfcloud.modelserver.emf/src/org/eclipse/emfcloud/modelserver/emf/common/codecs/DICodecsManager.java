@@ -22,7 +22,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emfcloud.modelserver.common.ModelServerPathParameters;
 import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV1;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
@@ -40,10 +39,13 @@ import io.javalin.websocket.WsContext;
 public class DICodecsManager implements CodecsManager {
 
    protected static final Logger LOG = LogManager.getLogger(DICodecsManager.class);
-   /** The format we prefer to use. */
-   private String preferredFormat = ModelServerPathParameters.FORMAT_JSON;
+   /** The format we prefer to use. If {@code null}, then the preferred format is inferred from the API version. */
+   private String preferredFormat;
 
    private final Set<CodecProvider> codecProviders = new LinkedHashSet<>();
+
+   /** In support of the deprecated {@link #findCodec(String, Map)} method, only. */
+   private final ThreadLocal<Context> currentContext = new ThreadLocal<>();
 
    @Inject
    private ModelURIConverter uriConverter;
@@ -87,7 +89,7 @@ public class DICodecsManager implements CodecsManager {
    @Override
    public JsonNode encode(final String modelUri, final Context context, final EObject eObject)
       throws EncodingException {
-      return findCodec(modelUri, context.queryParamMap()).encode(eObject);
+      return findCodec(modelUri, context).encode(eObject);
    }
 
    @Override
@@ -99,7 +101,7 @@ public class DICodecsManager implements CodecsManager {
    @Override
    public Optional<EObject> decode(final String modelUri, final Context context, final String payload)
       throws DecodingException {
-      return findCodec(modelUri, context.queryParamMap()).decode(payload);
+      return findCodec(modelUri, context).decode(payload);
    }
 
    @Override
@@ -107,7 +109,7 @@ public class DICodecsManager implements CodecsManager {
       throws DecodingException {
 
       URI modelUri = uriConverter.resolveModelURI(context).orElse(workspaceURI);
-      return findCodec(modelUri.toString(), context.queryParamMap()).decode(payload, workspaceURI);
+      return findCodec(modelUri.toString(), context).decode(payload, workspaceURI);
    }
 
    @Override
@@ -133,14 +135,30 @@ public class DICodecsManager implements CodecsManager {
       return ModelServerPathParametersV1.FORMAT_JSON;
    }
 
+   public Codec findCodec(final String modelUri, final Context context) {
+      // We used the deprecated method, so delegate to it still
+      Context previous = currentContext.get();
+      currentContext.set(context);
+      try {
+         return findCodec(modelUri, context.queryParamMap());
+      } finally {
+         currentContext.set(previous);
+      }
+   }
+
    @Override
    public Codec findCodec(final String modelUri, final WsContext context) {
       String format = findFormat(context);
       return getCodec(modelUri, format).orElseGet(JsonCodec::new);
    }
 
+   /**
+    * @deprecated Override the {@link #findCodec(String, Context)} method, instead.
+    */
+   @Deprecated
    protected Codec findCodec(final String modelUri, final Map<String, List<String>> queryParams) {
-      String format = ContextRequest.getParam(queryParams, ModelServerPathParametersV1.FORMAT).orElse(preferredFormat);
+      String format = ContextRequest.getParam(queryParams, ModelServerPathParametersV1.FORMAT).orElseGet(
+         () -> Optional.ofNullable(currentContext.get()).map(this::getPreferredFormat).orElse(preferredFormat));
       return getCodec(modelUri, format).orElseGet(JsonCodec::new);
    }
 

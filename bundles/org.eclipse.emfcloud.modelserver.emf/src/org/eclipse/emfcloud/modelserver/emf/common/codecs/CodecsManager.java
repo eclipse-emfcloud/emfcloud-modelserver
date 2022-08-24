@@ -15,9 +15,12 @@ import java.util.Optional;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emfcloud.modelserver.common.APIVersion;
+import org.eclipse.emfcloud.modelserver.common.ModelServerPathParametersV2;
 import org.eclipse.emfcloud.modelserver.common.codecs.Codec;
 import org.eclipse.emfcloud.modelserver.common.codecs.DecodingException;
 import org.eclipse.emfcloud.modelserver.common.codecs.EncodingException;
+import org.eclipse.emfcloud.modelserver.emf.common.util.ContextRequest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -37,7 +40,11 @@ public interface CodecsManager {
     * This format should have a corresponding Codec in the manager, but it's not guaranteed when binding is overridden.
     * This is generally implemented using DI and {@link #PREFERRED_FORMAT}.
     *
-    * @return preferred format value
+    * @return preferred format value. If {@code null}, then the preferred format is determined by the API version:
+    *         <ul>
+    *         <li>for API version 2 or later, {@code "json-v2"}</li>
+    *         <li>for API version 1, {@code "json"}</li>
+    *         </ul>
     */
    String getPreferredFormat();
 
@@ -120,12 +127,64 @@ public interface CodecsManager {
       throws DecodingException;
 
    /**
+    * Returns the format (perhaps implicit) of a {@code request}.
+    *
+    * @param context the javalin request context
+    * @return format string
+    */
+   default String findFormat(final Context context) {
+      String format = context.queryParam(ModelServerPathParametersV2.FORMAT);
+      if (format != null) {
+         return format;
+      }
+      return getPreferredFormat(context);
+   }
+
+   /**
     * Returns the format, for which the websocket subscribed for.
     *
     * @param context the javalin websocket context
     * @return format string
     */
-   String findFormat(WsContext context);
+   default String findFormat(final WsContext context) {
+      String format = context.queryParam(ModelServerPathParametersV2.FORMAT);
+      if (format != null) {
+         return format;
+      }
+      return getPreferredFormat(context);
+   }
+
+   /**
+    * Get the preferred format for request/response payloads in the given {@code context}.
+    *
+    * @param context a request context
+    * @return the preferred format
+    */
+   default String getPreferredFormat(final Context context) {
+      String result = this.getPreferredFormat();
+      if (result == null) {
+         result = ContextRequest.getAPIVersion(context).lessThan(APIVersion.API_V2)
+            ? ModelServerPathParametersV2.FORMAT_JSON
+            : ModelServerPathParametersV2.FORMAT_JSON_V2;
+      }
+      return result;
+   }
+
+   /**
+    * Get the preferred format for messages in the given socket {@code context}.
+    *
+    * @param context a socket context
+    * @return the preferred format
+    */
+   default String getPreferredFormat(final WsContext context) {
+      String result = this.getPreferredFormat();
+      if (result == null) {
+         result = ContextRequest.getAPIVersion(context).lessThan(APIVersion.API_V2)
+            ? ModelServerPathParametersV2.FORMAT_JSON
+            : ModelServerPathParametersV2.FORMAT_JSON_V2;
+      }
+      return result;
+   }
 
    /**
     * Obtains the codec that handles the format of the websocket.

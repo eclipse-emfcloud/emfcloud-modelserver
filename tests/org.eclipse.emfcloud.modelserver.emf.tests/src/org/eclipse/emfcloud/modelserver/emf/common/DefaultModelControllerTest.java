@@ -144,6 +144,8 @@ public class DefaultModelControllerTest {
          }
       }).getInstance(DICodecsManager.class);
 
+      when(context.matchedPath()).thenReturn("/api/v1"); // This is all we need of the path for these tests
+
       when(modelRepository.getModel(getModelUri("TestError.ecore").toString()))
          .thenReturn(Optional.of(resource.get().getContents().get(0)));
       when(modelRepository.loadResource(getModelUri("TestError.ecore").toString())).thenReturn(resource);
