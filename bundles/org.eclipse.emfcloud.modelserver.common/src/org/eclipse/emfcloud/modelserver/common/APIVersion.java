@@ -167,6 +167,10 @@ public final class APIVersion implements Comparable<APIVersion> {
     * @return the API version, or {@link #ZERO} if the URI is not a versioned API request URI
     */
    public static APIVersion forRequestURI(final String requestURI) {
+      if (requestURI == null) {
+         return ZERO;
+      }
+
       Matcher m = API_PATTERN.matcher(requestURI);
       return m.find() ? APIVersion.of(Integer.parseInt(m.group(1))) : ZERO;
    }
