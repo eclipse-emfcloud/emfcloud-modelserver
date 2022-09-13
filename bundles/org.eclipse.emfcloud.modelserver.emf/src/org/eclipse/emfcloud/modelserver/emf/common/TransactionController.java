@@ -10,9 +10,14 @@
  *******************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf.common;
 
+import java.util.Optional;
+
+import org.eclipse.emf.common.util.URI;
+
 import io.javalin.http.Context;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
+import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsErrorContext;
 import io.javalin.websocket.WsMessageContext;
 
@@ -59,4 +64,13 @@ public interface TransactionController {
     * @param ctx the web socket message context
     */
    void onMessage(WsMessageContext ctx);
+
+   /**
+    * Look up the model URI that is being in a transaction's socket context.
+    *
+    * @param ctx the transaction's socket context
+    * @return the model URI that it is editing, or empty if the context is not a transaction session
+    *         or it is closed or otherwise invalid
+    */
+   Optional<URI> getModelURI(WsContext ctx);
 }

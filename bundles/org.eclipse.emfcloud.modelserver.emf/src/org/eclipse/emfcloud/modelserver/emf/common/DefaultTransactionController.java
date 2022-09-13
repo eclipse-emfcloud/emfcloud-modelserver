@@ -215,6 +215,11 @@ public class DefaultTransactionController implements TransactionController {
          });
    }
 
+   @Override
+   public Optional<URI> getModelURI(final WsContext ctx) {
+      return getTransaction(ctx).map(TransactionContext::getModelURI).map(URI::createURI);
+   }
+
    //
    // Nested types
    //
