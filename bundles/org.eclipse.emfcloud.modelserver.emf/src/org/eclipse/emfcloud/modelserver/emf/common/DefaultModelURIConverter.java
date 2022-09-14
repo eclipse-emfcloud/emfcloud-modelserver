@@ -56,8 +56,12 @@ public class DefaultModelURIConverter extends ExtensibleURIConverterImpl impleme
 
    protected final ServerConfiguration serverConfiguration;
 
+   @Inject(optional = true)
+   protected TransactionController transactionController;
+
    @Inject
    public DefaultModelURIConverter(final ServerConfiguration serverConfiguration) {
+
       super();
 
       this.serverConfiguration = serverConfiguration;
@@ -103,7 +107,10 @@ public class DefaultModelURIConverter extends ExtensibleURIConverterImpl impleme
    @Override
    public Optional<URI> resolveModelURI(final WsContext ctx, final String key) {
       APIVersion apiVersion = getAPIVersion(ctx);
-      return getModelURI(ctx.queryParamMap(), key)
+
+      Optional<URI> modelURI = getModelURI(ctx.queryParamMap(), key)
+         .or(() -> getTransactionModelURI(ctx));
+      return modelURI
          .flatMap(uri -> makeAbsolute(apiVersion, uri));
    }
 
@@ -120,6 +127,10 @@ public class DefaultModelURIConverter extends ExtensibleURIConverterImpl impleme
    protected Optional<URI> getModelURI(final Map<String, List<String>> queryParameters, final String key) {
       return Optional.of(queryParameters.getOrDefault(key, List.of()))
          .filter(Predicate.not(List::isEmpty)).map(list -> list.get(0)).map(DefaultModelURIConverter::parseURI);
+   }
+
+   protected Optional<URI> getTransactionModelURI(final WsContext ctx) {
+      return Optional.ofNullable(this.transactionController).flatMap(tc -> tc.getModelURI(ctx));
    }
 
    /**
