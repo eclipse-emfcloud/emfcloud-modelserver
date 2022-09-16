@@ -29,6 +29,7 @@ import org.eclipse.emfcloud.modelserver.edit.DICommandCodec;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultFacetConfig;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelRepository;
+import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelSynchronizer;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultModelValidator;
 import org.eclipse.emfcloud.modelserver.emf.common.DefaultResourceSetFactory;
@@ -41,6 +42,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.DefaultUriHelper;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelController;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelResourceManager;
+import org.eclipse.emfcloud.modelserver.emf.common.ModelSynchronizer;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelURIConverter;
 import org.eclipse.emfcloud.modelserver.emf.common.ModelValidator;
 import org.eclipse.emfcloud.modelserver.emf.common.RecordingModelResourceManager;
@@ -50,6 +52,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.SchemaRepository;
 import org.eclipse.emfcloud.modelserver.emf.common.ServerController;
 import org.eclipse.emfcloud.modelserver.emf.common.SessionController;
 import org.eclipse.emfcloud.modelserver.emf.common.SingleThreadModelController;
+import org.eclipse.emfcloud.modelserver.emf.common.SingleThreadTransactionController;
 import org.eclipse.emfcloud.modelserver.emf.common.TransactionController;
 import org.eclipse.emfcloud.modelserver.emf.common.UriHelper;
 import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecProvider;
@@ -104,10 +107,11 @@ public class DefaultModelServerModule extends ModelServerModule {
       bind(ModelValidator.class).to(bindModelValidator()).in(Singleton.class);
       bind(FacetConfig.class).to(bindFacetConfig()).in(Singleton.class);
       bind(UriHelper.class).to(bindUriHelper()).in(Singleton.class);
-      bind(TransactionController.class).to(bindTransactionController()).in(Singleton.class);
+      bind(TransactionController.class).to(bindThreadSafeTransactionController()).in(Singleton.class);
       bind(ModelURIConverter.class).to(bindModelURIConverter()).in(Singleton.class);
       bind(ResourceSetFactory.class).to(bindResourceSetFactory()).in(Singleton.class);
       bind(URIConverter.class).to(Key.get(ModelURIConverter.class));
+      bind(ModelSynchronizer.class).to(bindModelSynchronizer()).in(Singleton.class);
 
       // Configure instance bindings
       bind(ObjectMapper.class).toProvider(this::provideObjectMapper).in(Singleton.class);
@@ -132,6 +136,10 @@ public class DefaultModelServerModule extends ModelServerModule {
 
    protected Class<? extends JsonSchemaConverter> bindJsonSchemaConverter() {
       return DefaultJsonSchemaConverter.class;
+   }
+
+   protected Class<? extends ModelSynchronizer> bindModelSynchronizer() {
+      return DefaultModelSynchronizer.class;
    }
 
    protected Class<? extends ModelController> bindModelController() {
@@ -198,6 +206,13 @@ public class DefaultModelServerModule extends ModelServerModule {
 
    protected Class<? extends TransactionController> bindTransactionController() {
       return DefaultTransactionController.class;
+   }
+
+   protected Class<? extends TransactionController> bindThreadSafeTransactionController() {
+      bind(TransactionController.class)
+         .annotatedWith(Names.named(SingleThreadTransactionController.TRANSACTION_CONTROLLER_DELEGATE))
+         .to(bindTransactionController());
+      return SingleThreadTransactionController.class;
    }
 
    protected Class<? extends ModelURIConverter> bindModelURIConverter() {
