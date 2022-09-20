@@ -31,10 +31,12 @@ public final class DefaultModelSynchronizer implements ModelSynchronizer {
    private final String name = DefaultModelSynchronizer.class.getSimpleName() + "-" + COUNTER.incrementAndGet();
    private final Logger log = LogManager.getLogger(name);
 
+   private volatile Thread executorThread;
+
    private final ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
-      Thread thread = new Thread(runnable, name);
-      thread.setDaemon(true);
-      return thread;
+      executorThread = new Thread(runnable, name);
+      executorThread.setDaemon(true);
+      return executorThread;
    });
 
    private final Semaphore executionPermits = new Semaphore(100);
@@ -43,10 +45,25 @@ public final class DefaultModelSynchronizer implements ModelSynchronizer {
       super();
    }
 
+   /**
+    * Shut down the linear execution service. Not exposed to clients but
+    * used in tests to avoid piling up threads.
+    */
+   public void dispose() {
+      executor.shutdown();
+   }
+
    @Override
    public void syncExec(final Runnable action) {
-      postAndWait(callable(action));
+      if (isExecutorThread()) {
+         // We are re-entering an active execution. Do not post but just go
+         action.run();
+      } else {
+         postAndWait(callable(action));
+      }
    }
+
+   private boolean isExecutorThread() { return Thread.currentThread() == executorThread; }
 
    static Callable<Void> callable(final Runnable runnable) {
       return () -> {
@@ -60,8 +77,18 @@ public final class DefaultModelSynchronizer implements ModelSynchronizer {
       return post(callable(action));
    }
 
+   @SuppressWarnings("checkstyle:IllegalCatch")
    @Override
    public <T> T syncCall(final Callable<T> action) {
+      if (isExecutorThread()) {
+         // We are re-entering an active execution. Do not post but just go
+         try {
+            return action.call();
+         } catch (Exception e) {
+            log.error("Synchronous call failed.", e);
+            return null;
+         }
+      }
       return postAndWait(action);
    }
 
