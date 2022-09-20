@@ -31,12 +31,12 @@ public final class DefaultModelSynchronizer implements ModelSynchronizer {
    private final String name = DefaultModelSynchronizer.class.getSimpleName() + "-" + COUNTER.incrementAndGet();
    private final Logger log = LogManager.getLogger(name);
 
-   private volatile Thread execThread;
+   private volatile Thread executorThread;
 
    private final ExecutorService executor = Executors.newSingleThreadExecutor(runnable -> {
-      execThread = new Thread(runnable, name);
-      execThread.setDaemon(true);
-      return execThread;
+      executorThread = new Thread(runnable, name);
+      executorThread.setDaemon(true);
+      return executorThread;
    });
 
    private final Semaphore executionPermits = new Semaphore(100);
@@ -45,19 +45,25 @@ public final class DefaultModelSynchronizer implements ModelSynchronizer {
       super();
    }
 
+   /**
+    * Shut down the linear execution service. Not exposed to clients but
+    * used in tests to avoid piling up threads.
+    */
    public void dispose() {
       executor.shutdown();
    }
 
    @Override
    public void syncExec(final Runnable action) {
-      if (Thread.currentThread() == execThread) {
+      if (isExecutorThread()) {
          // We are re-entering an active execution. Do not post but just go
          action.run();
       } else {
          postAndWait(callable(action));
       }
    }
+
+   private boolean isExecutorThread() { return Thread.currentThread() == executorThread; }
 
    static Callable<Void> callable(final Runnable runnable) {
       return () -> {
@@ -74,7 +80,7 @@ public final class DefaultModelSynchronizer implements ModelSynchronizer {
    @SuppressWarnings("checkstyle:IllegalCatch")
    @Override
    public <T> T syncCall(final Callable<T> action) {
-      if (Thread.currentThread() == execThread) {
+      if (isExecutorThread()) {
          // We are re-entering an active execution. Do not post but just go
          try {
             return action.call();
