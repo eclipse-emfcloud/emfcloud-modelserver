@@ -91,7 +91,7 @@ The default log level is set to `INFO` for the Log4j 2 logger itself and to `DEB
 For more information on the Log4j 2 configuration please visit [the Log4j 2 manual](https://logging.apache.org/log4j/2.x/manual/configuration.html).
 
 *Remark*:
-There is an known issue with Log4j2 used in bundled JARs.
+There is a known issue with Log4j2 used in bundled JARs.
 This shows in not properly logging INFO lines in the (rolling) log file (if used).
 This can be solved by adding the following property to the `ManifestResourceTransformer` in the packaging phase within the `maven-shade-plugin`. See for example also in our example application [`org.eclipse.emfcloud.modelserver.example/pom.xml`](https://github.com/eclipse-emfcloud/emfcloud-modelserver/blob/master/examples/org.eclipse.emfcloud.modelserver.example/pom.xml#L145)
 
