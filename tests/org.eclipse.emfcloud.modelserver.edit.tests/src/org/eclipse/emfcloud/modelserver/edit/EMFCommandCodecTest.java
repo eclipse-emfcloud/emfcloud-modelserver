@@ -24,6 +24,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;
+import org.eclipse.emf.ecore.EGenericType;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.EcorePackage;
@@ -62,6 +63,7 @@ public class EMFCommandCodecTest {
    private static final String N_A = "n/a";
    private static final String ATTRIBUTE = "attribute";
    private static final String REFERENCE = "reference";
+   private static final String MONO_CONTAINMENT = "monovalued containment reference";
    private static final String REFERENCE_MANY = "reference (many)";
    private static final String REFERENCE_BY_INDEX = "reference (by index)";
 
@@ -107,6 +109,7 @@ public class EMFCommandCodecTest {
          new Object[] { EMFCommandType.SET, ATTRIBUTE, createAttributeSetCommand(),
             createAttributeSetModel() }, //
          new Object[] { EMFCommandType.SET, REFERENCE, createReferenceSetCommand(), createReferenceSetModel() }, //
+         new Object[] { EMFCommandType.SET, MONO_CONTAINMENT, createMonoContainmentSetCommand(), createMonoContainmentSetModel() }, //
          new Object[] { EMFCommandType.ADD, ATTRIBUTE, createAttributeAddCommand(), createAttributeAddModel() }, //
          new Object[] { EMFCommandType.ADD, REFERENCE, createReferenceAddCommand(), createReferenceAddModel() }, //
          new Object[] { EMFCommandType.ADD, REFERENCE_MANY, createReferenceAddMultipleCommand(),
@@ -172,6 +175,25 @@ public class EMFCommandCodecTest {
       result.getObjectValues().add(newClass);
       result.getObjectsToAdd().add(newClass);
       result.getIndices().add(1);
+      return result;
+   }
+
+   static Command createMonoContainmentSetCommand() {
+      EGenericType newGenericType = EcoreFactory.eINSTANCE.createEGenericType();
+
+      return SetCommand.create(domain, ((EClass)ePackage.getEClassifiers().get(0)).getEStructuralFeatures().get(0), EcorePackage.Literals.ETYPED_ELEMENT__EGENERIC_TYPE, newGenericType);
+   }
+
+   static CCommand createMonoContainmentSetModel() {
+      EGenericType newGenericType = EcoreFactory.eINSTANCE.createEGenericType();
+
+      CCommand result = CCommandFactory.eINSTANCE.createCommand();
+      result.setType(EMFCommandType.SET);
+      result.setOwner(((EClass)ePackage.getEClassifiers().get(0)).getEStructuralFeatures().get(0));
+      result.setFeature("eGenericType");
+      result.getObjectValues().add(newGenericType);
+      result.getObjectsToAdd().add(newGenericType);
+      result.getIndices().add(NO_INDEX);
       return result;
    }
 
