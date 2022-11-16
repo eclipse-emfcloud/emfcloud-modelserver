@@ -16,6 +16,7 @@ import static org.eclipse.emf.common.notify.Notification.NO_INDEX;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
@@ -51,6 +52,8 @@ public class SetCommandContribution extends BasicCommandContribution<SetCommand>
          EDataType dataType = ((EAttribute) feature).getEAttributeType();
          value = command.getDataValues().isEmpty() ? null
             : EcoreUtil.createFromString(dataType, command.getDataValues().get(0));
+      } else if(feature instanceof EReference && ((EReference)feature).isContainment()) {
+         value = getFirst(command.getObjectsToAdd(), null);
       } else {
          value = getFirst(command.getObjectValues(), null);
       }
