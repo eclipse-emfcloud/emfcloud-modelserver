@@ -117,7 +117,7 @@
                <plugin>
                   <groupId>com.googlecode.addjars-maven-plugin</groupId>
                   <artifactId>addjars-maven-plugin</artifactId>
-                  <version>1.0.5</version>
+                  <version>${addjars.maven.version}</version>
                   <executions>
                      <execution>
                         <phase>package</phase>
