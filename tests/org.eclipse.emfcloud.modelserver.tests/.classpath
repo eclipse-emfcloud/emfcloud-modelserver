@@ -6,12 +6,14 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry exported="true" kind="lib" path="lib/mockito-inline-3.2.4.jar" sourcepath="lib/mockito-inline-3.2.4-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/okhttp-mock-1.5.0.jar" sourcepath="lib/okhttp-mock-1.5.0-sources.jar"/>
 	<classpathentry kind="src" path="src/">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/hamcrest-2.2.jar" sourcepath="lib/hamcrest-2.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/hamcrest-core-2.2.jar" sourcepath="lib/hamcrest-core-2.2-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/mockito-inline-4.8.1.jar" sourcepath="lib/mockito-inline-4.8.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/okhttp-mock-1.5.0.jar" sourcepath="lib/okhttp-mock-1.5.0-sources.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

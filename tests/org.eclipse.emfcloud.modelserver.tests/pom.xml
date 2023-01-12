@@ -21,6 +21,16 @@
          <artifactId>okhttp-mock</artifactId>
          <version>${gmazzo.okhttp.mock.version}</version>
       </dependency>
+      <dependency>
+         <groupId>org.hamcrest</groupId>
+         <artifactId>hamcrest</artifactId>
+         <version>${hamcrest.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hamcrest</groupId>
+         <artifactId>hamcrest-core</artifactId>
+         <version>${hamcrest.version}</version>
+      </dependency>
    </dependencies>
 
    <build>
@@ -59,6 +69,28 @@
                            <groupId>com.github.gmazzo</groupId>
                            <artifactId>okhttp-mock</artifactId>
                            <version>${gmazzo.okhttp.mock.version}</version>
+                           <classifier>sources</classifier>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.hamcrest</groupId>
+                           <artifactId>hamcrest</artifactId>
+                           <version>${hamcrest.version}</version>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.hamcrest</groupId>
+                           <artifactId>hamcrest</artifactId>
+                           <version>${hamcrest.version}</version>
+                           <classifier>sources</classifier>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.hamcrest</groupId>
+                           <artifactId>hamcrest-core</artifactId>
+                           <version>${hamcrest.version}</version>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.hamcrest</groupId>
+                           <artifactId>hamcrest-core</artifactId>
+                           <version>${hamcrest.version}</version>
                            <classifier>sources</classifier>
                         </artifactItem>
                      </artifactItems>

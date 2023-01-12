@@ -7,21 +7,23 @@ location "http://download.eclipse.org/releases/2022-03" {
 }
 
 location "https://download.eclipse.org/tools/orbit/downloads/drops/R20220302172233/repository" {
+	javax.servlet [3.1.0,4.0.0)
+}
+
+location "https://download.eclipse.org/tools/orbit/downloads/drops/R20221123021534/repository" {
 	org.apache.logging.log4j [2.17.1,3.0.0)
 	com.google.gson [2.8.9,3.0.0)
 	com.google.inject [5.0.1,6.0.0)
 	com.google.guava [30.1.0,31.0.0)
 	org.apache.commons.io [2.8.0,3.0.0)
-	org.mockito [2.23.0,3.0.0)
-	net.bytebuddy.byte-buddy [1.9.0,2.0.0)
-	net.bytebuddy.byte-buddy-agent [1.9.0,2.0.0)
-	org.objenesis [2.6.0,3.0.0)
-	org.hamcrest [1.1.0,2.0.0)
+	org.mockito.mockito-core [4.8.1,5.0.0)
+	net.bytebuddy.byte-buddy [1.12.18,2.0.0)
+	net.bytebuddy.byte-buddy-agent [1.12.18,2.0.0)
+	org.objenesis [3.3.0,4.0.0)
 	com.fasterxml.jackson.core.jackson-annotations [2.12.1,3.0.0)
 	com.fasterxml.jackson.core.jackson-core [2.12.1,3.0.0)
 	com.fasterxml.jackson.core.jackson-databind [2.12.1,3.0.0)
 	org.junit [4.13.2,5.0.0)
-	javax.servlet [3.1.0,4.0.0)
 	org.aopalliance [1.0.0,2.0.0)
 }
 
