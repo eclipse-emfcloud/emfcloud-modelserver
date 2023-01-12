@@ -6,28 +6,18 @@ For more information, please visit the [EMF.cloud Website](https://www.eclipse.o
 
 The following libraries/frameworks need to be installed on your system:
 
-|                                                                              |           |                                                  |
-| ---------------------------------------------------------------------------- | --------- | ------------------------------------------------ |
-| [Java](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) | `>= 11`   | we support the two last LTS versions (11 and 17) |
-| [Maven](https://maven.apache.org/)                                           | `<=3.8.4` |                                                  |
+|                                                                              | Version                 | Remark                                             |
+| ---------------------------------------------------------------------------- | ----------------------- | -------------------------------------------------- |
+| [Java](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) | `>= 11`                 | We support the two latest LTS versions (11 and 17) |
+| [Maven](https://maven.apache.org/)                                           | `>=3.8.6` || `<= 3.8.4` | There are build errors with Maven version `3.8.5`  |
 
-_Remark:_ There is currently a build problem with the latest Maven version `3.8.5`, which causes a build error for the `p2` build. (See also issues #201 and will be investigated and fixed with issue #203).
+_Remark:_ There are build errors with the Maven version `3.8.5`, which causes a build error for the `p2` build.
 
 ## Build
 
 To build the model server as standalone JAR and execute all component tests execute the following maven goal in the root directory:
 
     mvn clean install
-
-_Remark:_ If you have installed Maven `3.8.5` and do not want to install a lower version, you can also use the provided maven wrapper scripts (that provide Maven `3.8.4`) to build:
-
-For Ubuntu/MacOS:
-
-    ./mvnw mvn clean install
-
-For Windows:
-
-    ./mvnw.cmd mvn clean install
 
 ### Maven Repositories [![build-status-server](https://img.shields.io/jenkins/build?jobUrl=https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-m2/&label=publish)](https://ci.eclipse.org/emfcloud/job/deploy-emfcloud-modelserver-m2/)
 

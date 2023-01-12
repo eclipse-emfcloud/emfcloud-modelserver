@@ -1,6 +1,6 @@
 target "EMF.cloud Model Server Targetplatform" with source, requirements
 
-location "http://download.eclipse.org/releases/2022-03" {
+location "https://download.eclipse.org/releases/2022-03" {
 	org.eclipse.platform.feature.group [4.22.0,5.0.0)
 	org.eclipse.emf.transaction.feature.group [1.12.0,2.0.0)
 	org.eclipse.emf.sdk.feature.group [2.29.0,3.0.0)
