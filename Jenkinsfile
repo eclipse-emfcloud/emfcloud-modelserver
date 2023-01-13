@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'apache-maven-latest'
+        maven 'apache-maven-3.8.6'
         jdk 'openjdk-jdk11-latest'
     }
 
@@ -15,7 +15,7 @@ pipeline {
             steps {
                 // ignore test failures since we parse the test results afterwards
                 timeout(30) {
-                    sh './mvnw clean verify -Pm2 -B -Dmaven.test.failure.ignore=true'
+                    sh 'mvn clean verify -Pm2 -B -Dmaven.test.failure.ignore=true'
                 } 
             }
         }
@@ -24,7 +24,7 @@ pipeline {
             steps {
                 // ignore test failures since we parse the test results afterwards
                 timeout(30) {
-                    sh './mvnw clean verify -Pp2 -B -Dmaven.test.failure.ignore=true' 
+                    sh 'mvn clean verify -Pp2 -B -Dmaven.test.failure.ignore=true' 
                 }
             }
         }
