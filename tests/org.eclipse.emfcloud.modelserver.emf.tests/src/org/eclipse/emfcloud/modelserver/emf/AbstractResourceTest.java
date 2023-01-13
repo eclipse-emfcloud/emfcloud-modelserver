@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019 EclipseSource and others.
+ * Copyright (c) 2019-2023 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -10,9 +10,11 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.emf;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -21,11 +23,22 @@ import org.eclipse.emfcloud.jackson.resource.JsonResourceFactory;
 import org.eclipse.emfcloud.modelserver.common.codecs.EMFJsonConverter;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 public abstract class AbstractResourceTest {
-   public static final String RESOURCE_PATH = "resources/";
+   public static final String TEST_RESOURCES_PATH = "resources/";
+   public static final String RESOURCE_PATH = ".temp/";
    @SuppressWarnings({ "checkstyle:VisibilityModifier" })
    protected ResourceSetImpl resourceSet; // needed in ResourceManagerTest.java
+
+   @BeforeClass
+   public static void setupTestResources() throws IOException {
+      // copy test resources to a temporary resource location to avoid
+      // git changes if executing tests due to saving resources
+      File sourceDirectory = new File(TEST_RESOURCES_PATH);
+      File destinationDirectory = new File(RESOURCE_PATH);
+      FileUtils.copyDirectory(sourceDirectory, destinationDirectory);
+   }
 
    @Before
    public void initializeResourceSet() {

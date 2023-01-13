@@ -15,17 +15,13 @@
       <module>org.eclipse.emfcloud.modelserver.client.tests</module>
       <module>org.eclipse.emfcloud.modelserver.common.tests</module>
       <module>org.eclipse.emfcloud.modelserver.edit.tests</module>
+      <module>org.eclipse.emfcloud.modelserver.emf.tests</module>
       <module>org.eclipse.emfcloud.modelserver.tests</module>
    </modules>
 
    <profiles>
       <profile>
          <id>m2</id>
-
-         <!-- mockito cannot properly mock some classes so tests fail in p2 -->
-         <modules>
-            <module>org.eclipse.emfcloud.modelserver.emf.tests</module>
-         </modules>
 
          <build>
             <plugins>

@@ -103,8 +103,6 @@
 		<emfjson.jackson.version>2.0.0</emfjson.jackson.version>
 		<commons.io.version>2.8.0</commons.io.version>
 		<junit.version>4.13.2</junit.version>
-		<mockito.version>4.8.1</mockito.version>
-		<hamcrest.version>2.2</hamcrest.version>
 		<net.bytebuddy.version>1.12.16</net.bytebuddy.version>
 		<org.objenesis.version>3.3</org.objenesis.version>
 		<json-patch.version>1.13</json-patch.version>
@@ -120,8 +118,9 @@
 		<jetty.version>9.4.44.v20210927</jetty.version>
 		<jetty.websocket.version>9.4.44.v20210927</jetty.websocket.version>
 		<javalin.version>4.3.0</javalin.version>
-		<mockito.inline.version>4.8.1</mockito.inline.version>
+		<mockito.version>4.9.0</mockito.version>
 		<gmazzo.okhttp.mock.version>1.5.0</gmazzo.okhttp.mock.version>
+		<hamcrest.version>2.2</hamcrest.version>
 
 		<!-- Release Dependencies for M2 -->
 		<nexus.maven.version>1.6.8</nexus.maven.version>
