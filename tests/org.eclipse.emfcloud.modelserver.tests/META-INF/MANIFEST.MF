@@ -8,13 +8,14 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.emf.common;bundle-version="[2.17.0,3.0.0)",
  org.eclipse.emf.ecore;bundle-version="[2.20.0,3.0.0)",
  org.eclipse.emf.edit;bundle-version="[2.16.0,3.0.0)",
- org.eclipse.emfcloud.modelserver.lib;bundle-version="[0.7.0,1.0.0)",
- org.hamcrest.library;bundle-version="[1.3.0,2.0.0)",
- org.hamcrest.core;bundle-version="[1.3.0,2.0.0)"
+ org.eclipse.emfcloud.modelserver.lib;bundle-version="[0.7.0,1.0.0)"
 Export-Package: okhttp3.mock,
  okhttp3.mock.matchers,
- org.eclipse.emfcloud.modelserver.tests.util
+ org.eclipse.emfcloud.modelserver.tests.util,
+ org.hamcrest
 Bundle-ClassPath: .,
- lib/mockito-inline-3.2.4.jar,
+ lib/hamcrest-2.2.jar,
+ lib/hamcrest-core-2.2.jar,
+ lib/mockito-inline-4.8.1.jar,
  lib/okhttp-mock-1.5.0.jar
 Bundle-Vendor: EclipseSource

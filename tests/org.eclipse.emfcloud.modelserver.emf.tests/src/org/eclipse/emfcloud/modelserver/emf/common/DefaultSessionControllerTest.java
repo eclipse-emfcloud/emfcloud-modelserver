@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2019-2022 EclipseSource and others.
+ * Copyright (c) 2019-2023 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -39,6 +39,7 @@ import org.eclipse.emfcloud.modelserver.emf.common.codecs.CodecsManager;
 import org.eclipse.emfcloud.modelserver.emf.configuration.ServerConfiguration;
 import org.eclipse.emfcloud.modelserver.emf.util.JsonPatchHelper;
 import org.eclipse.emfcloud.modelserver.jsonschema.Json;
+import org.eclipse.emfcloud.modelserver.tests.util.MockitoUtil;
 import org.eclipse.jetty.websocket.api.Session;
 import org.hamcrest.CustomTypeSafeMatcher;
 import org.hamcrest.Description;
@@ -48,7 +49,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.internal.util.reflection.FieldSetter;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -235,7 +235,7 @@ public class DefaultSessionControllerTest {
       when(validClientCtx.getSessionId()).thenReturn(sessionId);
       when(validClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI)).thenReturn(modelUri);
       Field sessionField = WsContext.class.getDeclaredField("session");
-      FieldSetter.setField(validClientCtx, sessionField, session);
+      MockitoUtil.setField(validClientCtx, sessionField, session);
 
       when(codecs.findFormat(validClientCtx)).thenReturn(ModelServerPathParametersV1.FORMAT_JSON);
 
@@ -251,7 +251,7 @@ public class DefaultSessionControllerTest {
       when(repository.hasModel(modelUri)).thenReturn(true);
 
       Field sessionField = WsContext.class.getDeclaredField("session");
-      FieldSetter.setField(messageClientCtx, sessionField, session);
+      MockitoUtil.setField(messageClientCtx, sessionField, session);
    }
 
    @SuppressWarnings({ "checkstyle:ThrowsCount" })
@@ -259,7 +259,7 @@ public class DefaultSessionControllerTest {
       String modelUri = "tedioustesturi";
 
       when(invalidClientCtx.pathParam(ModelServerPathParametersV1.MODEL_URI)).thenReturn(modelUri);
-      FieldSetter.setField(invalidClientCtx, WsContext.class.getDeclaredField("session"), session);
+      MockitoUtil.setField(invalidClientCtx, WsContext.class.getDeclaredField("session"), session);
    }
 
    @Before

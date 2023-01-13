@@ -77,9 +77,9 @@
                      <appArgLine>-application org.eclipse.ant.core.antRunner -buildfile packaging-p2composite.ant p2.composite.add -Dsite.label=${p2.site.label} -Dproject.build.directory=${project.build.directory} -DunqualifiedVersion=${unqualifiedVersion} -DbuildQualifier=${buildQualifier} -Dsoftware.download.area=${rsync.local.dir}</appArgLine>
                      <repositories>
                         <repository>
-                           <id>2021-06</id>
+                           <id>2022-03</id>
                            <layout>p2</layout>
-                           <url>http://download.eclipse.org/releases/2021-06</url>
+                           <url>http://download.eclipse.org/releases/2022-03</url>
                         </repository>
                      </repositories>
                      <dependencies>
@@ -121,6 +121,7 @@
                </plugin>
                <!-- Skip cleaning of this module otherwise the release build is not working on the jenkins instance -->
                <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-clean-plugin</artifactId>
                   <version>${maven.clean.version}</version>
                   <configuration>

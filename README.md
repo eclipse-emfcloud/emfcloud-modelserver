@@ -6,10 +6,10 @@ For more information, please visit the [EMF.cloud Website](https://www.eclipse.o
 
 The following libraries/frameworks need to be installed on your system:
 
-|                                                                              |           |
-| ---------------------------------------------------------------------------- | --------- |
-| [Java](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) | `11`      |
-| [Maven](https://maven.apache.org/)                                           | `<=3.8.4` |
+|                                                                              |           |                                                  |
+| ---------------------------------------------------------------------------- | --------- | ------------------------------------------------ |
+| [Java](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) | `>= 11`   | we support the two last LTS versions (11 and 17) |
+| [Maven](https://maven.apache.org/)                                           | `<=3.8.4` |                                                  |
 
 _Remark:_ There is currently a build problem with the latest Maven version `3.8.5`, which causes a build error for the `p2` build. (See also issues #201 and will be investigated and fixed with issue #203).
 
