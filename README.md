@@ -805,7 +805,7 @@ All involved code must adhere to the provided codestyle and checkstyle settings.
 
 #### Requirements
 
-- Please make sure your Eclipse workspace uses a JRE of Java 9 or higher.
+- Please make sure your Eclipse workspace uses a JRE of Java 11 or higher.
 - Install the Eclipse Checkstyle Plug-in via its update site `https://checkstyle.org/eclipse-cs/#!/install`.
 
 #### Configure Checkstyle
