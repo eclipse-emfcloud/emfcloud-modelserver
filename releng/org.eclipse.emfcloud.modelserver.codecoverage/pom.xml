@@ -15,9 +15,15 @@
    </properties>
 
    <dependencies>
+      <!-- We have to repeat every tested bundle here :'( -->
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.client</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.emfcloud.modelserver</groupId>
+         <artifactId>org.eclipse.emfcloud.modelserver.client.tests</artifactId>
          <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -27,12 +33,27 @@
       </dependency>
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
+         <artifactId>org.eclipse.emfcloud.modelserver.common.tests</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.emf</artifactId>
          <version>${project.version}</version>
       </dependency>
       <dependency>
          <groupId>org.eclipse.emfcloud.modelserver</groupId>
+         <artifactId>org.eclipse.emfcloud.modelserver.emf.tests</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.emfcloud.modelserver</groupId>
          <artifactId>org.eclipse.emfcloud.modelserver.edit</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.emfcloud.modelserver</groupId>
+         <artifactId>org.eclipse.emfcloud.modelserver.edit.tests</artifactId>
          <version>${project.version}</version>
       </dependency>
    </dependencies>
@@ -46,7 +67,7 @@
             <executions>
                <execution>
                   <id>report-code-coverage</id>
-                  <phase>test</phase>
+                  <phase>verify</phase>
                   <goals>
                      <goal>report-aggregate</goal>
                   </goals>
