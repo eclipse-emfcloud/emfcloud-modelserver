@@ -10,6 +10,10 @@
  ********************************************************************************/
 package org.eclipse.emfcloud.modelserver.example.util;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -122,8 +126,16 @@ public final class PrintUtil {
          beginObject(object.eClass().getName() + " {");
 
          for (EAttribute attr : object.eClass().getEAllAttributes()) {
-            print(String.format("%s: %s", attr.getName(),
-               EcoreUtil.convertToString(attr.getEAttributeType(), object.eGet(attr))));
+            Object value = object.eGet(attr);
+            if (attr.isMany()) {
+               Stream<String> printableValues = ((Collection<?>) value).stream()
+                  .map(v -> EcoreUtil.convertToString(attr.getEAttributeType(), v));
+               print(String.format("%s: %s", attr.getName(),
+                  printableValues.collect(Collectors.toList()).toString()));
+            } else {
+               print(String.format("%s: %s", attr.getName(),
+                  EcoreUtil.convertToString(attr.getEAttributeType(), value)));
+            }
          }
 
          recurse(object);
