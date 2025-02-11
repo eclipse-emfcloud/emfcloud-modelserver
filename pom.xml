@@ -115,7 +115,7 @@
 		<kotlin.stdlib.common.version>1.4.10</kotlin.stdlib.common.version>
 		<squareup.okhttp.version>4.9.1</squareup.okhttp.version>
 		<squareup.okio.version>2.10.0</squareup.okio.version>
-		<jetty.version>9.4.44.v20210927</jetty.version>
+		<jetty.version>9.4.55.v20240627</jetty.version>
 		<jetty.websocket.version>9.4.44.v20210927</jetty.websocket.version>
 		<javalin.version>4.3.0</javalin.version>
 		<mockito.version>4.9.0</mockito.version>
