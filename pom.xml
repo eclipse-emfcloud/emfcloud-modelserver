@@ -101,7 +101,7 @@
 		<emf.transaction.version>1.8.0.201405281451</emf.transaction.version>
 		<emf.validation.version>1.8.0.201405281429</emf.validation.version>
 		<emfjson.jackson.version>2.0.0</emfjson.jackson.version>
-		<commons.io.version>2.8.0</commons.io.version>
+		<commons.io.version>2.14.0</commons.io.version>
 		<junit.version>4.13.2</junit.version>
 		<net.bytebuddy.version>1.12.16</net.bytebuddy.version>
 		<org.objenesis.version>3.3</org.objenesis.version>
