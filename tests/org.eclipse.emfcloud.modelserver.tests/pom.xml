@@ -17,11 +17,6 @@
          <version>${mockito.version}</version>
       </dependency>
       <dependency>
-         <groupId>org.mockito</groupId>
-         <artifactId>mockito-inline</artifactId>
-         <version>${mockito.version}</version>
-      </dependency>
-      <dependency>
          <groupId>com.github.gmazzo</groupId>
          <artifactId>okhttp-mock</artifactId>
          <version>${gmazzo.okhttp.mock.version}</version>
@@ -54,17 +49,6 @@
                   </goals>
                   <configuration>
                      <artifactItems>
-                        <artifactItem>
-                           <groupId>org.mockito</groupId>
-                           <artifactId>mockito-inline</artifactId>
-                           <version>${mockito.version}</version>
-                        </artifactItem>
-                        <artifactItem>
-                           <groupId>org.mockito</groupId>
-                           <artifactId>mockito-inline</artifactId>
-                           <version>${mockito.version}</version>
-                           <classifier>sources</classifier>
-                        </artifactItem>
                         <artifactItem>
                            <groupId>org.mockito</groupId>
                            <artifactId>mockito-core</artifactId>
