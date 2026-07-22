@@ -2,6 +2,9 @@
 
 For more information, please visit the [EMF.cloud Website](https://www.eclipse.org/emfcloud/). If you have questions, contact us on our [discussions page](https://github.com/eclipse-emfcloud/emfcloud/discussions) and have a look at our [communication and support options](https://www.eclipse.org/emfcloud/contact/).
 
+> [!IMPORTANT]
+> The EMF.cloud Model Server is a **development-time component** intended to run **locally in a trusted environment**, driven by a trusted client. Its default configuration binds all network interfaces, enables permissive CORS, and uses **no authentication**. **Do not expose it to untrusted networks.** Before any networked or production deployment, read **[Intended Use, Deployment &amp; Security Considerations](./docs/deployment.md)**.
+
 ## Prerequisites
 
 The following libraries/frameworks need to be installed on your system:
@@ -47,6 +50,9 @@ To run the model server standalone JAR, run this command in your terminal:
 
     cd  examples/org.eclipse.emfcloud.modelserver.example/target/
     java -jar org.eclipse.emfcloud.modelserver.example-X.X.X-SNAPSHOT-standalone.jar
+
+> [!WARNING]
+> This starts an **unauthenticated** server bound to **all network interfaces** with permissive CORS, suitable for **local development only**. Anyone who can reach the port can read and write models and files accessible to the server process. Do not run it on an exposed or shared host without the protections described in [Intended Use, Deployment &amp; Security Considerations](./docs/deployment.md).
 
 #### Usage
 
